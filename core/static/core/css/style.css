@@ -1,0 +1,324 @@
+/* General Body Styles */
+body {
+    margin: 0;
+    font-family: 'Kanit', sans-serif;
+    background-color: #4A0072; /* Dark purple background */
+    color: white;
+    overflow-x: hidden;
+}
+
+.main-container {
+    padding: 1.5rem 3rem;
+}
+
+/* Top Header */
+.top-header {
+    background-color: #FFC700; /* Yellow */
+    color: #4A0072;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 2rem;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    position: fixed;
+    top: 1.5rem;
+    left: 3rem;
+    right: 3rem;
+    z-index: 100;
+}
+
+.logo-placeholder {
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    line-height: 1;
+}
+
+.user-name {
+    font-size: 0.9rem;
+}
+
+.user-id {
+    font-size: 0.8rem;
+}
+
+.profile-pic-placeholder {
+    width: 40px;
+    height: 40px;
+    background-color: #ccc;
+    border-radius: 50%;
+    border: 2px solid #4A0072;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: #4A0072;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+/* Main Content Area */
+.content-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 100px; /* Space for fixed header */
+    height: calc(100vh - 100px);
+}
+
+.left-panel {
+    flex-basis: 50%;
+}
+
+.main-title {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.main-title .star { color: #FFC700; }
+.main-title .dot { color: #FF6B6B; }
+.main-title .pencil {
+    font-family: serif;
+    font-style: italic;
+    color: #FFC700;
+    display: inline-block;
+    transform: rotate(-15deg);
+}
+
+.sub-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+.search-bar {
+    display: flex;
+    background-color: white;
+    border-radius: 50px;
+    padding: 0.5rem;
+    max-width: 400px;
+}
+
+.search-bar input {
+    flex-grow: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-family: 'Kanit', sans-serif;
+    font-size: 1.2rem;
+    padding-left: 1rem;
+}
+
+.search-bar button {
+    background-color: #FF6B6B;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.action-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 1rem 2rem;
+    font-family: 'Kanit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    line-height: 1.1;
+}
+
+.write-review { background-color: #E83F6F; }
+.schedule-plan { background-color: #E83F6F; }
+.action-btn i { font-size: 1.8rem; }
+.fa-thumbs-up { margin-left: -1.5rem; margin-top: 0.8rem; }
+
+/* Right Panel Decorative Graphic */
+.right-panel {
+    flex-basis: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.decorative-graphic {
+    position: relative;
+    width: 450px;
+    height: 450px;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.circle-1 {
+    width: 100%;
+    height: 100%;
+    background: #FF6B6B; /* Red */
+}
+.circle-2 {
+    width: 80%;
+    height: 80%;
+    background: #FFC700; /* Yellow */
+}
+.circle-3 {
+    width: 70%;
+    height: 70%;
+    background: #FFDDAA; /* Light Yellow */
+}
+.arrow-shape {
+    width: 150px;
+    height: 150px;
+    background: white;
+    clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%);
+}
+
+/* Help Button */
+.help-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 3rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Side Navigation Menu */
+.side-nav {
+    height: 100%;
+    width: 300px;
+    position: fixed;
+    z-index: 200;
+    top: 0;
+    right: -350px; /* Start off-screen */
+    background-color: white;
+    overflow-x: hidden;
+    transition: 0.5s;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+}
+
+.side-nav.show {
+    right: 0; /* Slide in */
+}
+
+.nav-header {
+    background-color: #4A0072;
+    color: white;
+    padding: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.side-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.side-nav li a {
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    display: block;
+    transition: 0.3s;
+}
+
+.side-nav li a:hover {
+    background-color: #f1f1f1;
+}
+
+.side-nav .logout {
+    color: #D90429; /* Red for logout */
+}
+
+/* Styles for Side Nav Improvements */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 36px;
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+}
+
+.main-container.menu-open {
+    filter: brightness(0.6);
+    transition: filter 0.5s ease;
+}
+
+/* Styles for Header Actions (Logged-out state) */
+.header-actions .btn-login {
+    background-color: #4A0072;
+    color: #FFC700;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.header-actions .btn-login:hover {
+    background-color: #fff;
+    color: #4A0072;
+}
+
+/* === Logo Styling === */
+.logo-placeholder img {
+    /* กำหนดความสูงของโลโก้ให้พอดีกับ Header */
+    height: 45px; 
+    
+    /* ทำให้ width ปรับตามอัตโนมัติ */
+    width: auto; 
+    
+    /* แก้ปัญหาช่องว่างปริศนาใต้รูปภาพ */
+    display: block; 
+}

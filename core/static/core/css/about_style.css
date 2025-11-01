@@ -1,0 +1,168 @@
+:root {
+    --dark-purple: #4A0072;
+    --yellow: #FFC700;
+    --pink: #E83F6F;
+}
+
+body {
+    margin: 0;
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--dark-purple);
+    color: white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.about-container {
+    max-width: 1100px;
+    margin: 0 auto; /* เอา margin บน-ล่าง ออก */
+    padding: 120px 2rem 3rem 2rem; /* เพิ่ม padding-top 120px */
+    text-align: center;
+}
+
+.back-to-home {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--yellow);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.back-to-home:hover {
+    transform: translateX(-5px);
+}
+
+/* === Project Description Section === */
+.project-description-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    text-align: left;
+    margin-bottom: 4rem; /* เพิ่มระยะห่างจากส่วนทีม */
+}
+
+.project-description-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--yellow);
+    margin-bottom: 1rem;
+}
+
+.project-description-card p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #eee;
+    margin-bottom: 1.5rem;
+}
+
+.project-description-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.project-description-card li {
+    margin-bottom: 0.75rem;
+}
+
+.project-description-card a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: color 0.2s ease;
+}
+
+.project-description-card a:hover {
+    color: var(--pink);
+}
+
+.project-description-card a i {
+    color: var(--yellow);
+    font-size: 1.2rem;
+}
+
+
+/* === Team Section === */
+.about-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--yellow);
+    margin-bottom: 0.5rem;
+}
+
+.about-subtitle {
+    font-size: 1.2rem;
+    color: #eee;
+    margin-bottom: 4rem;
+}
+
+.team-grid {
+    display: grid;
+    /* 1. แสดงผล 1 คอลัมน์ (1x4) เป็นค่าเริ่มต้นสำหรับจอเล็ก */
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+}
+
+.team-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.member-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem auto;
+    border: 4px solid var(--pink);
+    background-color: rgba(0, 0, 0, 0.3);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 15px var(--pink);
+}
+
+.member-name {
+    font-size: 1.7rem;
+    margin: 0.5rem 0;
+    color: white;
+    font-weight: 700;
+}
+
+.member-id {
+    font-size: 1rem;
+    color: #ccc;
+    margin: 0;
+}
+
+.member-role {
+    font-size: 1.1rem;
+    color: var(--yellow);
+    margin-top: 0.75rem;
+    font-weight: bold;
+}
+
+/* 2. เมื่อหน้าจอกว้างกว่า 992px ให้แสดงผล 2 คอลัมน์ (2x2) */
+@media (min-width: 992px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
