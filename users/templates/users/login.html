@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Thammasat Study Plan</title>
+    <link rel="stylesheet" href="{% static 'users/login_style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form-box">
+            <div class="logo-placeholder">
+                <!-- ใส่ Logo ของคุณที่นี่ -->
+                S THAMMASAT STUDY PLAN
+            </div>
+            <h1>Login</h1>
+            <p>Enter your credentials provided by the administrator.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label for="id_username">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="input-group">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                </div>
+
+                {% if form.errors %}
+                    <div class="error-message">
+                        Invalid username or password. Please try again.
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            <a href="{% url 'core:homepage' %}" class="back-link">← Go back to Homepage</a>
+        </div>
+    </div>
+</body>
+</html>
