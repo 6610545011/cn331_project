@@ -1,158 +1,83 @@
+{% extends "core/template.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Thammasat Study Plan</title>
-    
-    <!-- ลิงก์ไปยัง CSS หลัก (สำหรับ Navbar) -->
-    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
-    <!-- ลิงก์ไปยัง CSS ของหน้า About (สำหรับเนื้อหา) -->
+
+{# 1. Set a unique title for this page #}
+{% block title %}About Us - Thammasat Study Plan{% endblock title %}
+
+{# 2. Add the page-specific stylesheet #}
+{% block extra_head %}
     <link rel="stylesheet" href="{% static 'core/css/about_style.css' %}">
+{% endblock extra_head %}
+
+
+{# 3. Provide the unique main content for this page #}
+{% block content %}
+<div class="about-container">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body>
-
-    <!-- ================================================================== -->
-    <!-- START: Navbar และ Header ที่คัดลอกมา -->
-    <!-- ================================================================== -->
-
-    <!-- Slide-out Navigation Menu -->
-    <nav class="side-nav" id="sideNav">
-        <button class="close-btn" id="closeBtn">&times;</button> 
-        <div class="nav-header">Menu</div>
-        <ul>
-            <li><a href="{% url 'core:homepage' %}">Homepage</a></li>
-            <li><a href="#">course review</a></li>
-            <li><a href="#">write review</a></li>
-            <li><a href="#">schedule plan</a></li>
-            <li><a href="{% url 'core:about' %}">about</a></li>
-            
-            {% if user.is_authenticated %}
-                <li><a href="#">profile</a></li>
-                <li class="logout-li">
-                    <form action="{% url 'users:logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-button">logout</button>
-                    </form>
-                </li>
-            {% else %}
-                <li><a href="{% url 'users:login' %}">login</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-
-    <!-- Top Header -->
-    <header class="top-header">
-        <div class="logo-placeholder">
-            <a href="{% url 'core:homepage' %}">
-                <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762004337/TU331_4_1_sp1ekg.png" alt="sTUdyPlan Logo">
-            </a>
-        </div>
-        
-        {% if user.is_authenticated %}
-        <div class="user-info">
-            <div class="user-details">
-                <span class="user-name">{{ user.username }}</span>
-                <span class="user-id">Student</span> 
-            </div>
-            <div class="profile-pic-placeholder"></div>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-        {% else %}
-        <div class="header-actions">
-            <a href="{% url 'users:login' %}" class="btn-login">Login</a>
-    <!-- เพิ่มปุ่มเมนูสำหรับสถานะ Logged-out -->
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-{% endif %}
-    </header>
-
-    <!-- ================================================================== -->
-    <!-- END: ส่วนของ Navbar และ Header -->
-    <!-- ================================================================== -->
-
-
-    <!-- เนื้อหาหลักของหน้า About -->
-    <div class="about-container" id="mainContainer">
-        
-        <!-- Project Description Section -->
-        <div class="project-description-card">
-            <h2>About The Project</h2>
-            <p>
-                sTUdyPlan is a web application designed to help Thammasat University students plan their academic journey more effectively. 
-                This project was developed as part of the Software Engineering (CN331) course.
-            </p>
-            <ul>
-                <li>
-                    <a href="https://github.com/6610545011/cn331_project.git" target="_blank">
-                        <i class="fab fa-github"></i> Project GitHub Repository
-                    </a>
-                </li>
-                <li>
-                    <a href="#" target="_blank">
-                        <i class="fab fa-youtube"></i> Demo Video (YouTube)
-                    </a>
-                </li>
-                <li>
-                    <a href="#" target="_blank">
-                        <i class="fas fa-file-alt"></i> Project Documentation (Google Docs)
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Team Section -->
-        <h1 class="about-title">Meet the Team</h1>
-        <p class="about-subtitle">
-            The passionate students behind the sTUdyPlan project.
+    <!-- Project Description Section -->
+    <div class="project-description-card">
+        <h2>About The Project</h2>
+        <p>
+            sTUdyPlan is a web application designed to help Thammasat University students plan their academic journey more effectively. 
+            This project was developed as part of the Software Engineering (CN331) course.
         </p>
-
-        <div class="team-grid">
-            <!-- Member 1 -->
-            <div class="team-card">
-                <div class="member-photo" style="background-image: url('')"></div>
-                <h3 class="member-name">นางสาว ณัฐรวี ช่วยวัง</h3>
-                <p class="member-id">6610525013</p>
-                <p class="member-role">Frontend & Design</p>
-            </div>
-
-            <!-- Member 2 -->
-            <div class="team-card">
-                <div class="member-photo" style="background-image: url('')"></div>
-                <h3 class="member-name">นาย ศรัญย์กร พงศ์อัศวชัย</h3>
-                <p class="member-id">6610545011</p>
-                <p class="member-role">Backend & DevOps</p>
-            </div>
-
-            <!-- Member 3 -->
-            <div class="team-card">
-                <div class="member-photo" style="background-image: url('')"></div>
-                <h3 class="member-name">นางสาว ธวัลภรณ์ จินดาวรานนท์</h3>
-                <p class="member-id">6610545029</p>
-                <p class="member-role">Database & API</p>
-            </div>
-
-            <!-- Member 4 -->
-            <div class="team-card">
-                <div class="member-photo" style="background-image: url('')"></div>
-                <h3 class="member-name">นาย รัชชานนท์ ม่วงวิเชียร</h3>
-                <p class="member-id">6610685304</p>
-                <p class="member-role">QA & Testing</p>
-            </div>
-        </div>
+        <ul>
+            <li>
+                <a href="https://github.com/6610545011/cn331_project.git" target="_blank">
+                    <i class="fab fa-github"></i> Project GitHub Repository
+                </a>
+            </li>
+            <li>
+                <a href="#" target="_blank">
+                    <i class="fab fa-youtube"></i> Demo Video (YouTube)
+                </a>
+            </li>
+            <li>
+                <a href="#" target="_blank">
+                    <i class="fas fa-file-alt"></i> Project Documentation (Google Docs)
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <!-- เพิ่มลิงก์ไปยังไฟล์ JavaScript เพื่อให้เมนูทำงาน -->
-    <script src="{% static 'core/js/main.js' %}"></script>
-</body>
-</html>
+    <!-- Team Section -->
+    <h1 class="about-title">Meet the Team</h1>
+    <p class="about-subtitle">
+        The passionate students behind the sTUdyPlan project.
+    </p>
+
+    <div class="team-grid">
+        <!-- Member 1 -->
+        <div class="team-card">
+            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099428/CnP_02112025_230324_w327vp.jpg')"></div>
+            <h3 class="member-name">นางสาว ณัฐรวี ช่วยวัง</h3>
+            <p class="member-id">6610525013</p>
+            <p class="member-role">member1</p>
+        </div>
+
+        <!-- Member 2 -->
+        <div class="team-card">
+            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099308/CnP_02112025_230134_bmmlb1.jpg')"></div>
+            <h3 class="member-name">นาย ศรัญย์กร พงศ์อัศวชัย</h3>
+            <p class="member-id">6610545011</p>
+            <p class="member-role">member2</p>
+        </div>
+
+        <!-- Member 3 -->
+        <div class="team-card">
+            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099880/Untitled_1_evlcml.jpg')"></div>
+            <h3 class="member-name">นางสาว ธวัลภรณ์ จินดาวรานนท์</h3>
+            <p class="member-id">6610545029</p>
+            <p class="member-role">member3</p>
+        </div>
+
+        <!-- Member 4 -->
+        <div class="team-card">
+            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099011/unnamed-1_1_vasvvy.jpg')"></div>
+            <h3 class="member-name">นาย รัชชานนท์ ม่วงวิเชียร</h3>
+            <p class="member-id">6610685304</p>
+            <p class="member-role">member4</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}
