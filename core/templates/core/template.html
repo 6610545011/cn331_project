@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# The title block can be overridden by child templates #}
+    <title>{% block title %}Thammasat Study Plan{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    {% block extra_head %}{% endblock extra_head %}
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <nav class="side-nav minimized" id="sideNav">
+        <div class="nav-header" style="margin-top:0; padding-top:0;">
+            <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762098249/0fec3bf5-8d0f-4eb2-bf1a-e63061206edf.png" alt="sTUdyPlan Logo" style="height:120px; margin-top:0;">
+        </div>
+        <ul>
+            <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}">homepage</a></li>
+            <li><a href="#" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
+            <li><a href="#" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
+            <li><a href="#" class="{% if request.resolver_match.url_name == 'schedule_plan' %}active{% endif %}">schedule plan</a></li>
+            <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">about</a></li>
+            
+            {% if user.is_authenticated %}
+                <!-- แสดงเมื่อล็อกอินแล้ว -->
+                <li><a href="#">profile</a></li>
+                <li class="logout-li">
+                    <form action="{% url 'users:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">logout</button>
+                    </form>
+                </li>
+            {% else %}
+                <!-- แสดงเมื่อยังไม่ล็อกอิน -->
+                <li><a href="{% url 'users:login' %}">login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="main-container" id="mainContainer">
+        <!-- ================================== -->
+        <!--         TOP BAR (EXTRACTED)        -->
+        <!-- ================================== -->
+        <header class="top-header">
+            <div class="logo-placeholder">
+                <a href="{% url 'core:homepage' %}">
+                    <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762097931/bcb28b14-e0a7-442f-9353-ce5f11301fe8.png" alt="sTUdyPlan Logo">
+                </a>
+            </div>
+                
+            {% if user.is_authenticated %}
+            <!-- แสดงผลเมื่อล็อกอินแล้ว -->
+            <div class="user-info">
+                <div class="user-details">
+                    <span class="user-name">{{ user.username }}</span>
+                    <span class="user-id">Student</span> 
+                </div>
+                <div class="profile-pic-placeholder"></div>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            {% else %}
+            <div class="header-actions">
+                <a href="{% url 'users:login' %}" class="btn-login">Login</a>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- ================================== -->
+        <!--      MAIN CONTENT PLACEHOLDER      -->
+        <!-- ================================== -->
+        {% block content %}
+        {# The unique content from other pages will be injected here. #}
+        {% endblock content %}
+
+        <a href="{% url 'core:about' %}" class="help-button">?</a>
+    </div>
+
+    <script src="{% static 'core/js/main.js' %}"></script>
+    {% block extra_scripts %}{% endblock extra_scripts %}
+</body>
+</html>
