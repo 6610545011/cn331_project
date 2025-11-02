@@ -28,7 +28,12 @@
             {% if user.is_authenticated %}
                 <!-- แสดงเมื่อล็อกอินแล้ว -->
                 <li><a href="#">profile</a></li>
-                <li><a href="{% url 'users:logout' %}" class="logout">logout</a></li>
+                <li class="logout-li">
+                    <form action="{% url 'users:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">logout</button>
+                    </form>
+                </li>
             {% else %}
                 <!-- แสดงเมื่อยังไม่ล็อกอิน -->
                 <li><a href="{% url 'users:login' %}">login</a></li>
@@ -39,7 +44,9 @@
     <div class="main-container" id="mainContainer">
     <header class="top-header">
         <div class="logo-placeholder">
-            <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762004337/TU331_4_1_sp1ekg.png" alt="sTUdyPlan Logo">
+            <a href="{% url 'core:homepage' %}">
+                <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762004337/TU331_4_1_sp1ekg.png" alt="sTUdyPlan Logo">
+            </a>
         </div>
             
             {% if user.is_authenticated %}
@@ -47,20 +54,19 @@
             <div class="user-info">
                 <div class="user-details">
                     <span class="user-name">{{ user.username }}</span>
-                    <!-- คุณสามารถเพิ่ม Student ID ได้ถ้ามีใน Profile Model -->
                     <span class="user-id">Student</span> 
                 </div>
-                <div class="profile-pic-placeholder">
-                    <!-- ใส่รูป Profile ที่นี่ -->
-                </div>
+                <div class="profile-pic-placeholder"></div>
                 <button class="menu-toggle" id="menuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
             {% else %}
-            <!-- แสดงผลเมื่อยังไม่ได้ล็อกอิน -->
             <div class="header-actions">
                 <a href="{% url 'users:login' %}" class="btn-login">Login</a>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
             {% endif %}
         </header>
@@ -91,13 +97,7 @@
             </div>
             <div class="right-panel">
                 <div class="decorative-graphic">
-                    <div class="circle circle-1">
-                        <div class="circle circle-2">
-                            <div class="circle circle-3">
-                                <div class="arrow-shape"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="circle circle-1"><div class="circle circle-2"><div class="circle circle-3"><div class="arrow-shape"></div></div></div></div>
                 </div>
             </div>
         </main>

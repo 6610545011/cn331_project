@@ -10,5 +10,5 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     
     # URL สำหรับ Logout (ใช้ View สำเร็จรูปของ Django)
-    path('logout/', auth_views.LogoutView.as_view(next_page='core:homepage'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='users:login'), name='logout'),
 ]
