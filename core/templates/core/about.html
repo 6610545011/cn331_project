@@ -35,7 +35,12 @@
             
             {% if user.is_authenticated %}
                 <li><a href="#">profile</a></li>
-                <li><a href="{% url 'users:logout' %}" class="logout">logout</a></li>
+                <li class="logout-li">
+                    <form action="{% url 'users:logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">logout</button>
+                    </form>
+                </li>
             {% else %}
                 <li><a href="{% url 'users:login' %}">login</a></li>
             {% endif %}
@@ -45,7 +50,9 @@
     <!-- Top Header -->
     <header class="top-header">
         <div class="logo-placeholder">
-            <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762004337/TU331_4_1_sp1ekg.png" alt="sTUdyPlan Logo">
+            <a href="{% url 'core:homepage' %}">
+                <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762004337/TU331_4_1_sp1ekg.png" alt="sTUdyPlan Logo">
+            </a>
         </div>
         
         {% if user.is_authenticated %}
@@ -62,8 +69,12 @@
         {% else %}
         <div class="header-actions">
             <a href="{% url 'users:login' %}" class="btn-login">Login</a>
+    <!-- เพิ่มปุ่มเมนูสำหรับสถานะ Logged-out -->
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
-        {% endif %}
+{% endif %}
     </header>
 
     <!-- ================================================================== -->

@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: 'Kanit', sans-serif;
-    background-color: #4A0072; /* Dark purple background */
+    background-color: #4A0072;
     color: white;
     overflow-x: hidden;
 }
@@ -13,7 +13,7 @@ body {
 
 /* Top Header */
 .top-header {
-    background-color: #FFC700; /* Yellow */
+    background-color: #FFC700;
     color: #4A0072;
     display: flex;
     justify-content: space-between;
@@ -29,8 +29,10 @@ body {
     z-index: 100;
 }
 
-.logo-placeholder {
-    font-weight: bold;
+.logo-placeholder img {
+    height: 45px;
+    width: auto;
+    display: block;
 }
 
 .user-info {
@@ -46,13 +48,8 @@ body {
     line-height: 1;
 }
 
-.user-name {
-    font-size: 0.9rem;
-}
-
-.user-id {
-    font-size: 0.8rem;
-}
+.user-name { font-size: 0.9rem; }
+.user-id { font-size: 0.8rem; }
 
 .profile-pic-placeholder {
     width: 40px;
@@ -75,13 +72,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 100px; /* Space for fixed header */
+    padding-top: 100px;
     height: calc(100vh - 100px);
 }
 
-.left-panel {
-    flex-basis: 50%;
-}
+.left-panel { flex-basis: 50%; }
 
 .main-title {
     font-size: 5rem;
@@ -186,21 +181,9 @@ body {
     align-items: center;
 }
 
-.circle-1 {
-    width: 100%;
-    height: 100%;
-    background: #FF6B6B; /* Red */
-}
-.circle-2 {
-    width: 80%;
-    height: 80%;
-    background: #FFC700; /* Yellow */
-}
-.circle-3 {
-    width: 70%;
-    height: 70%;
-    background: #FFDDAA; /* Light Yellow */
-}
+.circle-1 { width: 100%; height: 100%; background: #FF6B6B; }
+.circle-2 { width: 80%; height: 80%; background: #FFC700; }
+.circle-3 { width: 70%; height: 70%; background: #FFDDAA; }
 .arrow-shape {
     width: 150px;
     height: 150px;
@@ -235,16 +218,14 @@ body {
     position: fixed;
     z-index: 200;
     top: 0;
-    right: -350px; /* Start off-screen */
+    right: -350px;
     background-color: white;
     overflow-x: hidden;
     transition: 0.5s;
     box-shadow: -5px 0 15px rgba(0,0,0,0.2);
 }
 
-.side-nav.show {
-    right: 0; /* Slide in */
-}
+.side-nav.show { right: 0; }
 
 .nav-header {
     background-color: #4A0072;
@@ -270,15 +251,8 @@ body {
     transition: 0.3s;
 }
 
-.side-nav li a:hover {
-    background-color: #f1f1f1;
-}
+.side-nav li a:hover { background-color: #f1f1f1; }
 
-.side-nav .logout {
-    color: #D90429; /* Red for logout */
-}
-
-/* Styles for Side Nav Improvements */
 .close-btn {
     position: absolute;
     top: 10px;
@@ -296,6 +270,12 @@ body {
 }
 
 /* Styles for Header Actions (Logged-out state) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .header-actions .btn-login {
     background-color: #4A0072;
     color: #FFC700;
@@ -311,14 +291,29 @@ body {
     color: #4A0072;
 }
 
-/* === Logo Styling === */
-.logo-placeholder img {
-    /* กำหนดความสูงของโลโก้ให้พอดีกับ Header */
-    height: 45px; 
-    
-    /* ทำให้ width ปรับตามอัตโนมัติ */
-    width: auto; 
-    
-    /* แก้ปัญหาช่องว่างปริศนาใต้รูปภาพ */
-    display: block; 
+/* === LOGOUT BUTTON FIX === */
+.side-nav .logout-li {
+    padding: 0;
+}
+
+.side-nav .logout-li form {
+    margin: 0;
+    display: block;
+}
+
+.side-nav .logout-li .logout-button {
+    background: none;
+    border: none;
+    font-family: 'Kanit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #D90429;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    padding: 1rem 1.5rem;
+}
+
+.side-nav .logout-li .logout-button:hover {
+    background-color: #f1f1f1;
 }
