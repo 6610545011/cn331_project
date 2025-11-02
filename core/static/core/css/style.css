@@ -184,11 +184,23 @@ body {
 .circle-1 { width: 100%; height: 100%; background: #FF6B6B; }
 .circle-2 { width: 80%; height: 80%; background: #FFC700; }
 .circle-3 { width: 70%; height: 70%; background: #FFDDAA; }
-.arrow-shape {
-    width: 150px;
-    height: 150px;
-    background: white;
-    clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%);
+/* === New Graphic Logo Styling === */
+.graphic-logo {
+    /* 1. ทำให้โลโก้ลอยอยู่เหนือพื้นหลัง */
+    position: absolute;
+    z-index: 10;
+
+    /* 2. จัดตำแหน่งให้อยู่กึ่งกลางเป๊ะๆ */
+    top: 50%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+
+    /* 3. กำหนดขนาดของโลโก้ */
+    width: 850px; /* สามารถปรับขนาดได้ตามความเหมาะสม */
+    height: auto; /* รักษาสัดส่วนภาพ */
+
+    /* 4. (Optional) เพิ่มเงาเล็กน้อยเพื่อให้ดูมีมิติ */
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 /* Help Button */
