@@ -16,17 +16,24 @@
             <input type="text" placeholder="search course review...">
             <button><i class="fas fa-search"></i></button>
         </div>
+        
+        <!-- ===== ส่วนที่ต้องแก้ไขให้ถูกต้องอยู่ตรงนี้ ===== -->
         <div class="action-buttons">
-            <button class="action-btn write-review">
+            <!-- ปุ่มที่ 1: Write Review (เปลี่ยนเป็นแท็ก <a> เพื่อให้เป็นลิงก์) -->
+            <a href="{% url 'review:write_review' %}" class="action-btn write-review">
                 <i class="fas fa-star"></i>
                 <i class="fas fa-thumbs-up"></i>
                 <span>write<br>review</span>
-            </button>
+            </a>
+            
+            <!-- ปุ่มที่ 2: Schedule Plan (ยังคงเป็น <button> เหมือนเดิม) -->
             <button class="action-btn schedule-plan">
                 <i class="fas fa-calendar-alt"></i>
                 <span>schedule<br>PLAN</span>
             </button>
         </div>
+        <!-- ========================================== -->
+
     </div>
     <div class="right-panel">
         <div class="decorative-graphic">

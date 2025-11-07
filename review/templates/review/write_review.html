@@ -4,125 +4,8 @@
 {% block title %}Write Review - Thammasat Study Plan{% endblock title %}
 
 {% block extra_head %}
-<style>
-    /* เพิ่ม CSS เฉพาะสำหรับหน้านี้ */
-    .content-area {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 40px 20px;
-        background-color: #4A154B; /* สีม่วงเข้มจากธีม */
-        min-height: calc(100vh - 80px); /* 80px คือความสูงของ top-header */
-    }
-
-    .review-form-container {
-        background-color: #fff;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        width: 100%;
-        max-width: 800px;
-        color: #333;
-    }
-
-    .review-form-container h1 {
-        font-family: 'Kanit', sans-serif;
-        font-weight: 800;
-        font-size: 2.5rem;
-        color: #4A154B;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .form-group {
-        margin-bottom: 25px;
-    }
-
-    .form-group label {
-        display: block;
-        font-family: 'Kanit', sans-serif;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        color: #555;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-family: 'Kanit', sans-serif;
-        transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #E01E5A; /* สีชมพูจากธีม */
-        box-shadow: 0 0 0 3px rgba(224, 30, 90, 0.2);
-    }
-
-    /* Styling for Radio buttons (Rating) */
-    .rating-choices {
-        display: flex;
-        gap: 15px;
-        list-style: none;
-        padding: 0;
-    }
-    .rating-choices li {
-        display: inline-block;
-    }
-    .rating-choices input[type="radio"] {
-        display: none;
-    }
-    .rating-choices label {
-        cursor: pointer;
-        padding: 8px 15px;
-        border: 1px solid #ccc;
-        border-radius: 20px;
-        transition: all 0.3s;
-    }
-    .rating-choices input[type="radio"]:checked + label {
-        background-color: #ECB22E; /* สีเหลืองจากธีม */
-        color: #4A154B;
-        border-color: #ECB22E;
-        font-weight: bold;
-    }
-
-    /* Styling for Checkbox (Incognito) */
-    .incognito-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .form-check-input {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-
-    .btn-submit {
-        display: block;
-        width: 100%;
-        padding: 15px;
-        background-color: #E01E5A; /* สีชมพู */
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-family: 'Kanit', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        margin-top: 30px;
-    }
-
-    .btn-submit:hover {
-        background-color: #c4184d;
-    }
-
-</style>
+{# ลิงก์ไปยังไฟล์ CSS ภายนอกสำหรับหน้านี้โดยเฉพาะ #}
+<link rel="stylesheet" href="{% static 'review/css/review_form.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
@@ -180,3 +63,74 @@
     </div>
 </main>
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // --- ส่วนที่ 1: ทำให้ช่อง "รายวิชา" ค้นหาได้ด้วย Select2 ---
+    $('#id_course').select2({
+        placeholder: 'พิมพ์รหัสวิชาหรือชื่อวิชาเพื่อค้นหา',
+        allowClear: true,
+        ajax: {
+            url: "{% url 'review:ajax_search_courses' %}",
+            dataType: 'json',
+            delay: 250, // รอ 250ms หลังพิมพ์เสร็จถึงจะค้นหา
+            data: function (params) {
+                return {
+                    term: params.term // ส่งคำค้นหา (term) ไปที่ view
+                };
+            },
+            processResults: function (data) {
+                // แปลงข้อมูลที่ได้จาก API ให้อยู่ในรูปแบบที่ Select2 เข้าใจ
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
+    });
+
+    // --- ส่วนที่ 2: ควบคุมช่อง "อาจารย์ผู้สอน" ให้ขึ้นอยู่กับ "รายวิชา" ---
+    const courseSelect = $('#id_course');
+    const professorSelect = $('#id_professor');
+
+    // เริ่มต้นให้ช่องอาจารย์เป็น disabled (ปิดการใช้งาน)
+    professorSelect.prop('disabled', true);
+
+    // Event: เมื่อมีการเลือกรายวิชา
+    courseSelect.on('select2:select', function (e) {
+        const courseId = e.params.data.id;
+
+        // เปิดใช้งานช่องอาจารย์และแสดงสถานะกำลังโหลด
+        professorSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+
+        // เรียก API เพื่อดึงรายชื่ออาจารย์สำหรับวิชาที่เลือก
+        $.ajax({
+            url: "{% url 'review:ajax_get_professors' %}",
+            data: {
+                'course_id': courseId
+            },
+            success: function (data) {
+                professorSelect.empty().append('<option value="">--- เลือกอาจารย์ผู้สอน ---</option>');
+                if (data.professors.length > 0) {
+                    data.professors.forEach(function(prof) {
+                        professorSelect.append(new Option(prof.name, prof.id));
+                    });
+                } else {
+                    professorSelect.append('<option value="">ไม่พบข้อมูลอาจารย์สำหรับวิชานี้</option>');
+                }
+            },
+            error: function() {
+                professorSelect.html('<option value="">เกิดข้อผิดพลาดในการโหลดข้อมูล</option>');
+            }
+        });
+    });
+
+    // Event: เมื่อล้างการเลือกรายวิชา (กด x)
+    courseSelect.on('select2:unselect', function (e) {
+        // ล้างข้อมูล, ปิดการใช้งาน, และตั้งค่าข้อความเริ่มต้น
+        professorSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+    });
+});
+</script>
+{% endblock extra_scripts %}

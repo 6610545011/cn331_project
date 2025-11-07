@@ -14,6 +14,12 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+        <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     {% block extra_head %}{% endblock extra_head %}
 </head>
 <body>
@@ -25,7 +31,7 @@
         <ul>
             <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}">homepage</a></li>
             <li><a href="#" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
-            <li><a href="#" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
+            <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
             <li><a href="#" class="{% if request.resolver_match.url_name == 'schedule_plan' %}active{% endif %}">schedule plan</a></li>
             <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">about</a></li>
             
@@ -87,6 +93,13 @@
 
         <a href="{% url 'core:about' %}" class="help-button">?</a>
     </div>
+
+    <script src="{% static 'core/js/main.js' %}"></script>
+
+    <!-- jQuery (ต้องมาก่อน Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script src="{% static 'core/js/main.js' %}"></script>
     {% block extra_scripts %}{% endblock extra_scripts %}

@@ -48,5 +48,6 @@ class ReviewForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # ทำให้ dropdown แสดงข้อความเริ่มต้น
-        self.fields['course'].empty_label = "--- เลือกรหัสวิชา ---"
-        self.fields['professor'].empty_label = "--- เลือกอาจารย์ผู้สอน ---"
+        # self.fields['course'].empty_label = "--- เลือกรหัสวิชา ---"
+        # self.fields['professor'].empty_label = "--- เลือกอาจารย์ผู้สอน ---"
+        # ควบคุมข้อความเริ่มต้นด้วย JavaScript/Select2 แทน
