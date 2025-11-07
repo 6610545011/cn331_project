@@ -1,0 +1,15 @@
+{% extends "core/template.html" %}
+{% load static %}
+
+{% block title %}Search - Thammasat Study Plan{% endblock title %}
+
+{% block content %}
+
+
+<h1>{{ professor.name }}</h1>
+<p><strong>Description:</strong> {{ professor.description }}</p>
+<p><strong>Campus:</strong> {{ professor.campus.name }}</p>
+
+
+
+{% endblock content %}

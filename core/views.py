@@ -1,5 +1,5 @@
 # core/views.py
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 
 from .models import Professor, Course, Section
@@ -37,3 +37,10 @@ def search(request):
         'sections': sections,
     }
     return render(request, 'core/search.html', context)
+
+
+
+def prof_detail(request, name):
+    name_cleaned = name.replace('-', ' ')
+    professor = get_object_or_404(Professor, name__iexact=name_cleaned)
+    return render(request, 'core/prof_detail.html', {'professor': professor})

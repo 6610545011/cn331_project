@@ -23,17 +23,23 @@
       {% endfor %}
     </ul>
   </div>
+  {% if professors %}
   <div class="search-results">
     <h3>Professors</h3>
     <ul>
       {% for professor in professors %}
         <li>
-          <h4>{{ professor.name }}</h4>
+        <h4>
+        <a href="{% url 'core:professor_detail' professor.name|slugify %}">
+            {{ professor.name }}
+        </a>
+        </h4>
           <p>{{ professor.description }}</p>
         </li>
       {% endfor %}
     </ul>
   </div>
+  {% endif %}
   <div class="search-results">
     <h3>Courses</h3>
     <ul>

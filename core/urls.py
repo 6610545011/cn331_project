@@ -1,6 +1,6 @@
 # core/urls.py
 from django.urls import path
-from .views import homepage_view, about_view, search  # <-- re-add search import
+from .views import homepage_view, about_view, search, prof_detail
 
 app_name = 'core'
 
@@ -8,4 +8,5 @@ urlpatterns = [
     path('', homepage_view, name='homepage'),
     path('about/', about_view, name='about'),
     path('search/', search, name='search'),
+    path('professors/<slug:name>/', prof_detail, name='professor_detail'),
 ]
