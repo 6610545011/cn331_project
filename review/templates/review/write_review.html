@@ -1,0 +1,182 @@
+{% extends "core/template.html" %}
+{% load static %}
+
+{% block title %}Write Review - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+<style>
+    /* เพิ่ม CSS เฉพาะสำหรับหน้านี้ */
+    .content-area {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px;
+        background-color: #4A154B; /* สีม่วงเข้มจากธีม */
+        min-height: calc(100vh - 80px); /* 80px คือความสูงของ top-header */
+    }
+
+    .review-form-container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        width: 100%;
+        max-width: 800px;
+        color: #333;
+    }
+
+    .review-form-container h1 {
+        font-family: 'Kanit', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #4A154B;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-family: 'Kanit', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: 'Kanit', sans-serif;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #E01E5A; /* สีชมพูจากธีม */
+        box-shadow: 0 0 0 3px rgba(224, 30, 90, 0.2);
+    }
+
+    /* Styling for Radio buttons (Rating) */
+    .rating-choices {
+        display: flex;
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+    }
+    .rating-choices li {
+        display: inline-block;
+    }
+    .rating-choices input[type="radio"] {
+        display: none;
+    }
+    .rating-choices label {
+        cursor: pointer;
+        padding: 8px 15px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+    .rating-choices input[type="radio"]:checked + label {
+        background-color: #ECB22E; /* สีเหลืองจากธีม */
+        color: #4A154B;
+        border-color: #ECB22E;
+        font-weight: bold;
+    }
+
+    /* Styling for Checkbox (Incognito) */
+    .incognito-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background-color: #E01E5A; /* สีชมพู */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Kanit', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 30px;
+    }
+
+    .btn-submit:hover {
+        background-color: #c4184d;
+    }
+
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<main class="content-area">
+    <div class="review-form-container">
+        <h1>เขียนรีวิวรายวิชา</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                {{ form.course.label_tag }}
+                {{ form.course }}
+                {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.professor.label_tag }}
+                {{ form.professor }}
+                {% if form.professor.errors %}<div class="errors">{{ form.professor.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.rating.label_tag }}
+                <ul class="rating-choices">
+                    {% for radio in form.rating %}
+                    <li>
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.header.label_tag }}
+                {{ form.header }}
+                {% if form.header.errors %}<div class="errors">{{ form.header.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.body.label_tag }}
+                {{ form.body }}
+                {% if form.body.errors %}<div class="errors">{{ form.body.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group incognito-group">
+                {{ form.incognito }}
+                {{ form.incognito.label_tag }}
+                {% if form.incognito.errors %}<div class="errors">{{ form.incognito.errors }}</div>{% endif %}
+            </div>
+
+            <button type="submit" class="btn-submit">ส่งรีวิว</button>
+        </form>
+    </div>
+</main>
+{% endblock content %}
