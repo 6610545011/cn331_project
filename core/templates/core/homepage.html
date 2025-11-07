@@ -12,12 +12,12 @@
             <span class="dot">•</span>studyplan<span class="pencil">/</span>
         </h1>
         <h2 class="sub-title">course review</h2>
-        <div class="search-bar">
-            <input type="text" placeholder="search course review...">
-            <button><i class="fas fa-search"></i></button>
-        </div>
-        
-        <!-- ===== ส่วนที่ต้องแก้ไขให้ถูกต้องอยู่ตรงนี้ ===== -->
+        <form method="get" action="{% url 'core:search' %}" class="search-bar">
+        <input type="text" name="q" placeholder="search course review..." value="{{ request.GET.q|default:'' }}">
+        <button type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+        </form>
         <div class="action-buttons">
             <!-- ปุ่มที่ 1: Write Review (เปลี่ยนเป็นแท็ก <a> เพื่อให้เป็นลิงก์) -->
             <a href="{% url 'review:write_review' %}" class="action-btn write-review">

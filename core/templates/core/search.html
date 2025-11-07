@@ -1,0 +1,65 @@
+{% extends "core/template.html" %}
+{% load static %}
+
+{% block title %}Search - Thammasat Study Plan{% endblock title %}
+
+{% block content %}
+
+<form method="get" action="{% url 'core:search' %}">
+    <input type="text" name="q" placeholder="Search..." value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if professors or courses or sections %}
+  <h2>Results</h2>
+  <div class="search-results">
+    <h3>All</h3>
+    <ul>
+      {% for result in results %}
+        <li>
+          <h4>{{ result.name }}</h4>
+          <p>{{ result.description }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="search-results">
+    <h3>Professors</h3>
+    <ul>
+      {% for professor in professors %}
+        <li>
+          <h4>{{ professor.name }}</h4>
+          <p>{{ professor.description }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="search-results">
+    <h3>Courses</h3>
+    <ul>
+      {% for course in courses %}
+        <li>
+          <h4><a href="{/about}">{{ course.name }} ({{ course.code }})</a></h4>
+          <p>{{ course.description }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% if sections %}
+    <div class="search-results">
+      <h3>Sections</h3>
+      <ul>
+        {% for section in sections %}
+          <li>
+            <h4>{{ section.name }}</h4>
+            <p>{{ section.description }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% else %}
+  <p>No results found.</p>
+{% endif %}
+
+{% endblock content %}
