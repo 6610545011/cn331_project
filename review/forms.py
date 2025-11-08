@@ -1,21 +1,21 @@
 from django import forms
-from .models import Review, Course, Professor
+from .models import Review, Course, Professor, Section # <-- เพิ่ม Section
 
 class ReviewForm(forms.ModelForm):
-    # กำหนดให้ rating เป็น RadioSelect เพื่อให้เลือกดาวได้ง่ายขึ้น
     rating = forms.ChoiceField(
-        choices=[(i, f'{i} ดาว') for i in range(1, 6)],
-        widget=forms.RadioSelect(attrs={'class': 'rating-choices'}),
+        choices=[(i, str(i)) for i in range(1, 6)], # เปลี่ยน label เป็นแค่ตัวเลข
+        widget=forms.RadioSelect(), # ไม่ต้องใช้ class แล้ว เพราะเราจะซ่อนมัน
         label="ให้คะแนน"
     )
 
     class Meta:
         model = Review
-        # เลือกฟิลด์ที่จะแสดงในฟอร์ม
-        fields = ['course', 'professor', 'rating', 'header', 'body', 'incognito']
+        # --- เพิ่ม 'section' เข้าไปใน fields ---
+        fields = ['course', 'section', 'professor', 'rating', 'header', 'body', 'incognito']
         
         labels = {
             'course': 'รายวิชา',
+            'section': 'กลุ่มเรียน (Section)', # <-- เพิ่ม label
             'professor': 'อาจารย์ผู้สอน',
             'header': 'หัวข้อรีวิว',
             'body': 'เนื้อหารีวิว',
@@ -23,14 +23,10 @@ class ReviewForm(forms.ModelForm):
         }
 
         widgets = {
-            'course': forms.Select(attrs={
-                'class': 'form-control',
-                'placeholder': 'เลือกรหัสวิชาหรือชื่อวิชา'
-            }),
-            'professor': forms.Select(attrs={
-                'class': 'form-control',
-                'placeholder': 'เลือกอาจารย์ผู้สอน'
-            }),
+            'course': forms.Select(attrs={'class': 'form-control'}),
+            # --- เพิ่ม widget สำหรับ section ---
+            'section': forms.Select(attrs={'class': 'form-control'}),
+            'professor': forms.Select(attrs={'class': 'form-control'}),
             'header': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก ได้ความรู้เต็มๆ"'
@@ -38,16 +34,13 @@ class ReviewForm(forms.ModelForm):
             'body': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 5,
-                'placeholder': 'อธิบายรายละเอียดเพิ่มเติมเกี่ยวกับการเรียนการสอน การบ้าน โปรเจกต์ และการสอบ...'
+                'placeholder': 'อธิบายรายละเอียดเพิ่มเติม...'
             }),
-            'incognito': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
+            'incognito': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # ทำให้ dropdown แสดงข้อความเริ่มต้น
-        # self.fields['course'].empty_label = "--- เลือกรหัสวิชา ---"
-        # self.fields['professor'].empty_label = "--- เลือกอาจารย์ผู้สอน ---"
-        # ควบคุมข้อความเริ่มต้นด้วย JavaScript/Select2 แทน
+        # --- เพิ่มข้อความเริ่มต้นสำหรับ section และ professor ---
+        self.fields['section'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
+        self.fields['professor'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
