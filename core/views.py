@@ -47,3 +47,10 @@ def prof_detail(request, slug):
         if slugify(prof.name) == slug:
             return render(request, 'core/prof_detail.html', {'prof': prof})
     raise Http404("Professor not found")
+
+def course_detail(request, slug):
+
+    for course in Course.objects.all():
+        if slugify(course.name) == slug:
+            return render(request, 'core/course_detail.html', {'course': course})
+    raise Http404("Course not found")

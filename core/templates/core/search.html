@@ -45,7 +45,7 @@
     <ul>
       {% for course in courses %}
         <li>
-          <h4><a href="{/about}">{{ course.name }} ({{ course.code }})</a></h4>
+          <h4><a href="{% url 'core:course_detail' slug=course.name|slugify %}">{{ course.name }} ({{ course.code }})</a></h4>
           <p>{{ course.description }}</p>
         </li>
       {% endfor %}
