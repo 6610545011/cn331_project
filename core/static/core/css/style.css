@@ -7,6 +7,16 @@ body {
     overflow-x: hidden;
 }
 
+/* General Link Styles */
+a {
+    color: var(--yellow, #FFC700); /* Use yellow for links */
+    text-decoration: none; /* Removes the default underline */
+}
+
+a:visited {
+    color: var(--pink, #E83F6F); /* Use pink for visited links */
+}
+
 .main-container {
     padding: 80px 3rem 1.5rem; /* 80px top padding to offset fixed header */
 }
