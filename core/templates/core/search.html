@@ -30,7 +30,7 @@
       {% for professor in professors %}
         <li>
         <h4>
-        <a href="{% url 'core:professor_detail' professor.name|slugify %}">
+        <a href="{% url 'core:professor_detail' slug=professor.name|slugify %}">
             {{ professor.name }}
         </a>
         </h4>

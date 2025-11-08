@@ -8,7 +8,7 @@ body {
 }
 
 .main-container {
-    padding: 1.5rem 3rem;
+    padding: 80px 3rem 1.5rem; /* 80px top padding to offset fixed header */
 }
 
 /* Top Header */

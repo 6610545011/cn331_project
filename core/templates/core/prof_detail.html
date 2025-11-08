@@ -6,10 +6,46 @@
 {% block content %}
 
 
-<h1>{{ professor.name }}</h1>
-<p><strong>Description:</strong> {{ professor.description }}</p>
-<p><strong>Campus:</strong> {{ professor.campus.name }}</p>
+<h1>{{ prof.name }}</h1>
+<h4><strong>Description:</strong></h4>
+<p>{{ prof.description }}</p>
+<h4><strong>Campus:</strong></h4>
+<p>{{ prof.campus.name }}</p>
 
+<h3>Sections:</h3>
+<ul>
+    {% for section in prof.section_set.all %}
+        <li>{{ section.course.code }} {{ section.course.name }} - Section {{ section.number }}</li>
+    {% empty %}
+        <li>This professor is not currently assigned to any sections.</li>
+    {% endfor %}
+</ul>
+
+<h3>Reviews:</h3>
+<ul>
+    {% for review in prof.review_set.all %}
+        <li>
+            <h3>{{ review.header }}</h3>
+            {% if review.course %}
+                <strong>Course:</strong> {{ review.course.code }} - {{ review.course.name }}<br>
+            {% endif %}
+            {% if review.section %}
+                <strong>Section:</strong> {{ review.section.number }}<br>
+            {% endif %}
+            <strong>Rating:</strong> {{ review.rating }} / 5<br>
+            <strong>Comment:</strong> {{ review.body }}<br>
+            <strong>Date:</strong> {{ review.created_at|date:"F j, Y" }}<br>
+            <strong>Creator :</strong>
+            {% if review.incognito %}
+                Incognito
+            {% else %}
+                {{ review.user.username }}
+            {% endif %}<br>
+            <br>
+        </li>
+    {% empty %}
+        <li>No reviews available for this professor.</li>
+    {% endfor %}
 
 
 {% endblock content %}

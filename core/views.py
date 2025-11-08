@@ -1,8 +1,9 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
-
+from django.utils.text import slugify
 from .models import Professor, Course, Section
+from django.http import Http404
 
 def homepage_view(request):
     return render(request, 'core/homepage.html')
@@ -40,7 +41,9 @@ def search(request):
 
 
 
-def prof_detail(request, name):
-    name_cleaned = name.replace('-', ' ')
-    professor = get_object_or_404(Professor, name__iexact=name_cleaned)
-    return render(request, 'core/prof_detail.html', {'professor': professor})
+def prof_detail(request, slug):
+
+    for prof in Professor.objects.all():
+        if slugify(prof.name) == slug:
+            return render(request, 'core/prof_detail.html', {'prof': prof})
+    raise Http404("Professor not found")
