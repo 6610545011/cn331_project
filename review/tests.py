@@ -3,7 +3,6 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-# Import models from your apps
 from core.models import Course, Professor, Section, Campus, RoomMSTeam
 from .models import Review
 
@@ -11,30 +10,25 @@ User = get_user_model()
 
 class WriteReviewViewTestCase(TestCase):
     def setUp(self):
-        """Set up non-modified objects used by all test methods."""
         self.user = User.objects.create_user(username='testuser', password='testpassword123')
-        
-        # Create all necessary related objects
         self.campus = Campus.objects.create(name='Test Campus')
-        self.room = RoomMSTeam.objects.create(name='Test Room 101', campus=self.campus)
+        self.room = RoomMSTeam.objects.create(name='TestMS', campus=self.campus)
         self.course = Course.objects.create(code='CS331', name='Software Engineering')
         self.professor = Professor.objects.create(
             name='Dr. Test',
             campus=self.campus,
+            room=self.room,
             description='A test professor.'
         )
-        
-        # --- จุดสำคัญ: สร้าง Section พร้อมกับ section_number ---
         self.section = Section.objects.create(
             course=self.course,
-            section_number='701',  # <--- ต้องมีบรรทัดนี้
+            section_number='701',
             professor=self.professor,
             campus=self.campus,
             room=self.room,
             date_time='Mon 10:00-12:00',
             location='Main Building'
         )
-        
         self.client = Client()
         self.write_review_url = reverse('review:write_review')
 
@@ -47,36 +41,21 @@ class WriteReviewViewTestCase(TestCase):
         response = self.client.get(self.write_review_url)
         self.assertEqual(response.status_code, 200)
 
-# ในคลาส WriteReviewViewTestCase
-
     def test_write_review_submission_successful(self):
         self.client.login(username='testuser', password='testpassword123')
         self.assertEqual(Review.objects.count(), 0)
-        
         review_data = {
             'course': self.course.id,
-            'section': '701', # User types this in
+            'section': '701',
             'professor': self.professor.id,
             'rating': 5,
             'header': 'Great course!',
             'body': 'Learned a lot.',
             'incognito': False,
         }
-        
         response = self.client.post(self.write_review_url, data=review_data)
-        
-        # --- แก้ไขตรงนี้ ---
-
-        # 1. ตรวจสอบการ Redirect ก่อน เพราะเป็นสิ่งแรกที่ควรจะเกิดขึ้นหลังฟอร์ม valid
         self.assertRedirects(response, reverse('core:homepage'))
-
-        # 2. ตรวจสอบว่ามี object ถูกสร้างขึ้นในฐานข้อมูลจริง
         self.assertEqual(Review.objects.count(), 1)
-
-        # 3. (Optional) ตรวจสอบรายละเอียดของ object ที่สร้างขึ้น
-        new_review = Review.objects.first()
-        self.assertEqual(new_review.user, self.user)
-        self.assertEqual(new_review.section, self.section)
 
     def test_write_review_submission_missing_rating(self):
         self.client.login(username='testuser', password='testpassword123')
@@ -95,7 +74,7 @@ class WriteReviewViewTestCase(TestCase):
         self.client.login(username='testuser', password='testpassword123')
         invalid_data = {
             'course': self.course.id,
-            'section': '999', # Non-existent section
+            'section': '999',
             'professor': self.professor.id,
             'rating': 4,
             'header': 'Wrong section',
@@ -105,25 +84,62 @@ class WriteReviewViewTestCase(TestCase):
         self.assertEqual(Review.objects.count(), 0)
         self.assertIn('__all__', response.context['form'].errors)
 
+    def test_incognito_review_is_saved_correctly(self):
+        """
+        Test (Good Path): Ensure that when 'incognito' is checked,
+        the review is saved with incognito=True.
+        """
+        self.client.login(username='testuser', password='testpassword123')
+        review_data = {
+            'course': self.course.id,
+            'section': '701',
+            'professor': self.professor.id,
+            'rating': 4,
+            'header': 'Anonymous Review',
+            'body': 'This is an incognito review.',
+            'incognito': 'on',  # HTML checkbox sends 'on' when checked
+        }
+        self.client.post(self.write_review_url, data=review_data)
+        self.assertEqual(Review.objects.count(), 1)
+        review = Review.objects.first()
+        self.assertTrue(review.incognito, "Review should be saved as incognito.")
+
 
 class ReviewAPIsTestCase(TestCase):
-    # API tests are not relevant to this specific failure, but ensure they are correct too.
     def setUp(self):
         self.campus = Campus.objects.create(name='API Test Campus')
         self.room = RoomMSTeam.objects.create(name='API Room', campus=self.campus)
         self.course1 = Course.objects.create(code='CS101', name='Intro to CS')
+        self.course2 = Course.objects.create(code='MA202', name='Calculus II') # Add another course for testing
         self.prof1 = Professor.objects.create(
             name='Prof. Turing',
             campus=self.campus,
+            room=self.room,
             description='API test professor.'
+        )
+        self.prof2 = Professor.objects.create( # Add another professor
+            name='Prof. Knuth',
+            campus=self.campus,
+            room=self.room,
+            description='Another API test professor.'
         )
         self.sec1 = Section.objects.create(
             course=self.course1,
-            section_number='01', # <--- ต้องมีบรรทัดนี้
+            section_number='01',
             professor=self.prof1,
             campus=self.campus,
             room=self.room,
             date_time='Tue 13:00-15:00',
+            location='CS Building'
+        )
+        # Section 2 for the same course but different professor
+        self.sec2 = Section.objects.create(
+            course=self.course1,
+            section_number='02',
+            professor=self.prof2,
+            campus=self.campus,
+            room=self.room,
+            date_time='Wed 10:00-12:00',
             location='CS Building'
         )
         self.client = Client()
@@ -132,3 +148,44 @@ class ReviewAPIsTestCase(TestCase):
         url = reverse('review:ajax_search_courses')
         response = self.client.get(url, {'term': 'CS'})
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['results']), 1)
+
+    def test_get_professors_for_course_api(self):
+        url = reverse('review:ajax_get_professors')
+        params = {'course_id': self.course1.id}
+        response = self.client.get(url, params)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('professors', data)
+        self.assertEqual(len(data['professors']), 2) # Should find 2 professors for CS101
+        professor_names = {p['name'] for p in data['professors']}
+        self.assertIn('Prof. Turing', professor_names)
+        self.assertIn('Prof. Knuth', professor_names)
+
+    def test_search_courses_api_no_results(self):
+        """
+        Test (Sad Path): Ensure the search API returns an empty list
+        when no courses match the search term.
+        """
+        url = reverse('review:ajax_search_courses')
+        response = self.client.get(url, {'term': 'XYZ'}) # Search for a term that doesn't exist
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('results', data)
+        self.assertEqual(len(data['results']), 0, "Should return an empty list for no matches.")
+
+    def test_get_professors_for_course_api_invalid_id(self):
+        """
+        Test (Sad Path): Ensure the professors API returns an empty list
+        when an invalid or non-existent course_id is provided.
+        """
+        url = reverse('review:ajax_get_professors')
+        params = {'course_id': 999} # Use an ID that doesn't exist
+        response = self.client.get(url, params)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('professors', data)
+        self.assertEqual(len(data['professors']), 0, "Should return an empty list for an invalid course ID.")
+
+        

@@ -40,7 +40,7 @@ def search(request):
         # Combine all querysets into a single list for the "All" tab
         all_results = sorted(
             list(chain(professors, courses, sections)),
-            key=lambda instance: instance.name
+            key=lambda instance: getattr(instance, 'number', getattr(instance, 'name', ''))
         )
 
     context = {

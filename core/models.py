@@ -49,7 +49,7 @@ class Course(models.Model):
 
 class Section(models.Model):
     # Changed from section_number to number to match search template logic
-    number = models.CharField(max_length=6)
+    section_number = models.CharField(max_length=6)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     campus = models.ForeignKey(Campus, on_delete=models.CASCADE)

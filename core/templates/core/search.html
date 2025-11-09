@@ -44,7 +44,7 @@
                                 <h4><a href="{% url 'core:course_detail' slug=result.name|unicode_slugify %}">{{ result.name }} ({{ result.code }})</a></h4>
                                 <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
                             {% elif result.get_model_name == 'Section' %}
-                                <h4>{{ result.course.code }} - {{ result.course.name }} (Section: {{ result.number }})</h4>
+                                <h4>{{ result.course.code }} - {{ result.course.name }} (Section: {{ result.section_number }})</h4>
                                 <p>Taught by: <a href="{% url 'core:professor_detail' slug=result.professor.name|unicode_slugify %}">{{ result.professor.name }}</a></p>
                             {% else %}
                                 <h4>{{ result.name }}</h4>
@@ -89,7 +89,7 @@
                 <ul class="result-list">
                     {% for section in sections %}
                         <li class="result-item">
-                            <h4>{{ section.course.code }} - {{ section.course.name }} (Section: {{ section.number }})</h4>
+                            <h4>{{ section.course.code }} - {{ section.course.name }} (Section: {{ section.section_number }})</h4>
                             <p>Taught by: <a href="{% url 'core:professor_detail' slug=section.professor.name|unicode_slugify %}">{{ section.professor.name }}</a></p>
                         </li>
                     {% endfor %}
