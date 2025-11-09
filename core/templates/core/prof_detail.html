@@ -42,7 +42,7 @@
             {% for section in prof.section_set.all %}
                 <div class="info-card">
                     <h4>{{ section.course.code }} - {{ section.course.name }}</h4>
-                    <p><strong>Section:</strong> {{ section.number }}</p>
+                    <p><strong>Section:</strong> {{ section.section_number }}</p>
                 </div>
             {% empty %}
                 <p>This professor is not currently assigned to any sections.</p>
