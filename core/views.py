@@ -1,6 +1,6 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F
 from django.utils.text import slugify
 from .models import Professor, Course, Section
 from itertools import chain
@@ -55,19 +55,23 @@ def search(request):
 
 def prof_detail(request, slug):
     # This is inefficient. Let's find the professor whose slugified name matches.
-    # Note: This can still be slow on large datasets. A dedicated slug field is better.
-    professors = Professor.objects.all().prefetch_related('section_set__course', 'review_set__user')
-    for prof in professors:
-        if slugify(prof.name, allow_unicode=True) == slug:
-            return render(request, 'core/prof_detail.html', {'prof': prof})
-    raise Http404("Professor not found or slug could not be matched.")
+    # A dedicated slug field on the model would be a more performant solution.
+    # Using allow_unicode=True to correctly handle non-ASCII characters.
+    try:
+        prof = next(p for p in Professor.objects.all() if slugify(p.name, allow_unicode=True) == slug)
+    except StopIteration:
+        raise Http404("Professor not found or slug could not be matched.")
+    
+    # Pre-fetch related data for the found professor to optimize queries
+    prof = Professor.objects.prefetch_related('section_set__course', 'review_set__user').get(pk=prof.pk)
+    return render(request, 'core/prof_detail.html', {'prof': prof})
 
 def course_detail(request, slug):
-    # This is also inefficient. We'll find the specific course.
-    # Using prefetch_related to optimize fetching related sections and their professors.
-    courses = Course.objects.all().prefetch_related('section_set__professor', 'section_set__campus', 'section_set__room')
-    for course in courses:
-        # Using allow_unicode=True to better handle names with non-latin characters
-        if slugify(course.name, allow_unicode=True) == slug:
-            return render(request, 'core/course_detail.html', {'course': course})
-    raise Http404("Course not found or slug could not be matched.")
+    # Similar to prof_detail, we find the course by matching its slugified name.
+    try:
+        course = next(c for c in Course.objects.all() if slugify(c.name, allow_unicode=True) == slug)
+    except StopIteration:
+        raise Http404("Course not found or slug could not be matched.")
+
+    course = Course.objects.prefetch_related('section_set__professor', 'section_set__campus', 'section_set__room').get(pk=course.pk)
+    return render(request, 'core/course_detail.html', {'course': course})

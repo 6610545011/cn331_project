@@ -1,5 +1,6 @@
 {% extends "core/template.html" %}
 {% load static %}
+{% load core_extras %}
 
 {% block title %}Search Results for "{{ query }}" - Thammasat Study Plan{% endblock title %}
 
@@ -21,7 +22,7 @@
     {% if results %}
         {# --- Tab Navigation --- #}
         <div class="search-tabs">
-            <a class="tab-link active" data-target="#all-results">All ({{ results.count }})</a>
+            <a class="tab-link active" data-target="#all-results">All ({{ results|length }})</a>
             {% if professors %}<a class="tab-link" data-target="#professors-results">Professors ({{ professors.count }})</a>{% endif %}
             {% if courses %}<a class="tab-link" data-target="#courses-results">Courses ({{ courses.count }})</a>{% endif %}
             {% if sections %}<a class="tab-link" data-target="#sections-results">Sections ({{ sections.count }})</a>{% endif %}
@@ -35,8 +36,20 @@
                 <ul class="result-list">
                     {% for result in results %}
                         <li class="result-item">
-                            <h4>{{ result.name }}</h4>
-                            <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
+                            {# Check the type of the result object to generate the correct link #}
+                            {% if result.get_model_name == 'Professor' %}
+                                <h4><a href="{% url 'core:professor_detail' slug=result.name|unicode_slugify %}">{{ result.name }}</a></h4>
+                                <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
+                            {% elif result.get_model_name == 'Course' %}
+                                <h4><a href="{% url 'core:course_detail' slug=result.name|unicode_slugify %}">{{ result.name }} ({{ result.code }})</a></h4>
+                                <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
+                            {% elif result.get_model_name == 'Section' %}
+                                <h4>{{ result.course.code }} - {{ result.course.name }} (Section: {{ result.number }})</h4>
+                                <p>Taught by: <a href="{% url 'core:professor_detail' slug=result.professor.name|unicode_slugify %}">{{ result.professor.name }}</a></p>
+                            {% else %}
+                                <h4>{{ result.name }}</h4>
+                                <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
@@ -48,7 +61,7 @@
                 <ul class="result-list">
                     {% for professor in professors %}
                         <li class="result-item">
-                            <h4><a href="{% url 'core:professor_detail' slug=professor.name|slugify %}">{{ professor.name }}</a></h4>
+                            <h4><a href="{% url 'core:professor_detail' slug=professor.name|unicode_slugify %}">{{ professor.name }}</a></h4>
                             <p>{{ professor.description|default:"No description available."|truncatewords:30 }}</p>
                         </li>
                     {% endfor %}
@@ -62,7 +75,7 @@
                 <ul class="result-list">
                     {% for course in courses %}
                         <li class="result-item">
-                            <h4><a href="{% url 'core:course_detail' slug=course.name|slugify %}">{{ course.name }} ({{ course.code }})</a></h4>
+                            <h4><a href="{% url 'core:course_detail' slug=course.name|unicode_slugify %}">{{ course.name }} ({{ course.code }})</a></h4>
                             <p>{{ course.description|default:"No description available."|truncatewords:30 }}</p>
                         </li>
                     {% endfor %}
@@ -76,8 +89,8 @@
                 <ul class="result-list">
                     {% for section in sections %}
                         <li class="result-item">
-                            <h4>{{ section.name }}</h4>
-                            <p>{{ section.description|default:"No description available."|truncatewords:30 }}</p>
+                            <h4>{{ section.course.code }} - {{ section.course.name }} (Section: {{ section.number }})</h4>
+                            <p>Taught by: <a href="{% url 'core:professor_detail' slug=section.professor.name|unicode_slugify %}">{{ section.professor.name }}</a></p>
                         </li>
                     {% endfor %}
                 </ul>
@@ -87,7 +100,7 @@
 
     {% else %}
         {# --- "No Results" Message --- #}
-        <div class="no-results">
+        <div class="no-results" style="text-align: center; padding: 2rem;">
             <p>No results found for "<strong>{{ query }}</strong>".</p>
             <p>Please try a different search term.</p>
         </div>
