@@ -1,10 +1,13 @@
 # core/urls.py
 from django.urls import path
-from .views import homepage_view, about_view # <-- import about_view
+from .views import course_detail, homepage_view, about_view, search, prof_detail
 
 app_name = 'core'
 
 urlpatterns = [
     path('', homepage_view, name='homepage'),
-    path('about/', about_view, name='about'), # <-- เพิ่มบรรทัดนี้
+    path('about/', about_view, name='about'),
+    path('search/', search, name='search'),
+    path('professors/<slug:slug>/', prof_detail, name='professor_detail'),
+    path('courses/<slug:slug>/', course_detail, name='course_detail'),
 ]

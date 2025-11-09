@@ -1,0 +1,145 @@
+{% extends "core/template.html" %}
+{% load static %}
+
+{% block title %}Write Review - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'review/css/review_form.css' %}">
+{% endblock extra_head %}
+
+{% block content %}
+<main class="content-area">
+    <div class="review-form-container">
+        <h1>เขียนรีวิวรายวิชา</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                {{ form.course.label_tag }}
+                {{ form.course }}
+                {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
+            </div>
+
+            <!-- ===== เพิ่ม Form Group สำหรับ Section ===== -->
+            <div class="form-group">
+                {{ form.section.label_tag }}
+                {{ form.section }}
+                {% if form.section.errors %}<div class="errors">{{ form.section.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.professor.label_tag }}
+                {{ form.professor }}
+                {% if form.professor.errors %}<div class="errors">{{ form.professor.errors }}</div>{% endif %}
+            </div>
+
+            <!-- ===== แก้ไขส่วน Rating ทั้งหมด ===== -->
+            <div class="form-group rating-group">
+                {{ form.rating.label_tag }}
+                <div class="star-rating">
+                    {% for radio in form.rating reversed %}
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} ดาว"><i class="fas fa-star"></i></label>
+                    {% endfor %}
+                </div>
+                {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.header.label_tag }}
+                {{ form.header }}
+                {% if form.header.errors %}<div class="errors">{{ form.header.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.body.label_tag }}
+                {{ form.body }}
+                {% if form.body.errors %}<div class="errors">{{ form.body.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group incognito-group">
+                {{ form.incognito }}
+                {{ form.incognito.label_tag }}
+                {% if form.incognito.errors %}<div class="errors">{{ form.incognito.errors }}</div>{% endif %}
+            </div>
+
+            <button type="submit" class="btn-submit">ส่งรีวิว</button>
+        </form>
+    </div>
+</main>
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // --- ทำให้ช่อง "รายวิชา" ค้นหาได้ด้วย Select2 (เหมือนเดิม) ---
+    $('#id_course').select2({
+        placeholder: 'พิมพ์รหัสวิชาหรือชื่อวิชาเพื่อค้นหา',
+        allowClear: true,
+        ajax: {
+            url: "{% url 'review:ajax_search_courses' %}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { return { term: params.term }; },
+            processResults: function (data) { return { results: data.results }; },
+            cache: true
+        }
+    });
+
+    // --- ควบคุมช่อง Section และ อาจารย์ ---
+    const courseSelect = $('#id_course');
+    const sectionSelect = $('#id_section'); // <-- เพิ่มตัวแปร section
+    const professorSelect = $('#id_professor');
+
+    // เริ่มต้นให้ช่อง section และ อาจารย์เป็น disabled
+    sectionSelect.prop('disabled', true);
+    professorSelect.prop('disabled', true);
+
+    // Event: เมื่อมีการเลือกรายวิชา
+    courseSelect.on('select2:select', function (e) {
+        const courseId = e.params.data.id;
+
+        // --- 1. โหลด Sections ---
+        sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+        $.ajax({
+            url: "{% url 'review:ajax_get_sections' %}",
+            data: { 'course_id': courseId },
+            success: function (data) {
+                sectionSelect.empty().append('<option value="">--- เลือกกลุ่มเรียน ---</option>');
+                if (data.sections.length > 0) {
+                    data.sections.forEach(function(sec) {
+                        sectionSelect.append(new Option(sec.text, sec.id));
+                    });
+                } else {
+                    sectionSelect.append('<option value="">ไม่พบข้อมูลกลุ่มเรียน</option>');
+                }
+            }
+        });
+
+        // --- 2. โหลด Professors (เหมือนเดิม) ---
+        professorSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+        $.ajax({
+            url: "{% url 'review:ajax_get_professors' %}",
+            data: { 'course_id': courseId },
+            success: function (data) {
+                professorSelect.empty().append('<option value="">--- เลือกอาจารย์ผู้สอน ---</option>');
+                if (data.professors.length > 0) {
+                    data.professors.forEach(function(prof) {
+                        professorSelect.append(new Option(prof.name, prof.id));
+                    });
+                } else {
+                    professorSelect.append('<option value="">ไม่พบข้อมูลอาจารย์</option>');
+                }
+            }
+        });
+    });
+
+    // Event: เมื่อล้างการเลือกรายวิชา
+    courseSelect.on('select2:unselect', function (e) {
+        // Reset ทั้ง Section และ Professor
+        sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+        professorSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+    });
+});
+</script>
+{% endblock extra_scripts %}

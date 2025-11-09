@@ -7,8 +7,18 @@ body {
     overflow-x: hidden;
 }
 
+/* General Link Styles */
+a {
+    color: var(--yellow, #FFC700); /* Use yellow for links */
+    text-decoration: none; /* Removes the default underline */
+}
+
+a:visited {
+    color: var(--pink, #E83F6F); /* Use pink for visited links */
+}
+
 .main-container {
-    padding: 1.5rem 3rem;
+    padding: 80px 3rem 1.5rem; /* 80px top padding to offset fixed header */
 }
 
 /* Top Header */
@@ -365,4 +375,17 @@ body {
 /* Remove any existing transform styles when sidebar is visible */
 .side-nav:not(.minimized) {
     transform: translateX(0);
+}
+
+a.action-btn {
+    text-decoration: none;
+    color: white; /* บังคับให้ตัวลิงก์เองเป็นสีขาว */
+}
+
+/*
+  สำคัญที่สุด: กำหนดให้ <span> ที่อยู่ข้างในลิงก์ที่เป็นปุ่ม
+  มีสีขาวอย่างชัดเจน เพื่อไม่ให้ถูก override
+*/
+a.action-btn span {
+    color: white;
 }

@@ -21,7 +21,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls', namespace='core')), # <-- เพิ่มบรรทัดนี้
-    # path('review/', include('review.urls', namespace='review')), # ตัวอย่างแอปอื่น
+    path('review/', include('review.urls', namespace='review')), # ตัวอย่างแอปอื่น
     path('users/', include('users.urls', namespace='users')), # ตัวอย่างแอปอื่น
     # path('planner/', include('planner.urls', namespace='planner')), # ตัวอย่างแอปอื่น
 ]

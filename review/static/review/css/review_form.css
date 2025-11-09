@@ -1,0 +1,146 @@
+/* ======================================== */
+/*      review/static/review/css/review_form.css      */
+/* ======================================== */
+
+/* --- Layout & Container --- */
+.content-area {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    background-color: #4A154B; /* สีม่วงเข้มจากธีม */
+    min-height: calc(100vh - 80px); /* 80px คือความสูงของ top-header */
+}
+
+.review-form-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 800px;
+    color: #333;
+}
+
+/* --- Typography --- */
+.review-form-container h1 {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: #4A154B;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+/* --- General Form Elements --- */
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Kanit', sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #E01E5A; /* สีชมพูจากธีม */
+    box-shadow: 0 0 0 3px rgba(224, 30, 90, 0.2);
+}
+
+/* --- Star Rating System (Corrected for Left-to-Right Fill) --- */
+
+/* ซ่อน Radio Button ที่เป็น input จริงๆ */
+.rating-group input[type="radio"] {
+    display: none;
+}
+
+/* Container ของดาว */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse; /* <<--- 1. เพิ่ม flex-direction: row-reverse; กลับเข้ามา */
+    justify-content: flex-end;   /* ทำให้ดาวชิดซ้าย */
+    gap: 5px;
+}
+
+/* สไตล์ของดาวแต่ละดวง (ที่เป็น label) */
+.star-rating .star-label {
+    color: #ccc; /* สีดาวตอนยังไม่เลือก */
+    font-size: 2.5rem; /* ขนาดดาว */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+/* เมื่อ Radio Button ถูก check ให้เปลี่ยนสี label ที่อยู่ติดกัน (+) และ label ทั้งหมดที่ตามมา (~) */
+.rating-group input[type="radio"]:checked + .star-label,
+.rating-group input[type="radio"]:checked ~ .star-label {
+    color: #ECB22E;
+}
+
+
+/* --- Other Form Elements --- */
+
+/* Styling for Checkbox (Incognito) */
+.incognito-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Submit Button */
+.btn-submit {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: #E01E5A; /* สีชมพู */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 30px;
+}
+
+.btn-submit:hover {
+    background-color: #c4184d;
+}
+
+/* --- Third-Party Library Styles (Select2) --- */
+.select2-container--default .select2-selection--single {
+    height: 46px; /* ทำให้ความสูงเท่ากับ input อื่นๆ */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 44px;
+    padding-left: 15px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 44px;
+}
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #E01E5A;
+    box-shadow: 0 0 0 3px rgba(224, 30, 90, 0.2);
+}

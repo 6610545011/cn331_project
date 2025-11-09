@@ -12,21 +12,28 @@
             <span class="dot">•</span>studyplan<span class="pencil">/</span>
         </h1>
         <h2 class="sub-title">course review</h2>
-        <div class="search-bar">
-            <input type="text" placeholder="search course review...">
-            <button><i class="fas fa-search"></i></button>
-        </div>
+        <form method="get" action="{% url 'core:search' %}" class="search-bar">
+        <input type="text" name="q" placeholder="search course review..." value="{{ request.GET.q|default:'' }}">
+        <button type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+        </form>
         <div class="action-buttons">
-            <button class="action-btn write-review">
+            <!-- ปุ่มที่ 1: Write Review (เปลี่ยนเป็นแท็ก <a> เพื่อให้เป็นลิงก์) -->
+            <a href="{% url 'review:write_review' %}" class="action-btn write-review">
                 <i class="fas fa-star"></i>
                 <i class="fas fa-thumbs-up"></i>
                 <span>write<br>review</span>
-            </button>
+            </a>
+            
+            <!-- ปุ่มที่ 2: Schedule Plan (ยังคงเป็น <button> เหมือนเดิม) -->
             <button class="action-btn schedule-plan">
                 <i class="fas fa-calendar-alt"></i>
                 <span>schedule<br>PLAN</span>
             </button>
         </div>
+        <!-- ========================================== -->
+
     </div>
     <div class="right-panel">
         <div class="decorative-graphic">
