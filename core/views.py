@@ -1,8 +1,9 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F
 from django.utils.text import slugify
 from .models import Professor, Course, Section
+from itertools import chain
 from django.http import Http404
 
 def homepage_view(request):
@@ -14,25 +15,36 @@ def about_view(request):
 
 def search(request):
     query = request.GET.get('q', '')
+    professors = Professor.objects.none()
+    courses = Course.objects.none()
+    sections = Section.objects.none()
+    all_results = []
 
     if query:
+        # Use __iregex for better Unicode character support (including Thai)
         professors = Professor.objects.filter(
-            Q(name__icontains=query)
-        )
+            Q(name__iregex=query) |
+            Q(description__iregex=query)
+        ).distinct()
         courses = Course.objects.filter(
-            Q(code__icontains=query) |
-            Q(name__icontains=query)
-        )
+            Q(code__iregex=query) |
+            Q(name__iregex=query) |
+            Q(description__iregex=query)
+        ).distinct()
         sections = Section.objects.filter(
-            Q(course__name__icontains=query)
+            Q(course__name__iregex=query) |
+            Q(professor__name__iregex=query)
+        ).distinct()
+
+        # Combine all querysets into a single list for the "All" tab
+        all_results = sorted(
+            list(chain(professors, courses, sections)),
+            key=lambda instance: instance.name
         )
-    else:
-        professors = []  # or any other default value you want
-        courses = []  # or any other default value you want
-        sections = []
 
     context = {
         'query': query,
+        'results': all_results,
         'professors': professors,
         'courses': courses,
         'sections': sections,
@@ -42,15 +54,24 @@ def search(request):
 
 
 def prof_detail(request, slug):
-
-    for prof in Professor.objects.all():
-        if slugify(prof.name) == slug:
-            return render(request, 'core/prof_detail.html', {'prof': prof})
-    raise Http404("Professor not found")
+    # This is inefficient. Let's find the professor whose slugified name matches.
+    # A dedicated slug field on the model would be a more performant solution.
+    # Using allow_unicode=True to correctly handle non-ASCII characters.
+    try:
+        prof = next(p for p in Professor.objects.all() if slugify(p.name, allow_unicode=True) == slug)
+    except StopIteration:
+        raise Http404("Professor not found or slug could not be matched.")
+    
+    # Pre-fetch related data for the found professor to optimize queries
+    prof = Professor.objects.prefetch_related('section_set__course', 'review_set__user').get(pk=prof.pk)
+    return render(request, 'core/prof_detail.html', {'prof': prof})
 
 def course_detail(request, slug):
+    # Similar to prof_detail, we find the course by matching its slugified name.
+    try:
+        course = next(c for c in Course.objects.all() if slugify(c.name, allow_unicode=True) == slug)
+    except StopIteration:
+        raise Http404("Course not found or slug could not be matched.")
 
-    for course in Course.objects.all():
-        if slugify(course.name) == slug:
-            return render(request, 'core/course_detail.html', {'course': course})
-    raise Http404("Course not found")
+    course = Course.objects.prefetch_related('section_set__professor', 'section_set__campus', 'section_set__room').get(pk=course.pk)
+    return render(request, 'core/course_detail.html', {'course': course})
