@@ -11,6 +11,16 @@
 <main class="content-area">
     <div class="review-form-container">
         <h1>เขียนรีวิวรายวิชา</h1>
+        
+        {# แสดงข้อความ error ทั่วไป (เช่น "ไม่พบ Section") ที่ด้านบนของฟอร์ม #}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post" novalidate>
             {% csrf_token %}
             
@@ -20,7 +30,7 @@
                 {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
             </div>
 
-            <!-- ===== เพิ่ม Form Group สำหรับ Section ===== -->
+            {# ส่วนของ Section จะถูก render เป็น text input โดยอัตโนมัติจาก forms.py #}
             <div class="form-group">
                 {{ form.section.label_tag }}
                 {{ form.section }}
@@ -33,7 +43,6 @@
                 {% if form.professor.errors %}<div class="errors">{{ form.professor.errors }}</div>{% endif %}
             </div>
 
-            <!-- ===== แก้ไขส่วน Rating ทั้งหมด ===== -->
             <div class="form-group rating-group">
                 {{ form.rating.label_tag }}
                 <div class="star-rating">
@@ -72,7 +81,7 @@
 {% block extra_scripts %}
 <script>
 $(document).ready(function() {
-    // --- ทำให้ช่อง "รายวิชา" ค้นหาได้ด้วย Select2 (เหมือนเดิม) ---
+    // --- ส่วน Select2 ของ Course (เหมือนเดิม) ---
     $('#id_course').select2({
         placeholder: 'พิมพ์รหัสวิชาหรือชื่อวิชาเพื่อค้นหา',
         allowClear: true,
@@ -86,35 +95,22 @@ $(document).ready(function() {
         }
     });
 
-    // --- ควบคุมช่อง Section และ อาจารย์ ---
+    // --- (แก้ไข) ควบคุมช่อง Section และ อาจารย์ ---
     const courseSelect = $('#id_course');
-    const sectionSelect = $('#id_section'); // <-- เพิ่มตัวแปร section
+    const sectionInput = $('#id_section'); // เปลี่ยนชื่อตัวแปรเพื่อความชัดเจน
     const professorSelect = $('#id_professor');
 
     // เริ่มต้นให้ช่อง section และ อาจารย์เป็น disabled
-    sectionSelect.prop('disabled', true);
+    sectionInput.prop('disabled', true);
     professorSelect.prop('disabled', true);
 
     // Event: เมื่อมีการเลือกรายวิชา
     courseSelect.on('select2:select', function (e) {
         const courseId = e.params.data.id;
 
-        // --- 1. โหลด Sections ---
-        sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
-        $.ajax({
-            url: "{% url 'review:ajax_get_sections' %}",
-            data: { 'course_id': courseId },
-            success: function (data) {
-                sectionSelect.empty().append('<option value="">--- เลือกกลุ่มเรียน ---</option>');
-                if (data.sections.length > 0) {
-                    data.sections.forEach(function(sec) {
-                        sectionSelect.append(new Option(sec.text, sec.id));
-                    });
-                } else {
-                    sectionSelect.append('<option value="">ไม่พบข้อมูลกลุ่มเรียน</option>');
-                }
-            }
-        });
+        // --- 1. (แก้ไข) เปิดใช้งานช่อง Section Input ---
+        // ไม่ต้องมี AJAX call แล้ว แค่เปิดให้กรอกได้
+        sectionInput.prop('disabled', false);
 
         // --- 2. โหลด Professors (เหมือนเดิม) ---
         professorSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
@@ -136,8 +132,8 @@ $(document).ready(function() {
 
     // Event: เมื่อล้างการเลือกรายวิชา
     courseSelect.on('select2:unselect', function (e) {
-        // Reset ทั้ง Section และ Professor
-        sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+        // (แก้ไข) Reset ทั้ง Section และ Professor
+        sectionInput.val('').prop('disabled', true); // ล้างค่าในช่อง input และปิดการใช้งาน
         professorSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
     });
 });
