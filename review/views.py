@@ -73,3 +73,18 @@ def get_professors_for_course(request):
     results = [{'id': p.id, 'name': p.name} for p in professors]
     
     return JsonResponse({'professors': results})
+
+def get_sections_for_course(request):
+    """
+    API endpoint สำหรับดึงรายชื่อ Section ที่เกี่ยวข้องกับรายวิชาที่เลือก
+    """
+    course_id = request.GET.get('course_id')
+    if not course_id:
+        return JsonResponse({'sections': []})
+
+    sections = Section.objects.filter(course_id=course_id).order_by('section_number')
+    
+    # สมมติว่าโมเดล Section มีฟิลด์ 'section_number'
+    results = [{'id': s.id, 'text': f"Section {s.section_number}"} for s in sections]
+    
+    return JsonResponse({'sections': results})

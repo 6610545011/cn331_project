@@ -376,3 +376,16 @@ a:visited {
 .side-nav:not(.minimized) {
     transform: translateX(0);
 }
+
+a.action-btn {
+    text-decoration: none;
+    color: white; /* บังคับให้ตัวลิงก์เองเป็นสีขาว */
+}
+
+/*
+  สำคัญที่สุด: กำหนดให้ <span> ที่อยู่ข้างในลิงก์ที่เป็นปุ่ม
+  มีสีขาวอย่างชัดเจน เพื่อไม่ให้ถูก override
+*/
+a.action-btn span {
+    color: white;
+}
