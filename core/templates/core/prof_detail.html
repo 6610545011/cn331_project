@@ -1,51 +1,72 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}Search - Thammasat Study Plan{% endblock title %}
+{% block title %}{{ prof.name }} - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+{# ใช้ CSS ไฟล์เดียวกับหน้ารายละเอียดวิชาเพื่อความสอดคล้อง #}
+<link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
+{% endblock extra_head %}
 
 {% block content %}
+<div class="detail-container">
+    
+    {# --- ส่วนหัว: ข้อมูลหลักของอาจารย์ --- #}
+    <div class="detail-header">
+        <h1>{{ prof.name }}</h1>
+        <p class="sub-heading"><strong>Campus:</strong> {{ prof.campus.name }}</p>
+        <p>{{ prof.description }}</p>
+    </div>
 
+    <div class="detail-content">
+        
+        {# --- ส่วนที่ 1: รายการ Section ที่สอน --- #}
+        <h3>Sections Taught</h3>
+        <div class="card-list">
+            {% for section in prof.section_set.all %}
+                <div class="info-card">
+                    <h4>{{ section.course.code }} - {{ section.course.name }}</h4>
+                    <p><strong>Section:</strong> {{ section.number }}</p>
+                </div>
+            {% empty %}
+                <p>This professor is not currently assigned to any sections.</p>
+            {% endfor %}
+        </div>
 
-<h1>{{ prof.name }}</h1>
-<h4><strong>Description:</strong></h4>
-<p>{{ prof.description }}</p>
-<h4><strong>Campus:</strong></h4>
-<p>{{ prof.campus.name }}</p>
+        {# --- ส่วนที่ 2: รายการรีวิว --- #}
+        <h3>Reviews</h3>
+        <div class="card-list">
+            {% for review in prof.review_set.all %}
+                <div class="info-card review-card">
+                    <h4>{{ review.header }}</h4>
+                    <p class="rating">Rating: {{ review.rating }} / 5 ★</p>
+                    
+                    {% if review.course %}
+                        <p><strong>For Course:</strong> {{ review.course.code }} - {{ review.course.name }}</p>
+                    {% endif %}
 
-<h3>Sections:</h3>
-<ul>
-    {% for section in prof.section_set.all %}
-        <li>{{ section.course.code }} {{ section.course.name }} - Section {{ section.number }}</li>
-    {% empty %}
-        <li>This professor is not currently assigned to any sections.</li>
-    {% endfor %}
-</ul>
+                    <div class="review-body">
+                        <p>"{{ review.body }}"</p>
+                    </div>
 
-<h3>Reviews:</h3>
-<ul>
-    {% for review in prof.review_set.all %}
-        <li>
-            <h3>{{ review.header }}</h3>
-            {% if review.course %}
-                <strong>Course:</strong> {{ review.course.code }} - {{ review.course.name }}<br>
-            {% endif %}
-            {% if review.section %}
-                <strong>Section:</strong> {{ review.section.number }}<br>
-            {% endif %}
-            <strong>Rating:</strong> {{ review.rating }} / 5<br>
-            <strong>Comment:</strong> {{ review.body }}<br>
-            <strong>Date:</strong> {{ review.created_at|date:"F j, Y" }}<br>
-            <strong>Creator :</strong>
-            {% if review.incognito %}
-                Incognito
-            {% else %}
-                {{ review.user.username }}
-            {% endif %}<br>
-            <br>
-        </li>
-    {% empty %}
-        <li>No reviews available for this professor.</li>
-    {% endfor %}
-
-
+                    <div class="review-meta">
+                        <p>
+                            By 
+                            <strong>
+                                {% if review.incognito %}
+                                    Anonymous
+                                {% else %}
+                                    {{ review.user.username }}
+                                {% endif %}
+                            </strong> 
+                            on {{ review.created_at|date:"F j, Y" }}
+                        </p>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No reviews available for this professor yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock content %}
