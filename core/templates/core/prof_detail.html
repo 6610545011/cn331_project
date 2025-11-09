@@ -13,9 +13,25 @@
     
     {# --- ส่วนหัว: ข้อมูลหลักของอาจารย์ --- #}
     <div class="detail-header">
-        <h1>{{ prof.name }}</h1>
-        <p class="sub-heading"><strong>Campus:</strong> {{ prof.campus.name }}</p>
-        <p>{{ prof.description }}</p>
+        <div class="header-content">
+            {% if prof.img_url %}
+                <img src="{{ prof.img_url }}" alt="Photo of {{ prof.name }}" class="profile-image">
+            {% endif %}
+            <div class="header-text">
+                <h1>{{ prof.name }}</h1>
+                <p class="sub-heading">
+                    <strong>Campus:</strong> {{ prof.campus.name }} | 
+                    <strong>Room:</strong> {{ prof.room.name }}
+                </p>
+                {% if prof.email %}
+                    <p><strong>Email:</strong> <a href="mailto:{{ prof.email }}">{{ prof.email }}</a></p>
+                {% endif %}
+                {% if prof.website %}
+                    <p><strong>Website:</strong> <a href="{{ prof.website }}" target="_blank" rel="noopener noreferrer">{{ prof.website }}</a></p>
+                {% endif %}
+                <p>{{ prof.description }}</p>
+            </div>
+        </div>
     </div>
 
     <div class="detail-content">
