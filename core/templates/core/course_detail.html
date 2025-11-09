@@ -1,5 +1,6 @@
 {% extends "core/template.html" %}
 {% load static %}
+{% load core_extras %}
 
 {% block title %}{{ course.name }} - Thammasat Study Plan{% endblock title %}
 
@@ -20,7 +21,7 @@
             {% for section in course.section_set.all %}
                 <div class="info-card">
                     <h4>Section {{ forloop.counter }}</h4>
-                    <p><strong>Professor:</strong> <a href="{% url 'core:professor_detail' slug=section.professor.name|slugify %}">{{ section.professor.name }}</a></p>
+                    <p><strong>Professor:</strong> <a href="{% url 'core:professor_detail' slug=section.professor.name|unicode_slugify %}">{{ section.professor.name }}</a></p>
                     <p><strong>Campus:</strong> {{ section.campus.name }}</p>
                     <p><strong>Time:</strong> {{ section.date_time }}</p>
                     <p><strong>Location:</strong> {{ section.location }} ({{ section.room.name }})</p>
