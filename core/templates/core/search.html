@@ -1,71 +1,125 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}Search - Thammasat Study Plan{% endblock title %}
+{% block title %}Search Results for "{{ query }}" - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+{# ลิงก์ไปยัง CSS ใหม่ที่เราสร้างขึ้น #}
+<link rel="stylesheet" href="{% static 'core/css/search_page.css' %}">
+{% endblock extra_head %}
 
 {% block content %}
+<div class="search-page-container">
+    <h1>Search Results</h1>
 
-<form method="get" action="{% url 'core:search' %}">
-    <input type="text" name="q" placeholder="Search..." value="{{ query }}">
-    <button type="submit">Search</button>
-</form>
+    {# --- Search Bar --- #}
+    <form method="get" action="{% url 'core:search' %}" class="search-form">
+        <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
 
-{% if professors or courses or sections %}
-  <h2>Results</h2>
-  <div class="search-results">
-    <h3>All</h3>
-    <ul>
-      {% for result in results %}
-        <li>
-          <h4>{{ result.name }}</h4>
-          <p>{{ result.description }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% if professors %}
-  <div class="search-results">
-    <h3>Professors</h3>
-    <ul>
-      {% for professor in professors %}
-        <li>
-        <h4>
-        <a href="{% url 'core:professor_detail' slug=professor.name|slugify %}">
-            {{ professor.name }}
-        </a>
-        </h4>
-          <p>{{ professor.description }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
-  <div class="search-results">
-    <h3>Courses</h3>
-    <ul>
-      {% for course in courses %}
-        <li>
-          <h4><a href="{% url 'core:course_detail' slug=course.name|slugify %}">{{ course.name }} ({{ course.code }})</a></h4>
-          <p>{{ course.description }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% if sections %}
-    <div class="search-results">
-      <h3>Sections</h3>
-      <ul>
-        {% for section in sections %}
-          <li>
-            <h4>{{ section.name }}</h4>
-            <p>{{ section.description }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
-{% else %}
-  <p>No results found.</p>
-{% endif %}
+    {% if results %}
+        {# --- Tab Navigation --- #}
+        <div class="search-tabs">
+            <a class="tab-link active" data-target="#all-results">All ({{ results.count }})</a>
+            {% if professors %}<a class="tab-link" data-target="#professors-results">Professors ({{ professors.count }})</a>{% endif %}
+            {% if courses %}<a class="tab-link" data-target="#courses-results">Courses ({{ courses.count }})</a>{% endif %}
+            {% if sections %}<a class="tab-link" data-target="#sections-results">Sections ({{ sections.count }})</a>{% endif %}
+        </div>
 
+        {# --- Tab Content --- #}
+        <div class="tab-content">
+            
+            {# Panel for "All" results #}
+            <div id="all-results" class="tab-panel active">
+                <ul class="result-list">
+                    {% for result in results %}
+                        <li class="result-item">
+                            <h4>{{ result.name }}</h4>
+                            <p>{{ result.description|default:"No description available."|truncatewords:30 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {# Panel for "Professors" #}
+            {% if professors %}
+            <div id="professors-results" class="tab-panel">
+                <ul class="result-list">
+                    {% for professor in professors %}
+                        <li class="result-item">
+                            <h4><a href="{% url 'core:professor_detail' slug=professor.name|slugify %}">{{ professor.name }}</a></h4>
+                            <p>{{ professor.description|default:"No description available."|truncatewords:30 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Panel for "Courses" #}
+            {% if courses %}
+            <div id="courses-results" class="tab-panel">
+                <ul class="result-list">
+                    {% for course in courses %}
+                        <li class="result-item">
+                            <h4><a href="{% url 'core:course_detail' slug=course.name|slugify %}">{{ course.name }} ({{ course.code }})</a></h4>
+                            <p>{{ course.description|default:"No description available."|truncatewords:30 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Panel for "Sections" #}
+            {% if sections %}
+            <div id="sections-results" class="tab-panel">
+                <ul class="result-list">
+                    {% for section in sections %}
+                        <li class="result-item">
+                            <h4>{{ section.name }}</h4>
+                            <p>{{ section.description|default:"No description available."|truncatewords:30 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+    {% else %}
+        {# --- "No Results" Message --- #}
+        <div class="no-results">
+            <p>No results found for "<strong>{{ query }}</strong>".</p>
+            <p>Please try a different search term.</p>
+        </div>
+    {% endif %}
+</div>
 {% endblock content %}
+
+{% block extra_scripts %}
+{# --- JavaScript for Tab functionality --- #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-link');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remove active class from all tabs and panels
+            tabs.forEach(item => item.classList.remove('active'));
+            panels.forEach(panel => panel.classList.remove('active'));
+
+            // Add active class to the clicked tab and its corresponding panel
+            const targetId = this.getAttribute('data-target');
+            const targetPanel = document.querySelector(targetId);
+            
+            this.classList.add('active');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock extra_scripts %}
