@@ -33,6 +33,7 @@ class Course(models.Model):
         return self.name
 
 class Section(models.Model):
+    section_number = models.CharField(max_length=6)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
