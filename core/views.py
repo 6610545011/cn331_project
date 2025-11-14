@@ -2,7 +2,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q, F
 from django.utils.text import slugify
-from .models import Professor, Course, Section
+from .models import Prof, Course, Section
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
 
@@ -15,14 +15,14 @@ def about_view(request):
 
 def search(request):
     query = request.GET.get('q', '')
-    professors = Professor.objects.none()
+    professors = Prof.objects.none()
     courses = Course.objects.none()
     sections = Section.objects.none()
     all_results = []
 
     if query:
         # Use __iregex for better Unicode character support (including Thai)
-        professors = Professor.objects.filter(
+        professors = Prof.objects.filter(
             Q(name__iregex=query) |
             Q(description__iregex=query)
         ).distinct()
@@ -59,12 +59,12 @@ def prof_detail(request, slug):
     # A dedicated slug field on the model would be a more performant solution.
     # Using allow_unicode=True to correctly handle non-ASCII characters.
     try:
-        prof = next(p for p in Professor.objects.all() if slugify(p.name, allow_unicode=True) == slug)
+        prof = next(p for p in Prof.objects.all() if slugify(p.name, allow_unicode=True) == slug)
     except StopIteration:
         raise Http404("Professor not found or slug could not be matched.")
     
     # Pre-fetch related data for the found professor to optimize queries
-    prof = Professor.objects.prefetch_related('section_set__course', 'review_set__user').get(pk=prof.pk)
+    prof = Prof.objects.prefetch_related('section_set__course', 'review_set__user').get(pk=prof.pk)
     return render(request, 'core/prof_detail.html', {'prof': prof})
 
 def course_detail(request, slug):

@@ -6,7 +6,7 @@ from .models import Review
 
 from django.http import JsonResponse
 from django.db.models import Q
-from core.models import Course, Professor, Section
+from core.models import Course, Prof, Section
 
 # Create your views here.
 
@@ -66,7 +66,7 @@ def get_professors_for_course(request):
 
     # ค้นหาอาจารย์จาก Section ที่เกี่ยวข้องกับ Course ID นี้
     # .distinct() เพื่อไม่ให้มีชื่ออาจารย์ซ้ำ
-    professors = Professor.objects.filter(
+    professors = Prof.objects.filter(
         section__course_id=course_id
     ).distinct().order_by('name')
 

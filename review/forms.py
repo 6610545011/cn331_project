@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError # <-- เพิ่ม import นี้
-from .models import Review, Course, Professor, Section
+from .models import Review, Course, Prof, Section
 
 class ReviewForm(forms.ModelForm):
     # --- เปลี่ยนฟิลด์ section ตรงนี้ ---
@@ -21,20 +21,20 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         # เอา 'section' ออกจาก fields นี้ เพราะเรา override ไปแล้ว
-        fields = ['course', 'professor', 'rating', 'header', 'body', 'incognito']
+        fields = ['course', 'prof', 'rating', 'head', 'body', 'incognito']
         
         labels = {
             'course': 'รายวิชา',
-            'professor': 'อาจารย์ผู้สอน',
-            'header': 'หัวข้อรีวิว',
+            'prof': 'อาจารย์ผู้สอน',
+            'head': 'หัวข้อรีวิว',
             'body': 'เนื้อหารีวิว',
             'incognito': 'ไม่แสดงตัวตน (Incognito)',
         }
         # ... widgets อื่นๆ เหมือนเดิม ...
         widgets = {
             'course': forms.Select(attrs={'class': 'form-control'}),
-            'professor': forms.Select(attrs={'class': 'form-control'}),
-            'header': forms.TextInput(attrs={
+            'prof': forms.Select(attrs={'class': 'form-control'}),
+            'head': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก ได้ความรู้เต็มๆ"'
             }),
@@ -49,7 +49,7 @@ class ReviewForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # ไม่ต้องตั้งค่า choices ให้ section แล้ว
-        self.fields['professor'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
+        self.fields['prof'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
 
     # --- เพิ่มเมธอด clean() เพื่อแปลง section number เป็น object ---
     def clean(self):

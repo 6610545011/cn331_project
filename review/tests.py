@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from core.models import Course, Professor, Section, Campus, RoomMSTeam
+from core.models import Course, Prof, Section, Campus, RoomMSTeam
 from .models import Review
 
 User = get_user_model()
@@ -14,7 +14,7 @@ class WriteReviewViewTestCase(TestCase):
         self.campus = Campus.objects.create(name='Test Campus')
         self.room = RoomMSTeam.objects.create(name='TestMS', campus=self.campus)
         self.course = Course.objects.create(code='CS331', name='Software Engineering')
-        self.professor = Professor.objects.create(
+        self.professor = Prof.objects.create(
             name='Dr. Test',
             campus=self.campus,
             room=self.room,
@@ -111,13 +111,13 @@ class ReviewAPIsTestCase(TestCase):
         self.room = RoomMSTeam.objects.create(name='API Room', campus=self.campus)
         self.course1 = Course.objects.create(code='CS101', name='Intro to CS')
         self.course2 = Course.objects.create(code='MA202', name='Calculus II') # Add another course for testing
-        self.prof1 = Professor.objects.create(
+        self.prof1 = Prof.objects.create(
             name='Prof. Turing',
             campus=self.campus,
             room=self.room,
             description='API test professor.'
         )
-        self.prof2 = Professor.objects.create( # Add another professor
+        self.prof2 = Prof.objects.create( # Add another professor
             name='Prof. Knuth',
             campus=self.campus,
             room=self.room,

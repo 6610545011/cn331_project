@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+AUTH_USER_MODEL = 'users.User'
 
 # If you need to define other models in this file, add them here
 # Otherwise, this file can be empty or deleted

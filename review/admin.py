@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from .models import Review, Bookmark, ReviewVote, ReviewReport
+from .models import Review, Bookmark, ReviewUpvote, Report
 
 class AutoUserAdminMixin:
     exclude = ('user',)
@@ -20,23 +20,23 @@ class AutoUserAdminMixin:
 
 @admin.register(Review)
 class ReviewAdmin(AutoUserAdminMixin, admin.ModelAdmin):
-    list_display = ('id', '__str__', 'course', 'section', 'professor', 'rating', 'created_at')
-    raw_id_fields = ('course', 'section', 'professor')
+    list_display = ('id', '__str__', 'course', 'prof', 'rating', 'date_created')
+    raw_id_fields = ('course', 'prof')
 
 
 @admin.register(Bookmark)
 class BookmarkAdmin(AutoUserAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'course', 'section', 'review', 'created_at')
-    raw_id_fields = ('course', 'section', 'review')
+    list_display = ('id', 'user', 'course', 'review')
+    raw_id_fields = ('course', 'review')
 
 
-@admin.register(ReviewVote)
+@admin.register(ReviewUpvote)
 class ReviewVoteAdmin(AutoUserAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'review', 'user', 'vote_type', 'created_at')
+    list_display = ('id', 'review', 'user', 'vote_type')
     raw_id_fields = ('review',)
 
 
-@admin.register(ReviewReport)
+@admin.register(Report)
 class ReviewReportAdmin(AutoUserAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'review', 'user', 'status', 'reported_at')
+    list_display = ('id', 'review', 'user')
     raw_id_fields = ('review',)

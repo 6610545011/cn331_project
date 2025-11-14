@@ -42,12 +42,12 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "professor",
+                    "prof",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to="core.professor",
+                        to="core.prof",
                     ),
                 ),
                 (
