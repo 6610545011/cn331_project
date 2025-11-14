@@ -73,7 +73,11 @@ class Bookmark(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='bookmarked_by')
 
     class Meta:
-        unique_together = (('user', 'review'), ('user', 'course')) 
+        # A user can bookmark a specific review only once.
+        # A user can bookmark a course (without a specific review) only once.
+        # This handles both cases: bookmarking a review (review_id is not null)
+        # and bookmarking a course (review_id is null).
+        unique_together = ('user', 'review', 'course')
         
     def __str__(self):
         target = self.review if self.review else self.course.course_code

@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
+from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
-from .forms import ReviewForm
-from .models import Review
+from .forms import ReviewForm, ReportForm
+from .models import Review, Bookmark, Report
 
 
 @login_required
@@ -73,3 +74,50 @@ def ajax_get_sections(request):
     
     results = [{'id': s.id, 'text': f"Section {s.section_number}"} for s in sections]
     return JsonResponse({'sections': results})
+
+
+@login_required
+@require_POST
+def toggle_bookmark(request, review_id):
+    """
+    Toggles a bookmark on a review for the current user.
+    Creates a bookmark if it doesn't exist, deletes it if it does.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user,
+        course=review.course,
+        review=review
+    )
+
+    if not created:
+        bookmark.delete()
+        return JsonResponse({'status': 'ok', 'bookmarked': False})
+    
+    return JsonResponse({'status': 'ok', 'bookmarked': True})
+
+
+@login_required
+@require_POST
+def report_review(request, review_id):
+    """
+    Handles the submission of a report for a review.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    form = ReportForm(request.POST)
+
+    if form.is_valid():
+        # Check if the user has already reported this review
+        if Report.objects.filter(user=request.user, review=review).exists():
+            return JsonResponse({'status': 'error', 'message': 'You have already reported this review.'}, status=409)
+
+        report = form.save(commit=False)
+        report.user = request.user
+        report.review = review
+        report.save()
+        return JsonResponse({'status': 'ok', 'message': 'Thank you for your report. We will review it shortly.'})
+    
+    # Extract form errors to send back as JSON
+    errors = form.errors.as_json()
+    return JsonResponse({'status': 'error', 'errors': errors}, status=400)

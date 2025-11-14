@@ -1,6 +1,7 @@
 from django import forms
 from .models import Review, Tag
 from core.models import Course, Prof, Section
+from .models import Report
 
 class ReviewForm(forms.ModelForm):
     # 1. กำหนด Field ทั้งหมดให้ไม่บังคับเลือก (required=False) ในตอนแรก
@@ -127,5 +128,21 @@ class ReviewForm(forms.ModelForm):
 
         if commit:
             instance.save()
-            # self.save_m2m() จะถูกเรียกใน view หลังจากนี้
+
         return instance
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Please provide a reason for reporting this review...'
+            }),
+        }
+        labels = {
+            'comment': 'Reason for reporting',
+        }

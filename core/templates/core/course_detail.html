@@ -13,21 +13,49 @@
     <div class="detail-header">
         <h1>{{ course.course_code }} - {{ course.course_name }}</h1>
         <p class="sub-heading">{{ course.description }}</p>
+        <p class="sub-heading">
+            <strong>Taught by:</strong>
+            {% for prof in course.all_professors %}
+                <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Instructor information not available.
+            {% endfor %}
+        </p>
     </div>
 
     <div class="detail-content">
         <h3>Sections</h3>
         <div class="card-list">
-            {% for section in course.section_set.all %}
+            {% for section in course.sections.all %}
                 <div class="info-card">
-                    <h4>Section {{ forloop.counter }}</h4>
-                    <p><strong>Professor:</strong> <a href="{% url 'core:professor_detail' pk=section.professor.pk %}">{{ section.professor.name }}</a></p>
-                    <p><strong>Campus:</strong> {{ section.campus.name }}</p>
-                    <p><strong>Time:</strong> {{ section.date_time }}</p>
-                    <p><strong>Location:</strong> {{ section.location }} ({{ section.room.name }})</p>
+                    <h4>Section {{ section.section_number }}</h4>
+                    <p>
+                        <strong>Professor(s):</strong>
+                        {% for prof in section.teachers.all %}
+                            <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Not assigned
+                        {% endfor %}
+                    </p>
+                    {% if section.campus %}<p><strong>Campus:</strong> {{ section.campus.name }}</p>{% endif %}
+                    {% if section.date_time %}<p><strong>Time:</strong> {{ section.date_time }}</p>{% endif %}
+                    {% if section.location and section.room %}<p><strong>Location:</strong> {{ section.location }} ({{ section.room.name }})</p>{% endif %}
                 </div>
             {% empty %}
                 <p>No sections available for this course.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
+        <div class="detail-content">
+        <h3>Reviews</h3>
+        <div class="card-list">
+            {% for review in course.reviews.all %}
+                {% comment %} Use the reusable review block template {% endcomment %}
+                {% include "review/includes/review_block.html" with review=review %}
+            {% empty %}
+                <p>No reviews for this course yet. Be the first to write one!</p>
             {% endfor %}
         </div>
     </div>
