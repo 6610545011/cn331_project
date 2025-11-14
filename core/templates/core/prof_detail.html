@@ -58,7 +58,7 @@
         <div class="detail-content">
         <h3>Reviews</h3>
         <div class="card-list">
-            {% for review in prof.reviews.all %}
+            {% for review in reviews %}
                 {% comment %} Use the reusable review block template {% endcomment %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}

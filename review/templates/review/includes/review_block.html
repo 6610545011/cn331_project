@@ -2,18 +2,60 @@
     This template expects a 'review' object in the context.
 {% endcomment %}
 <div class="info-card review-card">
-    <h4>{{ review.head }}</h4>
+    <div class="review-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h4>{{ review.head }}</h4>
+        {% if user.is_authenticated %}
+        <button class="btn btn-sm bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
+                data-review-id="{{ review.id }}" 
+                data-url="{% url 'review:toggle_bookmark' review.id %}">
+            {% if review.is_bookmarked %}
+            <i class="fas fa-bookmark"></i> Bookmarked
+            {% else %}
+            <i class="far fa-bookmark"></i> Bookmark
+            {% endif %}
+        </button>
+        {% endif %}
+    </div>
     <p class="review-rating"><strong>Rating:</strong> {{ review.rating }}/5</p>
     <p>{{ review.body }}</p>
     <div class="review-meta">
         <span>
             By
             {% if review.incognito %}
-                Anonymous
+            Anonymous
             {% else %}
-                {{ review.user.get_full_name|default:review.user.email }}
+            {{ review.user.get_full_name|default:review.user.username }}
             {% endif %}
             on {{ review.date_created|date:"M d, Y" }}
         </span>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Use event delegation to handle clicks on all bookmark buttons
+    document.body.addEventListener('click', function(e) {
+        if (e.target && e.target.matches('.bookmark-btn')) {
+            e.preventDefault();
+            const button = e.target;
+            const url = button.dataset.url;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Make sure csrf_token is available
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    button.classList.toggle('btn-primary');
+                    button.classList.toggle('btn-outline-primary');
+                    button.innerHTML = data.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+                }
+            })
+            .catch(error => console.error('Error toggling bookmark:', error));
+        }
+    });
+});
+</script>

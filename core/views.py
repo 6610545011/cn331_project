@@ -1,9 +1,10 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from .models import Prof, Course, Section
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
+from review.models import Bookmark
 
 def homepage_view(request):
     return render(request, 'core/homepage.html')
@@ -54,17 +55,39 @@ def search(request):
     return render(request, 'core/search.html', context)
 
 def prof_detail(request, pk):
+    # Annotate reviews with bookmark status for the current user
+    bookmarked_reviews = Bookmark.objects.none()
+    if request.user.is_authenticated:
+        bookmarked_reviews = Bookmark.objects.filter(
+            user=request.user,
+            review=OuterRef('pk')
+        )
+
     # Use get_object_or_404 for a direct lookup, which is much more efficient.
     prof = get_object_or_404(
-        Prof.objects.prefetch_related('teaching_sections__course', 'reviews__user'), 
+        Prof.objects.prefetch_related('teaching_sections__course'), 
         pk=pk
     )
-    return render(request, 'core/prof_detail.html', {'prof': prof})
+
+    reviews = prof.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+
+    return render(request, 'core/prof_detail.html', {'prof': prof, 'reviews': reviews})
 
 def course_detail(request, pk):
+    # Annotate reviews with bookmark status for the current user
+    bookmarked_reviews = Bookmark.objects.none()
+    if request.user.is_authenticated:
+        bookmarked_reviews = Bookmark.objects.filter(
+            user=request.user,
+            review=OuterRef('pk')
+        )
+
     # Simplified to a direct primary key lookup.
     course = get_object_or_404(
-        Course.objects.prefetch_related('sections__teachers', 'sections__campus'), 
+        Course.objects.prefetch_related('sections__teachers', 'sections__campus'),
         pk=pk
     )
-    return render(request, 'core/course_detail.html', {'course': course})
+    
+    reviews = course.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+
+    return render(request, 'core/course_detail.html', {'course': course, 'reviews': reviews})

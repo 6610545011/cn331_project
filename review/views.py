@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
+from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
 from .forms import ReviewForm
-from .models import Review
+from .models import Review, Bookmark
 
 
 @login_required
@@ -68,3 +69,25 @@ def ajax_get_sections(request):
     sections = Section.objects.filter(course_id=course_id).order_by('section_number')
     results = [{'id': s.id, 'text': f"Section {s.section_number}"} for s in sections]
     return JsonResponse({'sections': results})
+
+
+@login_required
+@require_POST
+def toggle_bookmark(request, review_id):
+    """
+    Toggles a bookmark on a review for the current user.
+    Creates a bookmark if it doesn't exist, deletes it if it does.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user,
+        course=review.course,
+        review=review
+    )
+
+    if not created:
+        bookmark.delete()
+        return JsonResponse({'status': 'ok', 'bookmarked': False})
+    
+    return JsonResponse({'status': 'ok', 'bookmarked': True})

@@ -12,4 +12,5 @@ urlpatterns = [
     path('ajax/search-courses/', views.ajax_search_courses, name='ajax_search_courses'),
     path('ajax/get-professors/', views.ajax_get_professors, name='ajax_get_professors'),
     path('ajax/get-sections/', views.ajax_get_sections, name='ajax_get_sections'),
+    path('bookmark/<int:review_id>/', views.toggle_bookmark, name='toggle_bookmark'),
 ]
