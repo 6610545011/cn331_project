@@ -1,7 +1,8 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef, Sum, Value, IntegerField
 from .models import Prof, Course, Section
+from django.db.models.functions import Coalesce
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
 from review.models import Bookmark
@@ -69,7 +70,10 @@ def prof_detail(request, pk):
         pk=pk
     )
 
-    reviews = prof.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+    reviews = prof.reviews.select_related('user').annotate(
+        is_bookmarked=Exists(bookmarked_reviews),
+        score=Coalesce(Sum('votes__vote_type'), Value(0), output_field=IntegerField())
+    )
 
     return render(request, 'core/prof_detail.html', {'prof': prof, 'reviews': reviews})
 
@@ -88,6 +92,9 @@ def course_detail(request, pk):
         pk=pk
     )
     
-    reviews = course.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+    reviews = course.reviews.select_related('user').annotate(
+        is_bookmarked=Exists(bookmarked_reviews),
+        score=Coalesce(Sum('votes__vote_type'), Value(0), output_field=IntegerField())
+    )
 
     return render(request, 'core/course_detail.html', {'course': course, 'reviews': reviews})
