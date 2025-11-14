@@ -9,6 +9,13 @@ class Course(models.Model):
     description = models.TextField(blank=True)
     credit = models.IntegerField()
 
+    @property
+    def all_professors(self):
+        """
+        Returns a queryset of all unique professors teaching any section of this course.
+        """
+        return Prof.objects.filter(teaching_sections__course=self).distinct()
+
     def __str__(self):
         return f"{self.course_code} - {self.course_name}"
 

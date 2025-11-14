@@ -39,10 +39,13 @@
         {# --- ส่วนที่ 1: รายการ Section ที่สอน --- #}
         <h3>Sections Taught</h3>
         <div class="card-list">
-            {% for section in prof.section_set.all %}
+            {% for section in prof.teaching_sections.all %}
                 <div class="info-card">
-                    <h4>{{ section.course.code }} - {{ section.course.name }}</h4>
-                    <p><strong>Section:</strong> {{ section.section_number }}</p>
+                    <h4><a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }}</a></h4>
+                    <p>
+                        <strong>Section:</strong> {{ section.section_number }}
+                        {% if section.campus %}| <strong>Campus:</strong> {{ section.campus.name }}{% endif %}
+                    </p>
                 </div>
             {% empty %}
                 <p>This professor is not currently assigned to any sections.</p>
