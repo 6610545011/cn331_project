@@ -1,7 +1,7 @@
 from django import forms
 from .models import Review, Tag
 from core.models import Course, Prof, Section
-from .models import Report
+from .models import Report, ReviewUpvote
 
 class ReviewForm(forms.ModelForm):
     # 1. กำหนด Field ทั้งหมดให้ไม่บังคับเลือก (required=False) ในตอนแรก
@@ -145,4 +145,18 @@ class ReportForm(forms.ModelForm):
         }
         labels = {
             'comment': 'Reason for reporting',
+        }
+
+class ReviewUpvoteForm(forms.ModelForm):
+    """
+    Form for upvoting or downvoting a review.
+    The 'vote_type' is the only field exposed to the user,
+    and it will be validated to be either 1 (upvote) or -1 (downvote).
+    """
+    class Meta:
+        model = ReviewUpvote
+        fields = ['vote_type']
+        widgets = {
+            # The vote_type will be submitted via a button, so a hidden input is suitable.
+            'vote_type': forms.HiddenInput(),
         }
