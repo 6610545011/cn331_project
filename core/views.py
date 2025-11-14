@@ -15,6 +15,11 @@ def about_view(request):
 
 def search(request):
     query = request.GET.get('q', '')
+    sort_by = request.GET.get('sort_by', 'alphabetical') # Default to 'alphabetical'
+    order = request.GET.get('order', 'asc') # Default to 'asc'
+
+    order_prefix = '-' if order == 'desc' else ''
+
     if query:
         # Use __icontains for broad, case-insensitive matching.
         professors = Prof.objects.filter(
@@ -38,24 +43,36 @@ def search(request):
             Q(head__icontains=query) |
             Q(body__icontains=query)
         ).select_related('course', 'prof', 'user').distinct()
+
     else:
         # If no query is provided, return all objects.
         professors = Prof.objects.all()
         courses = Course.objects.all()
         sections = Section.objects.select_related('course').prefetch_related('teachers').all()
         reviews = Review.objects.select_related('course', 'prof', 'user').all()
-
+    
+    # Apply sorting to individual querysets
+    if sort_by == 'alphabetical':
+        professors = professors.order_by(f'{order_prefix}prof_name')
+        courses = courses.order_by(f'{order_prefix}course_name')
+        sections = sections.order_by(f'{order_prefix}course__course_name', f'{order_prefix}section_number')
+        reviews = reviews.order_by(f'{order_prefix}head')
 
     # Combine all querysets into a single list for the "All" tab
+    # The individual querysets are already sorted, so we just need to merge them.
+    # The lambda sort here is a fallback and helps group similar items if not perfectly pre-sorted.
     all_results = sorted(
         list(chain(professors, courses, sections, reviews)),
         key=lambda instance: getattr(instance, 'prof_name', 
                                  getattr(instance, 'course_name', 
-                                         getattr(instance, 'head', str(instance))))
+                                         getattr(instance, 'head', str(instance)))),
+        reverse=(order == 'desc')
     )
 
     context = {
         'query': query,
+        'sort_by': sort_by,
+        'order': order,
         'results': all_results, # This is for the "All" tab, which is not currently implemented in the template but the logic is here.
         'professors': professors,
         'courses': courses,

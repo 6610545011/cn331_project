@@ -15,8 +15,22 @@
 
     {# --- Search Bar --- #}
     <form method="get" action="{% url 'core:search' %}" class="search-form">
-        <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
-        <button type="submit">Search</button>
+        <div class="search-input-group">
+            <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
+            <button type="submit">Search</button>
+        </div>
+        <div class="sort-controls">
+            <select name="sort_by" id="sort-by-select">
+                <option value="alphabetical" {% if sort_by == 'alphabetical' %}selected{% endif %}>Sort by Alphabet</option>
+                {# Add other sort options here in the future #}
+            </select>
+            <select name="order" id="order-select">
+                <option value="asc" {% if order == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if order == 'desc' %}selected{% endif %}>Descending</option>
+            </select>
+            {# Hidden submit button for JS, or can be styled as a visible "Apply" button #}
+            <button type="submit" style="display: none;">Apply</button>
+        </div>
     </form>
 
     {% if results %}
@@ -81,11 +95,11 @@
                 {% if reviews %}
                 <div class="result-category">
                     <h3>Reviews</h3>
-                    <div class="card-list">
+                    <ul class="result-list card-list">
                         {% for review in reviews %}
-                            {% include "review/includes/review_block.html" with review=review %}
+                            <li class="result-item">{% include "review/includes/review_block.html" with review=review %}</li>
                         {% endfor %}
-                    </div>
+                    </ul>
                 </div>
                 {% endif %}
             </div>
@@ -143,11 +157,11 @@
             {# Panel for "Reviews" #}
             {% if reviews %}
             <div id="reviews-results" class="tab-panel">
-                <div class="card-list">
+                <ul class="result-list card-list">
                     {% for review in reviews %}
-                        {% include "review/includes/review_block.html" with review=review %}
+                        <li class="result-item">{% include "review/includes/review_block.html" with review=review %}</li>
                     {% endfor %}
-                </div>
+                </ul>
             </div>
             {% endif %}
         </div>
@@ -187,6 +201,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Auto-submit form when sorting changes
+    const sortBySelect = document.getElementById('sort-by-select');
+    const orderSelect = document.getElementById('order-select');
+    const searchForm = document.querySelector('.search-form');
+
+    if (sortBySelect && orderSelect && searchForm) {
+        sortBySelect.addEventListener('change', () => searchForm.submit());
+        orderSelect.addEventListener('change', () => searchForm.submit());
+    }
 });
 </script>
 {% endblock extra_scripts %}
