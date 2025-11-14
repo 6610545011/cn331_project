@@ -11,7 +11,7 @@
 {% block content %}
 <div class="detail-container">
     <div class="detail-header">
-        <h1>{{ course.code }} - {{ course.name }}</h1>
+        <h1>{{ course.course_code }} - {{ course.course_name }}</h1>
         <p class="sub-heading">{{ course.description }}</p>
     </div>
 
@@ -21,7 +21,7 @@
             {% for section in course.section_set.all %}
                 <div class="info-card">
                     <h4>Section {{ forloop.counter }}</h4>
-                    <p><strong>Professor:</strong> <a href="{% url 'core:professor_detail' slug=section.professor.name|unicode_slugify %}">{{ section.professor.name }}</a></p>
+                    <p><strong>Professor:</strong> <a href="{% url 'core:professor_detail' pk=section.professor.pk %}">{{ section.professor.name }}</a></p>
                     <p><strong>Campus:</strong> {{ section.campus.name }}</p>
                     <p><strong>Time:</strong> {{ section.date_time }}</p>
                     <p><strong>Location:</strong> {{ section.location }} ({{ section.room.name }})</p>

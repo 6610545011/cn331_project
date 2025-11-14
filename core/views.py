@@ -1,7 +1,6 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, F
-from django.utils.text import slugify
+from django.db.models import Q
 from .models import Prof, Course, Section
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
@@ -21,70 +20,51 @@ def search(request):
     all_results = []
 
     if query:
-        # Use __iregex for better Unicode character support (including Thai)
+        # Use __icontains for broad, case-insensitive matching.
         professors = Prof.objects.filter(
-            Q(name__iregex=query) |
-            Q(description__iregex=query)
+            Q(prof_name__icontains=query) |
+            Q(description__icontains=query)
         ).distinct()
+
         courses = Course.objects.filter(
-            Q(code__iregex=query) |
-            Q(name__iregex=query) |
-            Q(description__iregex=query)
+            Q(course_code__icontains=query) |
+            Q(course_name__icontains=query) |
+            Q(description__icontains=query)
         ).distinct()
+
         sections = Section.objects.filter(
-            Q(course__code__iregex=query) |
-            Q(course__name__iregex=query) |
-            Q(professor__name__iregex=query)
-        ).distinct()
+            Q(course__course_code__icontains=query) |
+            Q(course__course_name__icontains=query) |
+            Q(teachers__prof_name__icontains=query)
+        ).select_related('course').prefetch_related('teachers').distinct()
 
         # Combine all querysets into a single list for the "All" tab
         all_results = sorted(
             list(chain(professors, courses, sections)),
-            key=lambda instance: getattr(instance, 'number', getattr(instance, 'name', ''))
+            key=lambda instance: getattr(instance, 'prof_name', getattr(instance, 'course_name', str(instance)))
         )
 
     context = {
         'query': query,
-        'results': all_results,
+        'results': all_results, # This is for the "All" tab, which is not currently implemented in the template but the logic is here.
         'professors': professors,
         'courses': courses,
         'sections': sections,
     }
     return render(request, 'core/search.html', context)
 
-
-
-def prof_detail(request, slug):
-    # This is inefficient. Let's find the professor whose slugified name matches.
-    # A dedicated slug field on the model would be a more performant solution.
-    # Using allow_unicode=True to correctly handle non-ASCII characters.
-    try:
-        prof = next(p for p in Prof.objects.all() if slugify(p.name, allow_unicode=True) == slug)
-    except StopIteration:
-        raise Http404("Professor not found or slug could not be matched.")
-    
-    # Pre-fetch related data for the found professor to optimize queries
-    prof = Prof.objects.prefetch_related('section_set__course', 'review_set__user').get(pk=prof.pk)
+def prof_detail(request, pk):
+    # Use get_object_or_404 for a direct lookup, which is much more efficient.
+    prof = get_object_or_404(
+        Prof.objects.prefetch_related('teaching_sections__course', 'reviews__user'), 
+        pk=pk
+    )
     return render(request, 'core/prof_detail.html', {'prof': prof})
 
-def course_detail(request, slug):
-    # First, try to find the course by its code (case-insensitive).
-    course = Course.objects.filter(code__iexact=slug).first()
-
-    # If not found by code, try to find it by its slugified name.
-    if not course:
-        try:
-            # Find the first course where its slugified name matches the provided slug.
-            found_by_name = next(c for c in Course.objects.all() if slugify(c.name, allow_unicode=True) == slug)
-            # If found, permanently redirect to the URL with the course code.
-            return HttpResponsePermanentRedirect(redirect('core:course_detail', slug=found_by_name.code).url)
-        except StopIteration:
-            # If not found by name either, raise a 404.
-            raise Http404("Course not found.")
-
-    # If we found the course (by code), prefetch related data and render the page.
-    try:
-        course = Course.objects.prefetch_related('section_set__professor', 'section_set__campus', 'section_set__room').get(pk=course.pk)
-        return render(request, 'core/course_detail.html', {'course': course})
-    except Course.DoesNotExist:
-        raise Http404("Course not found.")
+def course_detail(request, pk):
+    # Simplified to a direct primary key lookup.
+    course = get_object_or_404(
+        Course.objects.prefetch_related('sections__teachers', 'sections__campus'), 
+        pk=pk
+    )
+    return render(request, 'core/course_detail.html', {'course': course})

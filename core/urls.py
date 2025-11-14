@@ -8,6 +8,6 @@ urlpatterns = [
     path('', homepage_view, name='homepage'),
     path('about/', about_view, name='about'),
     path('search/', search, name='search'),
-    path('professors/<str:slug>/', prof_detail, name='professor_detail'),
-    path('courses/<str:slug>/', course_detail, name='course_detail'),
+    path('professors/<int:pk>/', prof_detail, name='professor_detail'),
+    path('courses/<int:pk>/', course_detail, name='course_detail'),
 ]
