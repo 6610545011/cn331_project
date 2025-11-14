@@ -1,15 +1,12 @@
-# review/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseBadRequest, Http404
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q
 from django.views.decorators.http import require_POST
-from django.db import transaction
-from django.db.models import Q, Sum
-
-from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
-from .models import Review, Bookmark, Report, ReviewUpvote
-from core.models import Course, Section, Prof
+from core.models import Course, Prof, Section
+from .forms import ReviewForm, ReportForm
+from .models import Review, Bookmark, Report
 
 
 @login_required
@@ -78,27 +75,45 @@ def ajax_get_sections(request):
 @login_required
 @require_POST
 def toggle_bookmark(request, review_id):
-    # Placeholder for your bookmark logic
-    review = get_object_or_404(Review, pk=review_id)
-    # ... your logic here ...
+    """
+    Toggles a bookmark on a review for the current user.
+    Creates a bookmark if it doesn't exist, deletes it if it does.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user,
+        course=review.course,
+        review=review
+    )
+
+    if not created:
+        bookmark.delete()
+        return JsonResponse({'status': 'ok', 'bookmarked': False})
+    
     return JsonResponse({'status': 'ok', 'bookmarked': True})
 
 
 @login_required
 @require_POST
 def report_review(request, review_id):
-    # Placeholder for your report logic
-    review = get_object_or_404(Review, pk=review_id)
-    # ... your logic here ...
-    return JsonResponse({'status': 'ok', 'message': 'Report submitted.'})
+    """
+    Handles the submission of a report for a review.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    form = ReportForm(request.POST)
 
+    if form.is_valid():
+        # Check if the user has already reported this review
+        if Report.objects.filter(user=request.user, review=review).exists():
+            return JsonResponse({'status': 'error', 'message': 'You have already reported this review.'}, status=409)
 
-# Placeholder for your AJAX views
-def ajax_search_courses(request):
-    return JsonResponse({'results': []})
-
-def ajax_get_professors(request):
-    return JsonResponse({'professors': []})
-
-def ajax_get_sections_for_course(request):
-    return JsonResponse({'sections': []})
+        report = form.save(commit=False)
+        report.user = request.user
+        report.review = review
+        report.save()
+        return JsonResponse({'status': 'ok', 'message': 'Thank you for your report. We will review it shortly.'})
+    
+    # Extract form errors to send back as JSON
+    errors = form.errors.as_json()
+    return JsonResponse({'status': 'error', 'errors': errors}, status=400)

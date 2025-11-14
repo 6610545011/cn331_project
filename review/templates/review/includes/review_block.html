@@ -33,21 +33,6 @@
             {% endif %}
             on {{ review.date_created|date:"M d, Y" }}
         </span>
-        <span class="review-actions">
-            {% if user.is_authenticated %}
-            <form class="vote-form d-inline-block" method="post" data-url="{% url 'review:vote_review' review.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="vote_type" class="vote-type-input">
-                <button type="submit" class="btn btn-sm btn-outline-success vote-btn" data-vote="1">
-                    <i class="fas fa-thumbs-up"></i>
-                </button>
-                <button type="submit" class="btn btn-sm btn-outline-danger vote-btn" data-vote="-1">
-                    <i class="fas fa-thumbs-down"></i>
-                </button>
-                <strong class="vote-score ms-2" data-review-id="{{ review.id }}">{{ review.score|default:0 }}</strong>
-            </form>
-            {% endif %}
-        </span>
     </div>
 </div>
 {% if user.is_authenticated %}
@@ -84,40 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use event delegation for clicks
     document.body.addEventListener('click', function(e) {
         const bookmarkBtn = e.target.closest('.bookmark-btn');
-        const voteBtn = e.target.closest('.vote-btn');
-
-        if (voteBtn) {
-            e.preventDefault();
-            const form = voteBtn.closest('.vote-form');
-            const voteType = voteBtn.dataset.vote;
-            form.querySelector('.vote-type-input').value = voteType;
-
-            const formData = new FormData(form);
-            const url = form.dataset.url;
-            const reviewId = url.split('/')[3]; // A bit brittle, but works for /review/vote/ID/
-            const scoreElement = document.querySelector(`.vote-score[data-review-id="${reviewId}"]`);
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'ok') {
-                    scoreElement.textContent = data.new_score;
-                    // You could also add visual feedback here, like highlighting the clicked button
-                } else {
-                    // Optionally, display an error message to the user
-                    console.error('Vote error:', data.message);
-                    alert(data.message); // Simple alert for now
-                }
-            })
-            .catch(error => console.error('Error submitting vote:', error));
-        }
-
         if (bookmarkBtn) {
             e.preventDefault();
             const url = bookmarkBtn.dataset.url;
