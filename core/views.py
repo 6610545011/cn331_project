@@ -15,11 +15,6 @@ def about_view(request):
 
 def search(request):
     query = request.GET.get('q', '')
-    professors = Prof.objects.none()
-    courses = Course.objects.none()
-    sections = Section.objects.none()
-    all_results = []
-
     if query:
         # Use __icontains for broad, case-insensitive matching.
         professors = Prof.objects.filter(
@@ -38,12 +33,18 @@ def search(request):
             Q(course__course_name__icontains=query) |
             Q(teachers__prof_name__icontains=query)
         ).select_related('course').prefetch_related('teachers').distinct()
+    else:
+        # If no query is provided, return all objects.
+        professors = Prof.objects.all()
+        courses = Course.objects.all()
+        sections = Section.objects.select_related('course').prefetch_related('teachers').all()
 
-        # Combine all querysets into a single list for the "All" tab
-        all_results = sorted(
-            list(chain(professors, courses, sections)),
-            key=lambda instance: getattr(instance, 'prof_name', getattr(instance, 'course_name', str(instance)))
-        )
+
+    # Combine all querysets into a single list for the "All" tab
+    all_results = sorted(
+        list(chain(professors, courses, sections)),
+        key=lambda instance: getattr(instance, 'prof_name', getattr(instance, 'course_name', str(instance)))
+    )
 
     context = {
         'query': query,
