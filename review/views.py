@@ -5,8 +5,8 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
-from .forms import ReviewForm
-from .models import Review, Bookmark
+from .forms import ReviewForm, ReportForm
+from .models import Review, Bookmark, Report
 
 
 @login_required
@@ -91,3 +91,28 @@ def toggle_bookmark(request, review_id):
         return JsonResponse({'status': 'ok', 'bookmarked': False})
     
     return JsonResponse({'status': 'ok', 'bookmarked': True})
+
+
+@login_required
+@require_POST
+def report_review(request, review_id):
+    """
+    Handles the submission of a report for a review.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    form = ReportForm(request.POST)
+
+    if form.is_valid():
+        # Check if the user has already reported this review
+        if Report.objects.filter(user=request.user, review=review).exists():
+            return JsonResponse({'status': 'error', 'message': 'You have already reported this review.'}, status=409)
+
+        report = form.save(commit=False)
+        report.user = request.user
+        report.review = review
+        report.save()
+        return JsonResponse({'status': 'ok', 'message': 'Thank you for your report. We will review it shortly.'})
+    
+    # Extract form errors to send back as JSON
+    errors = form.errors.as_json()
+    return JsonResponse({'status': 'error', 'errors': errors}, status=400)

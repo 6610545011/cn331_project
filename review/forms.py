@@ -3,6 +3,7 @@
 from django import forms
 from .models import Review
 from core.models import Course, Prof, Section
+from .models import Report
 
 class ReviewForm(forms.ModelForm):
     course = forms.ModelChoiceField(
@@ -79,3 +80,19 @@ class ReviewForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Please provide a reason for reporting this review...'
+            }),
+        }
+        labels = {
+            'comment': 'Reason for reporting',
+        }
