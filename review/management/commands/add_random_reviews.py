@@ -24,7 +24,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **kwargs):
         total = kwargs['total']
-        fake = Faker()
+        fake = Faker('th_TH')
 
         # --- Fetch existing data ---
         users = list(User.objects.all())
