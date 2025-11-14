@@ -4,7 +4,7 @@ from django.db.models import Q, Exists, OuterRef
 from .models import Prof, Course, Section
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
-from review.models import Bookmark
+from review.models import Bookmark, Review
 
 def homepage_view(request):
     return render(request, 'core/homepage.html')
@@ -33,17 +33,25 @@ def search(request):
             Q(course__course_name__icontains=query) |
             Q(teachers__prof_name__icontains=query)
         ).select_related('course').prefetch_related('teachers').distinct()
+
+        reviews = Review.objects.filter(
+            Q(head__icontains=query) |
+            Q(body__icontains=query)
+        ).select_related('course', 'prof', 'user').distinct()
     else:
         # If no query is provided, return all objects.
         professors = Prof.objects.all()
         courses = Course.objects.all()
         sections = Section.objects.select_related('course').prefetch_related('teachers').all()
+        reviews = Review.objects.select_related('course', 'prof', 'user').all()
 
 
     # Combine all querysets into a single list for the "All" tab
     all_results = sorted(
-        list(chain(professors, courses, sections)),
-        key=lambda instance: getattr(instance, 'prof_name', getattr(instance, 'course_name', str(instance)))
+        list(chain(professors, courses, sections, reviews)),
+        key=lambda instance: getattr(instance, 'prof_name', 
+                                 getattr(instance, 'course_name', 
+                                         getattr(instance, 'head', str(instance))))
     )
 
     context = {
@@ -52,6 +60,7 @@ def search(request):
         'professors': professors,
         'courses': courses,
         'sections': sections,
+        'reviews': reviews,
     }
     return render(request, 'core/search.html', context)
 

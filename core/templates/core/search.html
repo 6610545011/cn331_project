@@ -26,6 +26,7 @@
             {% if professors %}<a class="tab-link" data-target="#professors-results">Professors ({{ professors.count }})</a>{% endif %}
             {% if courses %}<a class="tab-link" data-target="#courses-results">Courses ({{ courses.count }})</a>{% endif %}
             {% if sections %}<a class="tab-link" data-target="#sections-results">Sections ({{ sections.count }})</a>{% endif %}
+            {% if reviews %}<a class="tab-link" data-target="#reviews-results">Reviews ({{ reviews.count }})</a>{% endif %}
         </div>
 
         {# --- Tab Content --- #}
@@ -74,6 +75,17 @@
                             </li>
                         {% endfor %}
                     </ul>
+                </div>
+                {% endif %}
+
+                {% if reviews %}
+                <div class="result-category">
+                    <h3>Reviews</h3>
+                    <div class="card-list">
+                        {% for review in reviews %}
+                            {% include "review/includes/review_block.html" with review=review %}
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
             </div>
@@ -125,6 +137,17 @@
                         </li>
                     {% endfor %}
                 </ul>
+            </div>
+            {% endif %}
+
+            {# Panel for "Reviews" #}
+            {% if reviews %}
+            <div id="reviews-results" class="tab-panel">
+                <div class="card-list">
+                    {% for review in reviews %}
+                        {% include "review/includes/review_block.html" with review=review %}
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
         </div>
