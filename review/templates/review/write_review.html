@@ -12,7 +12,6 @@
     <div class="review-form-container">
         <h1>เขียนรีวิวรายวิชา</h1>
         
-        {# แสดงข้อความ error ทั่วไป (เช่น "ไม่พบ Section") ที่ด้านบนของฟอร์ม #}
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {% for error in form.non_field_errors %}
@@ -30,7 +29,7 @@
                 {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
             </div>
 
-            {# ส่วนของ Section จะถูก render เป็น text input โดยอัตโนมัติจาก forms.py #}
+            <!-- --- แก้ไขตรงนี้: เปลี่ยนจาก section_number เป็น section --- -->
             <div class="form-group">
                 {{ form.section.label_tag }}
                 {{ form.section }}
@@ -43,6 +42,7 @@
                 {% if form.professor.errors %}<div class="errors">{{ form.professor.errors }}</div>{% endif %}
             </div>
 
+            <!-- ... ส่วนที่เหลือของฟอร์มเหมือนเดิม ... -->
             <div class="form-group rating-group">
                 {{ form.rating.label_tag }}
                 <div class="star-rating">
@@ -78,6 +78,8 @@
 </main>
 {% endblock content %}
 
+<!-- ส่วน HTML ของ template ไม่ต้องแก้ไข ใช้โค้ดเดิมได้เลย -->
+
 {% block extra_scripts %}
 <script>
 $(document).ready(function() {
@@ -95,30 +97,64 @@ $(document).ready(function() {
         }
     });
 
-    // --- (แก้ไข) ควบคุมช่อง Section และ อาจารย์ ---
+    // --- อ้างอิง element และตั้งค่าเริ่มต้น ---
     const courseSelect = $('#id_course');
-    const sectionInput = $('#id_section'); // เปลี่ยนชื่อตัวแปรเพื่อความชัดเจน
+    const sectionSelect = $('#id_section');
     const professorSelect = $('#id_professor');
 
-    // เริ่มต้นให้ช่อง section และ อาจารย์เป็น disabled
-    sectionInput.prop('disabled', true);
-    professorSelect.prop('disabled', true);
+    // ทำให้ Section และ Professor เป็น Select2 และปิดการใช้งานไว้ก่อน
+    sectionSelect.select2({ placeholder: '--- กรุณาเลือกรายวิชาก่อน ---' }).prop('disabled', true);
+    professorSelect.select2({ placeholder: '--- กรุณาเลือก Section ก่อน ---', allowClear: true }).prop('disabled', true);
 
-    // Event: เมื่อมีการเลือกรายวิชา
+    // --- Event 1: เมื่อมีการเลือก "รายวิชา" ---
     courseSelect.on('select2:select', function (e) {
         const courseId = e.params.data.id;
 
-        // --- 1. (แก้ไข) เปิดใช้งานช่อง Section Input ---
-        // ไม่ต้องมี AJAX call แล้ว แค่เปิดให้กรอกได้
-        sectionInput.prop('disabled', false);
+        // 1. โหลด Sections (เหมือนเดิม)
+        sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+        $.ajax({
+            url: "{% url 'review:ajax_get_sections' %}",
+            data: { 'course_id': courseId },
+            success: function (data) {
+                sectionSelect.empty().append('<option value="">--- เลือก Section ---</option>');
+                if (data.sections.length > 0) {
+                    data.sections.forEach(function(sec) {
+                        sectionSelect.append(new Option(sec.text, sec.id));
+                    });
+                } else {
+                    sectionSelect.append('<option value="">ไม่พบข้อมูล Section</option>');
+                }
+            }
+        });
 
-        // --- 2. โหลด Professors (เหมือนเดิม) ---
+        // 2. (สำคัญ) Reset ช่องอาจารย์ และปิดการใช้งานไว้ก่อน
+        professorSelect.empty().append('<option value="">--- กรุณาเลือก Section ก่อน ---</option>').prop('disabled', true);
+    });
+
+    // --- Event 2: เมื่อล้างการเลือก "รายวิชา" ---
+    courseSelect.on('select2:unselect', function (e) {
+        // Reset และปิดการใช้งานทั้ง Section และ Professor
+        sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+        professorSelect.empty().append('<option value="">--- กรุณาเลือก Section ก่อน ---</option>').prop('disabled', true);
+    });
+
+    // --- Event 3 (ใหม่): เมื่อมีการเลือก "Section" ---
+    sectionSelect.on('select2:select', function (e) {
+        const sectionId = e.params.data.id;
+
+        // ถ้าไม่มีการเลือก section (เลือกค่าว่าง) ให้ reset ช่องอาจารย์
+        if (!sectionId) {
+            professorSelect.empty().append('<option value="">--- กรุณาเลือก Section ก่อน ---</option>').prop('disabled', true);
+            return;
+        }
+
+        // โหลดรายชื่ออาจารย์สำหรับ Section ที่เลือก
         professorSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
         $.ajax({
             url: "{% url 'review:ajax_get_professors' %}",
-            data: { 'course_id': courseId },
+            data: { 'section_id': sectionId }, // ส่ง section_id ไปแทน
             success: function (data) {
-                professorSelect.empty().append('<option value="">--- เลือกอาจารย์ผู้สอน ---</option>');
+                professorSelect.empty().append('<option value="">--- เลือกอาจารย์ผู้สอน (ถ้ามี) ---</option>');
                 if (data.professors.length > 0) {
                     data.professors.forEach(function(prof) {
                         professorSelect.append(new Option(prof.name, prof.id));
@@ -130,12 +166,12 @@ $(document).ready(function() {
         });
     });
 
-    // Event: เมื่อล้างการเลือกรายวิชา
-    courseSelect.on('select2:unselect', function (e) {
-        // (แก้ไข) Reset ทั้ง Section และ Professor
-        sectionInput.val('').prop('disabled', true); // ล้างค่าในช่อง input และปิดการใช้งาน
-        professorSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+    // --- Event 4 (ใหม่): เมื่อล้างการเลือก "Section" ---
+    sectionSelect.on('select2:unselect', function (e) {
+        // Reset และปิดการใช้งานช่อง Professor
+        professorSelect.empty().append('<option value="">--- กรุณาเลือก Section ก่อน ---</option>').prop('disabled', true);
     });
+
 });
 </script>
 {% endblock extra_scripts %}

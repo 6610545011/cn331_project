@@ -1,78 +1,81 @@
+# review/forms.py
+
 from django import forms
-from django.core.exceptions import ValidationError # <-- เพิ่ม import นี้
-from .models import Review, Course, Prof, Section
+from .models import Review
+from core.models import Course, Prof, Section
 
 class ReviewForm(forms.ModelForm):
-    # --- เปลี่ยนฟิลด์ section ตรงนี้ ---
-    # เราจะ override ฟิลด์ section ให้เป็น CharField เพื่อรับข้อความ
-    section = forms.CharField(
-        label="กลุ่มเรียน (Section)",
-        max_length=10,
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.all(),
+        label="รายวิชา",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_course'})
+    )
+    
+    # --- แก้ไขตรงนี้ ---
+    # เปลี่ยนจาก CharField เป็น ModelChoiceField
+    # เราจะใช้ JavaScript เพื่อเติมตัวเลือกเข้ามาทีหลัง
+    section = forms.ModelChoiceField(
+        queryset=Section.objects.none(), # เริ่มต้นให้เป็นค่าว่าง
+        label="Section",
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น 701, 731'})
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_section'})
     )
 
-    rating = forms.ChoiceField(
-        choices=[(i, str(i)) for i in range(1, 6)],
-        widget=forms.RadioSelect(),
-        label="ให้คะแนน"
+    professor = forms.ModelChoiceField(
+        queryset=Prof.objects.none(),
+        label="อาจารย์ผู้สอน",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_professor'})
+    )
+
+    header = forms.CharField(
+        label="หัวข้อรีวิว",
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก"'})
     )
 
     class Meta:
         model = Review
-        # เอา 'section' ออกจาก fields นี้ เพราะเรา override ไปแล้ว
-        fields = ['course', 'prof', 'rating', 'head', 'body', 'incognito']
+        # --- แก้ไขตรงนี้ ---
+        # เปลี่ยน 'section_number' เป็น 'section'
+        fields = ['course', 'section', 'professor', 'rating', 'header', 'body', 'incognito']
         
         labels = {
-            'course': 'รายวิชา',
-            'prof': 'อาจารย์ผู้สอน',
-            'head': 'หัวข้อรีวิว',
             'body': 'เนื้อหารีวิว',
-            'incognito': 'ไม่แสดงตัวตน (Incognito)',
+            'rating': 'ให้คะแนนความพึงพอใจ',
+            'incognito': 'ไม่ระบุตัวตน',
         }
-        # ... widgets อื่นๆ เหมือนเดิม ...
         widgets = {
-            'course': forms.Select(attrs={'class': 'form-control'}),
-            'prof': forms.Select(attrs={'class': 'form-control'}),
-            'head': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก ได้ความรู้เต็มๆ"'
-            }),
-            'body': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5,
-                'placeholder': 'อธิบายรายละเอียดเพิ่มเติม...'
-            }),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'เล่าประสบการณ์ของคุณเกี่ยวกับวิชานี้...'}),
+            'rating': forms.RadioSelect(choices=[(i, str(i)) for i in range(5, 0, -1)]),
             'incognito': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # ไม่ต้องตั้งค่า choices ให้ section แล้ว
-        self.fields['prof'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
+        self.fields['professor'].queryset = Prof.objects.all()
+        self.fields['professor'].to_field_name = 'id'
+        self.fields['professor'].label_from_instance = lambda obj: obj.prof_name
+        self.fields['professor'].name = 'prof'
 
-    # --- เพิ่มเมธอด clean() เพื่อแปลง section number เป็น object ---
+    # --- แก้ไขตรงนี้ ---
+    # เราไม่ต้องการ clean() แบบเดิมแล้ว เพราะ ModelChoiceField จัดการการตรวจสอบให้เรา
+    # สามารถลบเมธอด clean() ทิ้งไปได้เลย หรือจะเหลือไว้เผื่อ validation อื่นๆ ในอนาคตก็ได้
     def clean(self):
         cleaned_data = super().clean()
-        course = cleaned_data.get("course")
-        section_number_str = cleaned_data.get("section")
-
-        if course and section_number_str:
-            try:
-                # ค้นหา Section object จาก course และ section number ที่ผู้ใช้กรอก
-                section_obj = Section.objects.get(course=course, section_number=section_number_str)
-                # แทนที่ string ใน cleaned_data ด้วย object ที่เราหาเจอ
-                cleaned_data['section'] = section_obj
-            except Section.DoesNotExist:
-                # ถ้าหาไม่เจอ ให้สร้าง validation error
-                raise ValidationError(
-                    f"ไม่พบ Section '{section_number_str}' สำหรับรายวิชา {course.code}."
-                )
-        
+        # ไม่ต้องมี logic การค้นหา section แล้ว
         return cleaned_data
 
-    # --- แก้ไขเมธอด save() เพื่อให้ทำงานกับฟิลด์ที่เรา override ---
+    # --- แก้ไขตรงนี้ ---
+    # เราสามารถทำให้เมธอด save() ง่ายลงได้
+    # เพราะชื่อฟิลด์ 'section' ในฟอร์มตรงกับในโมเดลแล้ว ModelForm จะจัดการให้เอง
     def save(self, commit=True):
-        # ตั้งค่า instance.section จาก cleaned_data ที่เราแปลงเป็น object แล้ว
-        self.instance.section = self.cleaned_data.get('section')
-        return super().save(commit=commit)
+        instance = super().save(commit=False)
+        
+        # ไม่ต้องกำหนด instance.section เองแล้ว
+        instance.head = self.cleaned_data.get('header')
+        instance.prof = self.cleaned_data.get('professor')
+
+        if commit:
+            instance.save()
+        return instance
