@@ -10,7 +10,7 @@ User = get_user_model()
 
 class WriteReviewViewTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword123')
+        self.user = User.objects.create_user(username='testuser', email='test@example.com', password='testpassword123')
         self.campus = Campus.objects.create(name='Test Campus')
         self.room = RoomMSTeam.objects.create(name='TestMS', campus=self.campus)
         self.course = Course.objects.create(code='CS331', name='Software Engineering')
