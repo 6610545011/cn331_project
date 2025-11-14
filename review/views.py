@@ -10,19 +10,19 @@ from .models import Review
 
 @login_required
 def write_review(request):
-    # ... (ส่วนนี้ไม่ต้องแก้ไข) ...
     if request.method == 'POST':
-        form = ReviewForm(request.POST)
+        # ส่ง request.user เข้าไปในฟอร์มตอนประมวลผลข้อมูล
+        form = ReviewForm(request.POST, user=request.user)
         if form.is_valid():
             review = form.save(commit=False)
             review.user = request.user
             review.save()
-            form.save_m2m() # จำเป็นถ้าฟอร์มมี ManyToManyFields
-            
+            form.save_m2m()
             messages.success(request, 'ขอบคุณสำหรับรีวิวของคุณ!')
             return redirect('core:homepage')
     else:
-        form = ReviewForm()
+        # ส่ง request.user เข้าไปในฟอร์มตอนแสดงหน้าเว็บครั้งแรก
+        form = ReviewForm(user=request.user)
 
     context = {
         'form': form
@@ -61,10 +61,15 @@ def ajax_get_professors(request):
 
 
 def ajax_get_sections(request):
-    # ... (ส่วนนี้ไม่ต้องแก้ไข) ...
     course_id = request.GET.get('course_id')
     if not course_id:
         return JsonResponse({'sections': []})
-    sections = Section.objects.filter(course_id=course_id).order_by('section_number')
+    
+    # (เพิ่ม) กรองเฉพาะ Section ที่ user คนนี้เคยลงทะเบียน
+    sections = Section.objects.filter(
+        course_id=course_id, 
+        students=request.user
+    ).distinct().order_by('section_number')
+    
     results = [{'id': s.id, 'text': f"Section {s.section_number}"} for s in sections]
     return JsonResponse({'sections': results})

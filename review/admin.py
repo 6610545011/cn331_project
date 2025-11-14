@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from .models import Review, Bookmark, ReviewUpvote, Report
+from .models import Review, Bookmark, ReviewUpvote, Report, Tag
 
 class AutoUserAdminMixin:
     exclude = ('user',)
@@ -40,3 +40,5 @@ class ReviewVoteAdmin(AutoUserAdminMixin, admin.ModelAdmin):
 class ReviewReportAdmin(AutoUserAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'review', 'user')
     raw_id_fields = ('review',)
+
+admin.site.register(Tag)

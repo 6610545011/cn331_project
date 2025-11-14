@@ -3,38 +3,61 @@ from django.conf import settings
 from core.models import Course, Section, Prof
 from django.utils import timezone
 
-# Main Review Entity
+# --- โมเดลสำหรับ Tag ---
+# สร้างขึ้นเพื่อใช้กับ Review ผ่าน ManyToManyField
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+# --- โมเดลหลักสำหรับรีวิว ---
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
     
-    # Relationships
+    # --- Relationships ---
+    # ผู้เขียนรีวิว (จำเป็นต้องมีเสมอ)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
+    
+    # เป้าหมายของการรีวิว (สามารถเป็นค่าว่างได้ทั้งหมด แต่ต้องมีอย่างน้อย 1 อย่างตอน validate ในฟอร์ม)
+    # on_delete=SET_NULL: ถ้ารายวิชาถูกลบ รีวิวจะยังคงอยู่ แต่ฟิลด์ course จะเป็น NULL
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
     prof = models.ForeignKey(Prof, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
     
-    # Content and Metadata
+    # Tag ที่เกี่ยวข้อง (สามารถไม่มีเลยก็ได้)
+    tags = models.ManyToManyField(Tag, blank=True, related_name='reviews')
+    
+    # --- Content and Metadata ---
     head = models.CharField(max_length=255)
     body = models.TextField()
-    rating = models.IntegerField() # Assuming rating is an integer score (e.g., 1 to 5)
+    rating = models.IntegerField() # คะแนน 1-5
     incognito = models.BooleanField(default=False)
     date_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Review by {self.user.email} for {self.course.course_code}"
+        # ทำให้ __str__ ฉลาดขึ้น สามารถแสดงผลได้แม้ course หรือ prof จะเป็น None
+        target = "Review"
+        if self.course:
+            target = self.course.course_code
+        elif self.prof:
+            target = self.prof.prof_name
+        return f"Review by {self.user.email} for {target}"
 
     class Meta:
         ordering = ['-date_created']
 
 
+# --- โมเดลเสริมอื่นๆ (ไม่ต้องแก้ไข) ---
+
 class ReviewUpvote(models.Model):
-    """Records user votes (upvote/downvote) on a specific review."""
+    """บันทึกการโหวต (upvote/downvote) ของผู้ใช้ในรีวิว"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='votes')
-    vote_type = models.IntegerField() # e.g., 1 for Upvote, -1 for Downvote
+    vote_type = models.IntegerField() # เช่น 1 สำหรับ Upvote, -1 สำหรับ Downvote
 
     class Meta:
-        # Ensures a user can only vote once per review
+        # ผู้ใช้ 1 คน โหวตได้ 1 ครั้งต่อ 1 รีวิว
         unique_together = (('user', 'review'),)
 
     def __str__(self):
@@ -42,18 +65,14 @@ class ReviewUpvote(models.Model):
 
 
 class Bookmark(models.Model):
-    """Allows users to bookmark specific reviews or courses."""
+    """ให้ผู้ใช้ bookmark รีวิวหรือรายวิชาที่สนใจ"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookmarks')
     
-    # Note: DBML included both review_id and course_id. 
-    # Since a review always belongs to a course, if review is set, course is redundant.
-    # However, to maintain the schema integrity, we include both, assuming a user might bookmark 
-    # the entire Course (review=None) or a specific Review (review=X).
+    # ผู้ใช้อาจจะ bookmark รีวิวที่เจาะจง หรือ bookmark ทั้งรายวิชา
     review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True, related_name='bookmarked_by')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='bookmarked_by')
 
     class Meta:
-        # Prevents bookmarking the same course/review combination multiple times
         unique_together = (('user', 'review'), ('user', 'course')) 
         
     def __str__(self):
@@ -62,13 +81,13 @@ class Bookmark(models.Model):
 
 
 class Report(models.Model):
-    """Records reports against abusive or inappropriate reviews."""
+    """บันทึกการรายงานรีวิวที่ไม่เหมาะสม"""
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='reports')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='submitted_reports')
     comment = models.TextField()
 
     class Meta:
-        # Ensures a user can only report a specific review once
+        # ผู้ใช้ 1 คน รายงานได้ 1 ครั้งต่อ 1 รีวิว
         unique_together = (('user', 'review'),)
 
     def __str__(self):
