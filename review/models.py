@@ -54,7 +54,7 @@ class Bookmark(models.Model):
 
     class Meta:
         # Prevents bookmarking the same course/review combination multiple times
-        unique_together = (('user', 'review'), ('user', 'course')) 
+        unique_together = [('user', 'review'), ('user', 'course')] 
         
     def __str__(self):
         target = self.review if self.review else self.course.course_code

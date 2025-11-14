@@ -46,5 +46,18 @@
             {% endfor %}
         </div>
     </div>
+
+
+        <div class="detail-content">
+        <h3>Reviews</h3>
+        <div class="card-list">
+            {% for review in course.reviews.all %}
+                {% comment %} Use the reusable review block template {% endcomment %}
+                {% include "review/includes/review_block.html" with review=review %}
+            {% empty %}
+                <p>No reviews for this course yet. Be the first to write one!</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock content %}

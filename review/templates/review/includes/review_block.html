@@ -1,0 +1,19 @@
+{% comment %}
+    This template expects a 'review' object in the context.
+{% endcomment %}
+<div class="info-card review-card">
+    <h4>{{ review.head }}</h4>
+    <p class="review-rating"><strong>Rating:</strong> {{ review.rating }}/5</p>
+    <p>{{ review.body }}</p>
+    <div class="review-meta">
+        <span>
+            By
+            {% if review.incognito %}
+                Anonymous
+            {% else %}
+                {{ review.user.get_full_name|default:review.user.email }}
+            {% endif %}
+            on {{ review.date_created|date:"M d, Y" }}
+        </span>
+    </div>
+</div>

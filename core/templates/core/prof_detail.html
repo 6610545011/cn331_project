@@ -18,7 +18,7 @@
                 <img src="{{ prof.img_url }}" alt="Photo of {{ prof.name }}" class="profile-image">
             {% endif %}
             <div class="header-text">
-                <h1>{{ prof.name }}</h1>
+                <h1>{{ prof.prof_name }}</h1>
                 <p class="sub-heading">
                     <strong>Campus:</strong> {{ prof.campus.name }} | 
                     <strong>Room:</strong> {{ prof.room.name }}
@@ -53,37 +53,16 @@
         </div>
 
         {# --- ส่วนที่ 2: รายการรีวิว --- #}
+
+
+        <div class="detail-content">
         <h3>Reviews</h3>
         <div class="card-list">
-            {% for review in prof.review_set.all %}
-                <div class="info-card review-card">
-                    <h4>{{ review.header }}</h4>
-                    <p class="rating">Rating: {{ review.rating }} / 5 ★</p>
-                    
-                    {% if review.course %}
-                        <p><strong>For Course:</strong> {{ review.course.code }} - {{ review.course.name }}</p>
-                    {% endif %}
-
-                    <div class="review-body">
-                        <p>"{{ review.body }}"</p>
-                    </div>
-
-                    <div class="review-meta">
-                        <p>
-                            By 
-                            <strong>
-                                {% if review.incognito %}
-                                    Anonymous
-                                {% else %}
-                                    {{ review.user.username }}
-                                {% endif %}
-                            </strong> 
-                            on {{ review.created_at|date:"F j, Y" }}
-                        </p>
-                    </div>
-                </div>
+            {% for review in prof.reviews.all %}
+                {% comment %} Use the reusable review block template {% endcomment %}
+                {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
-                <p>No reviews available for this professor yet.</p>
+                <p>No reviews for this professor yet. Be the first to write one!</p>
             {% endfor %}
         </div>
     </div>
