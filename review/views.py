@@ -1,12 +1,13 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db import transaction, models
 from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
-from .forms import ReviewForm, ReportForm
-from .models import Review, Bookmark, Report
+from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
+from .models import Review, Bookmark, Report, ReviewUpvote
 
 
 @login_required
@@ -117,3 +118,50 @@ def report_review(request, review_id):
     # Extract form errors to send back as JSON
     errors = form.errors.as_json()
     return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+
+
+@login_required 
+@require_POST
+@transaction.atomic
+def vote_review(request, review_id):
+    try:
+        data = json.loads(request.body)
+        vote_type = int(data.get('vote_type'))
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid request format.'}, status=400)
+    
+    form = ReviewUpvoteForm({'vote_type': vote_type})
+    if not form.is_valid():
+        return JsonResponse({'status': 'error', 'message': 'Invalid vote type.'}, status=400)
+    
+    cleaned_vote_type = form.cleaned_data['vote_type']
+    
+    # Lock the review object to prevent race conditions on its votes.
+    # This is the key to preventing the 'database is locked' error.
+    review = get_object_or_404(Review.objects.select_for_update(), pk=review_id)
+    
+    # Now, safely get the existing vote or prepare to create one.
+    vote = ReviewUpvote.objects.filter(user=request.user, review=review).first()
+    
+    user_vote_status = cleaned_vote_type
+    
+    if vote is None:
+        # If no vote exists, create one.
+        ReviewUpvote.objects.create(
+            user=request.user,
+            review=review,
+            vote_type=cleaned_vote_type
+        )
+    else:
+        # If a vote exists, check if we're toggling it off or changing it.
+        if vote.vote_type == cleaned_vote_type:
+            vote.delete()
+            user_vote_status = 0  # 0 means no vote
+        else:
+            vote.vote_type = cleaned_vote_type
+            vote.save()
+
+    # Recalculate the score after the changes.
+    new_score = review.votes.aggregate(score=models.Sum('vote_type')).get('score') or 0
+    
+    return JsonResponse({'status': 'ok', 'new_score': new_score, 'user_vote': user_vote_status})

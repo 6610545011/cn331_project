@@ -24,7 +24,7 @@
     <p class="review-rating"><strong>Rating:</strong> {{ review.rating }}/5</p>
     <p>{{ review.body }}</p>
     <div class="review-meta">
-        <span>
+        <span class="review-author">
             By
             {% if review.incognito %}
             Anonymous
@@ -33,6 +33,21 @@
             {% endif %}
             on {{ review.date_created|date:"M d, Y" }}
         </span>
+
+        {% if user.is_authenticated %}
+        <div class="review-actions">
+            <form class="vote-form d-inline-block" data-url="{% url 'review:vote_review' review.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" name="vote_type" value="1" class="btn btn-sm vote-btn upvote-btn {% if review.user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <span class="vote-score" data-review-id="{{ review.id }}">{{ review.vote_score|default:0 }}</span>
+                <button type="submit" name="vote_type" value="-1" class="btn btn-sm vote-btn downvote-btn {% if review.user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% if user.is_authenticated %}
@@ -139,5 +154,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Use event delegation for vote form submissions
+    document.body.addEventListener('submit', function(e) {
+        const voteForm = e.target.closest('.vote-form');
+        if (voteForm) {
+            e.preventDefault();
+            const reviewId = voteForm.dataset.url.split('/')[3]; // A bit brittle, but works for the URL structure
+            const voteType = e.submitter.value;
+            const url = voteForm.dataset.url;
+
+            // Disable buttons to prevent spamming
+            const upvoteBtn = voteForm.querySelector('.upvote-btn');
+            const downvoteBtn = voteForm.querySelector('.downvote-btn');
+            upvoteBtn.disabled = true;
+            downvoteBtn.disabled = true;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'vote_type': voteType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    // Update vote score
+                    const scoreSpan = document.querySelector(`.vote-score[data-review-id="${reviewId}"]`);
+                    scoreSpan.textContent = data.new_score;
+
+                    // Update button states
+                    upvoteBtn.classList.toggle('btn-success', data.user_vote == 1);
+                    upvoteBtn.classList.toggle('btn-outline-success', data.user_vote != 1);
+                    downvoteBtn.classList.toggle('btn-danger', data.user_vote == -1);
+                    downvoteBtn.classList.toggle('btn-outline-danger', data.user_vote != -1);
+                }
+            })
+            .catch(error => console.error('Error submitting vote:', error))
+            .finally(() => {
+                // Re-enable buttons after the request is complete
+                upvoteBtn.disabled = false;
+                downvoteBtn.disabled = false;
+            });
+        }
+    });
 });
 </script>
