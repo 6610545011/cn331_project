@@ -17,10 +17,16 @@ class AutoUserAdminMixin:
             # Convert DB-level FK failures into a validation error shown in the admin form.
             raise ValidationError("Could not save: a related foreign-key value is invalid or missing.") from exc
 
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
 
 @admin.register(Review)
 class ReviewAdmin(AutoUserAdminMixin, admin.ModelAdmin):
     list_display = ('id', '__str__', 'course', 'prof', 'rating', 'date_created')
+    filter_horizontal = ('tags',) # Improves the UI for ManyToManyFields
     raw_id_fields = ('course', 'prof')
 
 
@@ -40,5 +46,3 @@ class ReviewVoteAdmin(AutoUserAdminMixin, admin.ModelAdmin):
 class ReviewReportAdmin(AutoUserAdminMixin, admin.ModelAdmin):
     list_display = ('id', 'review', 'user')
     raw_id_fields = ('review',)
-
-admin.site.register(Tag)

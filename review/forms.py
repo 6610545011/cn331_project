@@ -1,7 +1,6 @@
 from django import forms
-from .models import Review, Tag
+from .models import Review, Tag, Report, ReviewUpvote
 from core.models import Course, Prof, Section
-from .models import Report, ReviewUpvote
 
 class ReviewForm(forms.ModelForm):
     # 1. กำหนด Field ทั้งหมดให้ไม่บังคับเลือก (required=False) ในตอนแรก
