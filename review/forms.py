@@ -159,3 +159,12 @@ class ReviewUpvoteForm(forms.ModelForm):
             # The vote_type will be submitted via a button, so a hidden input is suitable.
             'vote_type': forms.HiddenInput(),
         }
+
+    def clean_vote_type(self):
+        """
+        Validate that the vote_type is either 1 or -1.
+        """
+        vote_type = self.cleaned_data.get('vote_type')
+        if vote_type not in [1, -1]:
+            raise forms.ValidationError('Invalid vote type. Must be 1 or -1.', code='invalid_vote_type')
+        return vote_type

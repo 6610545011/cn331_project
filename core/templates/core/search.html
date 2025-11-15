@@ -84,7 +84,7 @@
                             <li class="result-item">
                                 <h4><a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }} (Section: {{ section.section_number }})</a></h4>
                                 <p>Taught by: 
-                                    {% for Prof in section.Prof.all %}<a href="{% url 'core:professor_detail' pk=teacher.pk %}">{{ teacher.prof_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}N/A{% endfor %}
+                                    {% for teacher in section.teachers.all %}<a href="{% url 'core:professor_detail' pk=teacher.pk %}">{{ teacher.prof_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}N/A{% endfor %}
                                 </p>
                             </li>
                         {% endfor %}

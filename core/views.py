@@ -1,10 +1,10 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef, Sum, Case, When, IntegerField
 from .models import Prof, Course, Section
 from itertools import chain
 from django.http import Http404, HttpResponsePermanentRedirect
-from review.models import Bookmark, Review
+from review.models import Bookmark, Review, ReviewUpvote
 
 def homepage_view(request):
     return render(request, 'core/homepage.html')
@@ -18,7 +18,22 @@ def search(request):
     sort_by = request.GET.get('sort_by', 'alphabetical') # Default to 'alphabetical'
     order = request.GET.get('order', 'asc') # Default to 'asc'
 
-    order_prefix = '-' if order == 'desc' else ''
+    order_prefix = '-' if order == 'desc' else ''    
+
+    # Annotate reviews with vote score and the current user's vote
+    # This annotation must work for both authenticated and unauthenticated users.
+    reviews_queryset = Review.objects.annotate(
+        vote_score=Sum('votes__vote_type', default=0),
+        user_vote=Case(
+            # When the user is not authenticated, request.user is AnonymousUser,
+            # which doesn't have a pk, so the filter `votes__user=request.user`
+            # will correctly not match anything.
+            # This is more robust than checking `is_authenticated` beforehand.
+            When(votes__user=request.user, then='votes__vote_type'),
+            default=0,
+            output_field=IntegerField()
+        )
+    ).select_related('course', 'prof', 'user').distinct()
 
     if query:
         # Use __icontains for broad, case-insensitive matching.
@@ -39,17 +54,16 @@ def search(request):
             Q(teachers__prof_name__icontains=query)
         ).select_related('course').prefetch_related('teachers').distinct()
 
-        reviews = Review.objects.filter(
+        reviews = reviews_queryset.filter(
             Q(head__icontains=query) |
             Q(body__icontains=query)
-        ).select_related('course', 'prof', 'user').distinct()
-
+        )
     else:
         # If no query is provided, return all objects.
         professors = Prof.objects.all()
         courses = Course.objects.all()
         sections = Section.objects.select_related('course').prefetch_related('teachers').all()
-        reviews = Review.objects.select_related('course', 'prof', 'user').all()
+        reviews = reviews_queryset.all()
     
     # Apply sorting to individual querysets
     if sort_by == 'alphabetical':
@@ -82,39 +96,54 @@ def search(request):
     return render(request, 'core/search.html', context)
 
 def prof_detail(request, pk):
-    # Annotate reviews with bookmark status for the current user
-    bookmarked_reviews = Bookmark.objects.none()
+    # Prepare subqueries for annotations
+    user_bookmark_subquery = Bookmark.objects.none()
     if request.user.is_authenticated:
-        bookmarked_reviews = Bookmark.objects.filter(
+        user_bookmark_subquery = Bookmark.objects.filter(
             user=request.user,
             review=OuterRef('pk')
         )
 
-    # Use get_object_or_404 for a direct lookup, which is much more efficient.
     prof = get_object_or_404(
         Prof.objects.prefetch_related('teaching_sections__course'), 
         pk=pk
     )
 
-    reviews = prof.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+    # Annotate the reviews for this professor
+    reviews = prof.reviews.select_related('user', 'course').annotate(
+        is_bookmarked=Exists(user_bookmark_subquery),
+        vote_score=Sum('votes__vote_type', default=0),
+        user_vote=Case(
+            When(votes__user=request.user, then='votes__vote_type'),
+            default=0,
+            output_field=IntegerField()
+        )
+    ).distinct()
 
     return render(request, 'core/prof_detail.html', {'prof': prof, 'reviews': reviews})
 
 def course_detail(request, pk):
-    # Annotate reviews with bookmark status for the current user
-    bookmarked_reviews = Bookmark.objects.none()
+    # Prepare subqueries for annotations
+    user_bookmark_subquery = Bookmark.objects.none()
     if request.user.is_authenticated:
-        bookmarked_reviews = Bookmark.objects.filter(
+        user_bookmark_subquery = Bookmark.objects.filter(
             user=request.user,
             review=OuterRef('pk')
         )
 
-    # Simplified to a direct primary key lookup.
     course = get_object_or_404(
         Course.objects.prefetch_related('sections__teachers', 'sections__campus'),
         pk=pk
     )
     
-    reviews = course.reviews.select_related('user').annotate(is_bookmarked=Exists(bookmarked_reviews))
+    reviews = course.reviews.select_related('user', 'prof').annotate(
+        is_bookmarked=Exists(user_bookmark_subquery),
+        vote_score=Sum('votes__vote_type', default=0),
+        user_vote=Case(
+            When(votes__user=request.user, then='votes__vote_type'),
+            default=0,
+            output_field=IntegerField()
+        )
+    ).distinct()
 
     return render(request, 'core/course_detail.html', {'course': course, 'reviews': reviews})
