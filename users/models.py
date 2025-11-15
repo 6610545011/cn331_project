@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 # --- Required Manager for Custom User Model ---
 # Note: In a production setting, you must fully implement User and UserManager,
@@ -35,11 +36,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
+
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
+
     imgurl = models.URLField(max_length=200, blank=True, null=True)
 
     # Required fields for AbstractBaseUser compatibility
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+
+    date_joined = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(blank=True, null=True)
 
     groups = models.ManyToManyField(
         'auth.Group',

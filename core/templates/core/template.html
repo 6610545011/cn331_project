@@ -41,7 +41,7 @@
             
             {% if user.is_authenticated %}
                 <!-- แสดงเมื่อล็อกอินแล้ว -->
-                <li><a href="#">profile</a></li>
+                <li><a href="{% url 'users:profile' %}">profile</a></li>
                 <li class="logout-li">
                     <form action="{% url 'users:logout' %}" method="post">
                         {% csrf_token %}
