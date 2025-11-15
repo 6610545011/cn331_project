@@ -31,7 +31,7 @@
         </div>
         <ul>
             <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}">homepage</a></li>
-            <li><a href="#" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
+            <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
             <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
             <li><a href="#" class="{% if request.resolver_match.url_name == 'schedule_plan' %}active{% endif %}">schedule plan</a></li>
             <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">about</a></li>
