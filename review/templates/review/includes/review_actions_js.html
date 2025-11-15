@@ -1,0 +1,79 @@
+<script>
+// ใช้ jQuery's document ready, และป้องกันการรันซ้ำ
+if (typeof window.reviewActionsLoaded === 'undefined') {
+    window.reviewActionsLoaded = true;
+
+    jQuery(function($) {
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // --- VOTE SYSTEM ---
+        // ใช้ Event Delegation กับ document เพื่อให้ทำงานกับ element ที่โหลดมาทีหลังได้
+        $(document).on('submit', '.vote-form', function(e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const url = $form.data('url');
+            const reviewId = $form.data('review-id');
+            // หาค่า vote_type จากปุ่มที่ถูกคลิกเพื่อ submit
+            const voteType = $(e.originalEvent.submitter).val(); 
+
+            const $upvoteBtn = $form.find('.upvote-btn');
+            const $downvoteBtn = $form.find('.downvote-btn');
+            const $scoreSpan = $(`.vote-score[data-review-id="${reviewId}"]`);
+
+            // ปิดปุ่มชั่วคราว
+            $upvoteBtn.prop('disabled', true);
+            $downvoteBtn.prop('disabled', true);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'vote_type': voteType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    // อัปเดตคะแนน
+                    $scoreSpan.text(data.new_score);
+
+                    // อัปเดตสถานะปุ่ม Upvote
+                    $upvoteBtn.toggleClass('btn-success', data.user_vote == 1);
+                    $upvoteBtn.toggleClass('btn-outline-success', data.user_vote != 1);
+
+                    // อัปเดตสถานะปุ่ม Downvote
+                    $downvoteBtn.toggleClass('btn-danger', data.user_vote == -1);
+                    $downvoteBtn.toggleClass('btn-outline-danger', data.user_vote != -1);
+                }
+            })
+            .catch(error => console.error('Error submitting vote:', error))
+            .finally(() => {
+                // เปิดปุ่มให้ใช้งานได้อีกครั้ง
+                $upvoteBtn.prop('disabled', false);
+                $downvoteBtn.prop('disabled', false);
+            });
+        });
+
+        // --- BOOKMARK SYSTEM ---
+        // (โค้ดส่วนนี้สามารถเพิ่มเข้ามาในลักษณะเดียวกันได้)
+
+    });
+}
+</script>

@@ -5,7 +5,7 @@
 {% block title %}Search Results for "{{ query }}" - Thammasat Study Plan{% endblock title %}
 
 {% block extra_head %}
-{# ลิงก์ไปยัง CSS ใหม่ที่เราสร้างขึ้น #}
+{# ลิงก์ไปยัง CSS ของหน้า search #}
 <link rel="stylesheet" href="{% static 'core/css/search_page.css' %}">
 {% endblock extra_head %}
 
@@ -13,7 +13,7 @@
 <div class="search-page-container">
     <h1>Search Results</h1>
 
-    {# --- Search Bar --- #}
+    {# --- Search Bar and Sorting Controls --- #}
     <form method="get" action="{% url 'core:search' %}" class="search-form">
         <div class="search-input-group">
             <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
@@ -28,8 +28,6 @@
                 <option value="asc" {% if order == 'asc' %}selected{% endif %}>Ascending</option>
                 <option value="desc" {% if order == 'desc' %}selected{% endif %}>Descending</option>
             </select>
-            {# Hidden submit button for JS, or can be styled as a visible "Apply" button #}
-            <button type="submit" style="display: none;">Apply</button>
         </div>
     </form>
 
@@ -97,7 +95,9 @@
                     <h3>Reviews</h3>
                     <ul class="result-list card-list">
                         {% for review in reviews %}
-                            <li class="result-item">{% include "review/includes/review_block.html" with review=review %}</li>
+                            <li class="result-item">
+                                {% include "review/includes/review_block.html" with review=review %}
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -159,7 +159,9 @@
             <div id="reviews-results" class="tab-panel">
                 <ul class="result-list card-list">
                     {% for review in reviews %}
-                        <li class="result-item">{% include "review/includes/review_block.html" with review=review %}</li>
+                        <li class="result-item">
+                            {% include "review/includes/review_block.html" with review=review %}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -177,40 +179,33 @@
 {% endblock content %}
 
 {% block extra_scripts %}
-{# --- JavaScript for Tab functionality --- #}
+{# --- JavaScript for Tab functionality and Sorting --- #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.tab-link');
-    const panels = document.querySelectorAll('.tab-panel');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Remove active class from all tabs and panels
-            tabs.forEach(item => item.classList.remove('active'));
-            panels.forEach(panel => panel.classList.remove('active'));
-
-            // Add active class to the clicked tab and its corresponding panel
-            const targetId = this.getAttribute('data-target');
-            const targetPanel = document.querySelector(targetId);
-            
-            this.classList.add('active');
-            if (targetPanel) {
-                targetPanel.classList.add('active');
-            }
-        });
+jQuery(function($) {
+    // --- Tab Switching Logic ---
+    $('.tab-link').on('click', function(e) {
+        e.preventDefault();
+        
+        // Remove active state from all tabs and panels
+        $('.tab-link').removeClass('active');
+        $('.tab-panel').removeClass('active');
+        
+        // Add active state to the clicked tab and its target panel
+        $(this).addClass('active');
+        const targetId = $(this).data('target');
+        $(targetId).addClass('active');
     });
 
-    // Auto-submit form when sorting changes
-    const sortBySelect = document.getElementById('sort-by-select');
-    const orderSelect = document.getElementById('order-select');
-    const searchForm = document.querySelector('.search-form');
-
-    if (sortBySelect && orderSelect && searchForm) {
-        sortBySelect.addEventListener('change', () => searchForm.submit());
-        orderSelect.addEventListener('change', () => searchForm.submit());
-    }
+    // --- Auto-submit form on sort change ---
+    $('#sort-by-select, #order-select').on('change', function() {
+        $('.search-form').submit();
+    });
 });
 </script>
+
+{# --- Load Review Actions JavaScript ONLY if there are reviews --- #}
+{% if reviews %}
+    {% include "review/includes/review_actions_js.html" %}
+{% endif %}
+
 {% endblock extra_scripts %}

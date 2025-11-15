@@ -1,5 +1,6 @@
 {% comment %}
-    This template expects a 'review' object in the context.
+    This template now contains ONLY HTML structure.
+    The controlling JavaScript is loaded separately.
 {% endcomment %}
 <div class="info-card review-card">
     <div class="review-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -9,12 +10,9 @@
             <button class="btn btn-sm bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
                     data-review-id="{{ review.id }}" 
                     data-url="{% url 'review:toggle_bookmark' review.id %}">
-                {% if review.is_bookmarked %}
-                <i class="fas fa-bookmark"></i> Bookmarked
-                {% else %}
-                <i class="far fa-bookmark"></i> Bookmark
-                {% endif %}
+                <i class="fas fa-bookmark"></i> Bookmark
             </button>
+            {# หมายเหตุ: ปุ่ม Report นี้ต้องใช้ Bootstrap JS หรือ custom JS เพื่อให้ Modal ทำงาน #}
             <button class="btn btn-sm btn-outline-danger report-btn" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}">
                 <i class="fas fa-flag"></i> Report
             </button>
@@ -26,17 +24,13 @@
     <div class="review-meta">
         <span class="review-author">
             By
-            {% if review.incognito %}
-            Anonymous
-            {% else %}
-            {{ review.user.get_full_name|default:review.user.username }}
-            {% endif %}
+            {% if review.incognito %} Anonymous {% else %} {{ review.user.username }} {% endif %}
             on {{ review.date_created|date:"M d, Y" }}
         </span>
 
         {% if user.is_authenticated %}
         <div class="review-actions">
-            <form class="vote-form d-inline-block" data-url="{% url 'review:vote_review' review.id %}" method="post">
+            <form class="vote-form d-inline-block" data-url="{% url 'review:vote_review' review.id %}" data-review-id="{{ review.id }}" method="post">
                 {% csrf_token %}
                 <button type="submit" name="vote_type" value="1" class="btn btn-sm vote-btn upvote-btn {% if review.user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
                     <i class="fas fa-arrow-up"></i>
