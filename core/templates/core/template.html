@@ -25,6 +25,30 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     {% block extra_head %}{% endblock extra_head %}
+
+    <style>
+        /* Styles for the circular profile picture in the header */
+        .profile-pic-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #e9e9e9; /* Fallback background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff; /* Optional: adds a nice border */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .profile-pic-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image covers the area without distortion */
+        }
+        .profile-pic-placeholder .fa-user {
+            color: #888; /* Color for the fallback icon */
+        }
+    </style>
 </head>
 <body>
     <div class="overlay" id="overlay"></div>
@@ -72,7 +96,15 @@
                 <span class="user-name">{{ user.username }}</span>
                 <span class="user-id">Student</span> 
             </div>
-            <div class="profile-pic-placeholder"></div>
+            <a href="{% url 'users:profile' %}" class="profile-pic-link">
+                <div class="profile-pic-placeholder">
+                    {% if user.imgurl %}
+                        <img src="{{ user.imgurl }}" alt="{{ user.username }}'s profile picture">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+            </a>
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>
