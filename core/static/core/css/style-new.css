@@ -1,0 +1,335 @@
+/* ================================== */
+/*         GENERAL STYLES             */
+/* ================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #ff8c00;
+    --secondary-color: #ff7600;
+    --tertiary-color: #ff6b6b;
+    --dark-bg: #1a1a2e;
+    --darker-bg: #16213e;
+    --light-text: #f5f5f5;
+    --dark-text: #1a1a1a;
+    --accent-orange: #ff8c00;
+}
+
+body {
+    font-family: 'Kanit', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: var(--light-text);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ================================== */
+/*         HEADER & NAVIGATION        */
+/* ================================== */
+
+.header-top {
+    background: linear-gradient(90deg, #ff8c00 0%, #ff7600 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-menu {
+    background: linear-gradient(180deg, #ff8c00 0%, #ff7600 100%);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-menu a {
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: block;
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(4px);
+}
+
+.sidebar-menu a.active {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    border-left: 4px solid #ff6b6b;
+}
+
+/* ================================== */
+/*         BUTTON STYLES              */
+/* ================================== */
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff7600 100%);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary-color);
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ================================== */
+/*         CARD STYLES                */
+/* ================================== */
+
+.card-review {
+    background: linear-gradient(135deg, #2a2a4e 0%, #1a1a3e 100%);
+    border-left: 4px solid #ff8c00;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-review:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.2);
+}
+
+.card-course {
+    background: linear-gradient(135deg, #2a2a4e 0%, #1a1a3e 100%);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-course:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.2);
+}
+
+/* ================================== */
+/*         FORM STYLES                */
+/* ================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 140, 0, 0.3);
+    color: var(--light-text);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: 'Kanit', sans-serif;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+textarea::placeholder {
+    color: rgba(245, 245, 245, 0.5);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ================================== */
+/*         HELP BUTTON                */
+/* ================================== */
+
+.help-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.help-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+/* ================================== */
+/*         SEARCH & FILTER            */
+/* ================================== */
+
+.search-container {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-container input {
+    background: transparent;
+    border: none;
+    color: var(--light-text);
+    flex: 1;
+    font-size: 16px;
+}
+
+.search-container input::placeholder {
+    color: rgba(245, 245, 245, 0.5);
+}
+
+.search-container button {
+    background: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-container button:hover {
+    background: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+/* ================================== */
+/*         RATING & STARS             */
+/* ================================== */
+
+.rating {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.star {
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.star.empty {
+    color: rgba(255, 140, 0, 0.3);
+}
+
+/* ================================== */
+/*         RESPONSIVE DESIGN          */
+/* ================================== */
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 70px 1rem 1.5rem;
+    }
+    
+    .card-review,
+    .card-course {
+        padding: 12px;
+    }
+    
+    .header-top {
+        height: 60px;
+        padding: 0 12px;
+    }
+}
+
+/* ================================== */
+/*         UTILITY CLASSES            */
+/* ================================== */
+
+.gradient-text {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================== */
+/*         SCROLLBAR STYLING          */
+/* ================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 140, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
