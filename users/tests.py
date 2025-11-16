@@ -102,3 +102,66 @@ class UserModelAndManagerTestCase(TestCase):
         self.assertEqual(alices.count(), 1)
         self.assertEqual(alices.first().username, 'alice')
 
+
+class UserViewsTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', email='test@example.com', password='testpass123')
+
+    def test_login_view_get(self):
+        resp = self.client.get(reverse('users:login'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('form', resp.context)
+
+    def test_login_view_post_valid(self):
+        resp = self.client.post(reverse('users:login'), {'username': 'testuser', 'password': 'testpass123'})
+        self.assertRedirects(resp, reverse('core:homepage'))
+        self.assertTrue(self.client.session.get('_auth_user_id'))
+
+    def test_login_view_post_invalid_password(self):
+        resp = self.client.post(reverse('users:login'), {'username': 'testuser', 'password': 'wrongpass'})
+        self.assertEqual(resp.status_code, 200)
+        # Check that we're still on the login form (form is re-rendered with errors)
+        self.assertFalse(self.client.session.get('_auth_user_id'))
+
+    def test_login_view_post_nonexistent_user(self):
+        resp = self.client.post(reverse('users:login'), {'username': 'nonexistent', 'password': 'pass'})
+        self.assertEqual(resp.status_code, 200)
+        # Check that form is re-rendered without authentication
+        self.assertFalse(self.client.session.get('_auth_user_id'))
+
+    def test_profile_view_logged_in(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(reverse('users:profile'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('user_reviews', resp.context)
+        self.assertIn('bookmarked_reviews', resp.context)
+
+    def test_profile_view_not_logged_in(self):
+        resp = self.client.get(reverse('users:profile'))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn('/login', resp.url)
+
+    def test_profile_view_with_reviews(self):
+        from core.models import Course, Campus
+        from review.models import Review
+        self.client.force_login(self.user)
+        campus = Campus.objects.create(name='Campus')
+        course = Course.objects.create(course_code='CS100', course_name='Test', credit=3)
+        review = Review.objects.create(user=self.user, course=course, head='Test', body='Body', rating=5)
+        resp = self.client.get(reverse('users:profile'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['user_reviews']), 1)
+
+    def test_profile_view_with_bookmarks(self):
+        from core.models import Course, Campus
+        from review.models import Review, Bookmark
+        self.client.force_login(self.user)
+        campus = Campus.objects.create(name='Campus')
+        course = Course.objects.create(course_code='CS100', course_name='Test', credit=3)
+        review = Review.objects.create(user=self.user, course=course, head='Test', body='Body', rating=5)
+        Bookmark.objects.create(user=self.user, review=review, course=course)
+        resp = self.client.get(reverse('users:profile'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['bookmarked_reviews']), 1)
+

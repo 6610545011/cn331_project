@@ -1,12 +1,3 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-
-@login_required
-@require_POST
-def delete_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id, user=request.user)
-    review.delete()
-    return JsonResponse({'status': 'ok'})
 import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -14,9 +5,17 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction, models
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 from core.models import Course, Prof, Section
 from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
 from .models import Review, Bookmark, Report, ReviewUpvote
+
+@login_required
+@require_POST
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    review.delete()
+    return JsonResponse({'status': 'ok'})
 
 @login_required
 def write_review(request):
