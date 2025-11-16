@@ -1,78 +1,226 @@
 from django import forms
-from django.core.exceptions import ValidationError # <-- เพิ่ม import นี้
-from .models import Review, Course, Professor, Section
+from .models import Review, Tag, Report, ReviewUpvote
+from core.models import Course, Prof, Section
 
 class ReviewForm(forms.ModelForm):
-    # --- เปลี่ยนฟิลด์ section ตรงนี้ ---
-    # เราจะ override ฟิลด์ section ให้เป็น CharField เพื่อรับข้อความ
-    section = forms.CharField(
-        label="กลุ่มเรียน (Section)",
-        max_length=10,
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น 701, 731'})
+    # 1. กำหนด Field ทั้งหมดให้ไม่บังคับเลือก (required=False) ในตอนแรก
+    # เราจะใช้เมธอด clean() เพื่อสร้างเงื่อนไขการตรวจสอบที่ซับซ้อนเอง
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.none(), # จะกำหนด queryset แบบไดนามิกใน __init__
+        label="รายวิชา (เลือกจากวิชาที่เคยลงทะเบียน)",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_course'})
+    )
+    
+    section = forms.ModelChoiceField(
+        queryset=Section.objects.none(), # จะถูกเติมด้วย AJAX
+        label="Section (เลือกได้หลังเลือกรายวิชา)",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_section'})
     )
 
-    rating = forms.ChoiceField(
-        choices=[(i, str(i)) for i in range(1, 6)],
-        widget=forms.RadioSelect(),
-        label="ให้คะแนน"
+    professor = forms.ModelChoiceField(
+        queryset=Prof.objects.none(), # จะกำหนด queryset แบบไดนามิกใน __init__
+        label="อาจารย์ผู้สอน (เลือกจากอาจารย์ที่เคยเรียนด้วย)",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_professor'})
+    )
+
+    # ฟิลด์สำหรับเนื้อหารีวิว (ยังคงบังคับกรอก)
+    header = forms.CharField(
+        label="หัวข้อรีวิว",
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก"'})
+    )
+
+    # ฟิลด์สำหรับ Tag (ไม่บังคับเลือก)
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="แท็กที่เกี่ยวข้องกับรีวิวนี้"
     )
 
     class Meta:
         model = Review
-        # เอา 'section' ออกจาก fields นี้ เพราะเรา override ไปแล้ว
-        fields = ['course', 'professor', 'rating', 'header', 'body', 'incognito']
+        # ระบุฟิลด์ทั้งหมดที่จะใช้ในฟอร์ม
+        fields = ['course', 'section', 'prof', 'header', 'rating', 'body', 'incognito', 'tags']
         
         labels = {
-            'course': 'รายวิชา',
-            'professor': 'อาจารย์ผู้สอน',
-            'header': 'หัวข้อรีวิว',
             'body': 'เนื้อหารีวิว',
-            'incognito': 'ไม่แสดงตัวตน (Incognito)',
+            'rating': 'ให้คะแนนความพึงพอใจ',
+            'incognito': 'ไม่ระบุตัวตน',
         }
-        # ... widgets อื่นๆ เหมือนเดิม ...
         widgets = {
-            'course': forms.Select(attrs={'class': 'form-control'}),
-            'professor': forms.Select(attrs={'class': 'form-control'}),
-            'header': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก ได้ความรู้เต็มๆ"'
-            }),
-            'body': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5,
-                'placeholder': 'อธิบายรายละเอียดเพิ่มเติม...'
-            }),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'เล่าประสบการณ์ของคุณเกี่ยวกับวิชานี้...'}),
+            'rating': forms.RadioSelect(choices=[(i, str(i)) for i in range(5, 0, -1)]),
             'incognito': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
+        # 2. รับ 'user' เข้ามาเพื่อใช้กรองข้อมูลใน Dropdown
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # ไม่ต้องตั้งค่า choices ให้ section แล้ว
-        self.fields['professor'].choices = [("", "--- กรุณาเลือกรายวิชาก่อน ---")]
+        # keep a reference to user for use in clean()
+        self.user = user
 
-    # --- เพิ่มเมธอด clean() เพื่อแปลง section number เป็น object ---
+        if user:
+            # กรอง "รายวิชา" ให้แสดงเฉพาะที่ user เคยลงทะเบียน
+            enrolled_courses = Course.objects.filter(
+                sections__students=user
+            ).distinct().order_by('course_code')
+            self.fields['course'].queryset = enrolled_courses
+
+            # กรอง "อาจารย์" ให้แสดงเฉพาะที่เคยสอน user
+            taught_professors = Prof.objects.filter(
+                teaching_sections__students=user
+            ).distinct().order_by('prof_name')
+            self.fields['professor'].queryset = taught_professors
+
+        # ทำให้ช่อง Section เริ่มต้นเป็น disabled (จะถูกเปิดใช้งานด้วย JavaScript)
+        self.fields['section'].widget.attrs['disabled'] = True
+
+        # Rename the 'professor' form field to 'prof' so it maps to the model's field name.
+        # Keep the HTML id as 'id_professor' so templates/JS continue to work.
+        if 'professor' in self.fields:
+            prof_field = self.fields.pop('professor')
+            self.fields['prof'] = prof_field
+            self.fields['prof'].widget.attrs.setdefault('id', 'id_professor')
+
+        # If form is bound (POST), ensure the section queryset includes the submitted choice
+        # so ModelChoiceField validation will succeed.
+        if self.is_bound:
+            # Attempt to read the selected course from submitted data
+            course_val = None
+            # The key is simply 'course' because field name matches
+            if 'course' in self.data:
+                course_val = self.data.get('course')
+            elif self.initial.get('course'):
+                course_val = getattr(self.initial.get('course'), 'id', None)
+
+            if course_val:
+                try:
+                    course_id = int(course_val)
+                    sections_qs = Section.objects.filter(course_id=course_id)
+                    # Optionally restrict to sections the user enrolled in
+                    if user:
+                        sections_qs = sections_qs.filter(students=user)
+                    self.fields['section'].queryset = sections_qs.distinct().order_by('section_number')
+                    # If a section was submitted, enable the widget so validation runs normally
+                    if 'section' in self.data and self.data.get('section'):
+                        self.fields['section'].widget.attrs.pop('disabled', None)
+                except (TypeError, ValueError):
+                    pass
+
     def clean(self):
+        # 3. หัวใจของการตรวจสอบ Logic ทั้งหมด
         cleaned_data = super().clean()
-        course = cleaned_data.get("course")
-        section_number_str = cleaned_data.get("section")
+        course = cleaned_data.get('course')
+        section = cleaned_data.get('section')
+        prof = cleaned_data.get('prof') # ใช้ 'prof' เพราะเราเปลี่ยนชื่อใน __init__
 
-        if course and section_number_str:
+        # --- Validation 1: ต้องเลือกเป้าหมายรีวิวอย่างน้อย 1 อย่าง ---
+        if not course and not prof:
+            # Error นี้จะแสดงที่ด้านบนสุดของฟอร์ม (non_field_errors)
+            raise forms.ValidationError(
+                "กรุณาเลือกอย่างน้อยหนึ่งรายการเพื่อรีวิว (รายวิชา หรือ อาจารย์ผู้สอน)",
+                code='no_target'
+            )
+
+        # --- Validation 2: ตรวจสอบความสอดคล้องของข้อมูลที่เลือก ---
+        # กรณี 2.1: ถ้าเลือก Course และ Section -> Section ต้องอยู่ใน Course นั้น
+        if course and section:
+            if section.course != course:
+                self.add_error('section', f"Section {section.section_number} ไม่ได้อยู่ในรายวิชา {course.course_code}")
+
+        # กรณี 2.2: ถ้าเลือก Course และ Professor -> Professor ต้องเคยสอน Course นั้น
+        if course and prof:
+            if not Section.objects.filter(course=course, teachers=prof).exists():
+                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนในรายวิชา {course.course_code}")
+
+        # If user selected a professor but no course, try to infer a course.
+        # Prefer a course where the user was enrolled with that professor.
+        if prof and not course:
+            inferred_course = None
             try:
-                # ค้นหา Section object จาก course และ section number ที่ผู้ใช้กรอก
-                section_obj = Section.objects.get(course=course, section_number=section_number_str)
-                # แทนที่ string ใน cleaned_data ด้วย object ที่เราหาเจอ
-                cleaned_data['section'] = section_obj
-            except Section.DoesNotExist:
-                # ถ้าหาไม่เจอ ให้สร้าง validation error
-                raise ValidationError(
-                    f"ไม่พบ Section '{section_number_str}' สำหรับรายวิชา {course.code}."
+                if hasattr(self, 'user') and self.user:
+                    qs = Section.objects.filter(teachers=prof, students=self.user)
+                    if qs.exists():
+                        inferred_course = qs.first().course
+                if not inferred_course:
+                    qs_any = Section.objects.filter(teachers=prof)
+                    if qs_any.exists():
+                        inferred_course = qs_any.first().course
+            except Exception:
+                inferred_course = None
+
+            if inferred_course:
+                cleaned_data['course'] = inferred_course
+                course = inferred_course
+            else:
+                raise forms.ValidationError(
+                    "เมื่อเลือกอาจารย์ผู้สอนโดยไม่เลือกรายวิชา ระบบไม่พบรายวิชาที่เชื่อมกับอาจารย์ท่านนี้ — กรุณาเลือกรายวิชาหรือเลือกอาจารย์ที่มีการสอนในระบบ",
+                    code='no_course_for_prof'
                 )
-        
+
+        # กรณี 2.3: ถ้าเลือก Professor และ Section -> Professor ต้องสอน Section นั้น
+        if prof and section:
+            if prof not in section.teachers.all():
+                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนใน Section {section.section_number}")
+
         return cleaned_data
 
-    # --- แก้ไขเมธอด save() เพื่อให้ทำงานกับฟิลด์ที่เรา override ---
     def save(self, commit=True):
-        # ตั้งค่า instance.section จาก cleaned_data ที่เราแปลงเป็น object แล้ว
-        self.instance.section = self.cleaned_data.get('section')
-        return super().save(commit=commit)
+        # 4. จัดการการบันทึกข้อมูลชื่อฟิลด์ที่ไม่ตรงกัน
+        instance = super().save(commit=False)
+        
+        # Map ฟิลด์ 'header' จากฟอร์มไปที่ 'head' ในโมเดล
+        instance.head = self.cleaned_data.get('header')
+        
+        # การ map 'professor' -> 'prof' ถูกจัดการโดย `self.fields['professor'].name = 'prof'` ใน __init__ แล้ว
+        # แต่เพื่อความชัดเจน เราสามารถกำหนดค่าอีกครั้งได้
+        instance.prof = self.cleaned_data.get('prof')
+
+        if commit:
+            instance.save()
+
+        return instance
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Please provide a reason for reporting this review...'
+            }),
+        }
+        labels = {
+            'comment': 'Reason for reporting',
+        }
+
+class ReviewUpvoteForm(forms.ModelForm):
+    """
+    Form for upvoting or downvoting a review.
+    The 'vote_type' is the only field exposed to the user,
+    and it will be validated to be either 1 (upvote) or -1 (downvote).
+    """
+    class Meta:
+        model = ReviewUpvote
+        fields = ['vote_type']
+        widgets = {
+            # The vote_type will be submitted via a button, so a hidden input is suitable.
+            'vote_type': forms.HiddenInput(),
+        }
+
+    def clean_vote_type(self):
+        """
+        Validate that the vote_type is either 1 or -1.
+        """
+        vote_type = self.cleaned_data.get('vote_type')
+        if vote_type not in [1, -1]:
+            raise forms.ValidationError('Invalid vote type. Must be 1 or -1.', code='invalid_vote_type')
+        return vote_type

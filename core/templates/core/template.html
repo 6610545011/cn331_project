@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {# The title block can be overridden by child templates #}
     <title>{% block title %}Thammasat Study Plan{% endblock title %}</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="https://res.cloudinary.com/dz614nkdd/image/upload/v1763222471/favicon_rw1nf2.ico" type="image/x-icon">
     
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
@@ -21,7 +24,34 @@
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <!-- Review block styles -->
+    <link rel="stylesheet" href="{% static 'review/css/review_block.css' %}">
+
     {% block extra_head %}{% endblock extra_head %}
+
+    <style>
+        /* Styles for the circular profile picture in the header */
+        .profile-pic-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #e9e9e9; /* Fallback background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff; /* Optional: adds a nice border */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .profile-pic-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image covers the area without distortion */
+        }
+        .profile-pic-placeholder .fa-user {
+            color: #888; /* Color for the fallback icon */
+        }
+    </style>
 </head>
 <body>
     <div class="overlay" id="overlay"></div>
@@ -31,14 +61,14 @@
         </div>
         <ul>
             <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}">homepage</a></li>
-            <li><a href="#" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
+            <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
             <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
             <li><a href="#" class="{% if request.resolver_match.url_name == 'schedule_plan' %}active{% endif %}">schedule plan</a></li>
             <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">about</a></li>
             
             {% if user.is_authenticated %}
                 <!-- แสดงเมื่อล็อกอินแล้ว -->
-                <li><a href="#">profile</a></li>
+                <li><a href="{% url 'users:profile' %}">profile</a></li>
                 <li class="logout-li">
                     <form action="{% url 'users:logout' %}" method="post">
                         {% csrf_token %}
@@ -69,7 +99,15 @@
                 <span class="user-name">{{ user.username }}</span>
                 <span class="user-id">Student</span> 
             </div>
-            <div class="profile-pic-placeholder"></div>
+            <a href="{% url 'users:profile' %}" class="profile-pic-link">
+                <div class="profile-pic-placeholder">
+                    {% if user.imgurl %}
+                        <img src="{{ user.imgurl }}" alt="{{ user.username }}'s profile picture">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+            </a>
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>

@@ -1,4 +1,16 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import User
 
-# Remove User model registration since we're using Django's built-in User
-# Add any other model registrations here if needed
+class CustomUserAdmin(UserAdmin):
+    fieldsets = UserAdmin.fieldsets + (
+        ('Extra Profile Info', {'fields': ('imgurl',)}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Extra Profile Info', {'fields': ('imgurl',)}),
+    )
+    list_display = ('username', 'email', 'is_staff', 'is_active')
+    search_fields = ('username', 'email')
+    ordering = ('username',)
+
+admin.site.register(User, CustomUserAdmin)

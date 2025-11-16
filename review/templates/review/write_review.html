@@ -10,9 +10,9 @@
 {% block content %}
 <main class="content-area">
     <div class="review-form-container">
-        <h1>เขียนรีวิวรายวิชา</h1>
+        <h1>เขียนรีวิว</h1>
         
-        {# แสดงข้อความ error ทั่วไป (เช่น "ไม่พบ Section") ที่ด้านบนของฟอร์ม #}
+        {# แสดงข้อความ error ทั่วไป (เช่น "กรุณาเลือกอย่างน้อยหนึ่งรายการ") #}
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {% for error in form.non_field_errors %}
@@ -30,7 +30,6 @@
                 {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
             </div>
 
-            {# ส่วนของ Section จะถูก render เป็น text input โดยอัตโนมัติจาก forms.py #}
             <div class="form-group">
                 {{ form.section.label_tag }}
                 {{ form.section }}
@@ -38,21 +37,12 @@
             </div>
 
             <div class="form-group">
-                {{ form.professor.label_tag }}
-                {{ form.professor }}
-                {% if form.professor.errors %}<div class="errors">{{ form.professor.errors }}</div>{% endif %}
+                {{ form.prof.label_tag }}
+                {{ form.prof }}
+                {% if form.prof.errors %}<div class="errors">{{ form.prof.errors }}</div>{% endif %}
             </div>
 
-            <div class="form-group rating-group">
-                {{ form.rating.label_tag }}
-                <div class="star-rating">
-                    {% for radio in form.rating reversed %}
-                        {{ radio.tag }}
-                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} ดาว"><i class="fas fa-star"></i></label>
-                    {% endfor %}
-                </div>
-                {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
-            </div>
+            <hr style="margin: 30px 0; border-top: 1px solid #eee;">
 
             <div class="form-group">
                 {{ form.header.label_tag }}
@@ -66,10 +56,29 @@
                 {% if form.body.errors %}<div class="errors">{{ form.body.errors }}</div>{% endif %}
             </div>
 
+            <div class="form-group rating-group">
+                {{ form.rating.label_tag }}
+                <div class="star-rating">
+                    {% for radio in form.rating reversed %}
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} ดาว"><i class="fas fa-star"></i></label>
+                    {% endfor %}
+                </div>
+                {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
+            </div>
+
             <div class="form-group incognito-group">
                 {{ form.incognito }}
                 {{ form.incognito.label_tag }}
                 {% if form.incognito.errors %}<div class="errors">{{ form.incognito.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group tag-group">
+                {{ form.tags.label_tag }}
+                <div class="tag-checkboxes">
+                    {{ form.tags }}
+                </div>
+                {% if form.tags.errors %}<div class="errors">{{ form.tags.errors }}</div>{% endif %}
             </div>
 
             <button type="submit" class="btn-submit">ส่งรีวิว</button>
@@ -81,60 +90,41 @@
 {% block extra_scripts %}
 <script>
 $(document).ready(function() {
-    // --- ส่วน Select2 ของ Course (เหมือนเดิม) ---
-    $('#id_course').select2({
-        placeholder: 'พิมพ์รหัสวิชาหรือชื่อวิชาเพื่อค้นหา',
-        allowClear: true,
-        ajax: {
-            url: "{% url 'review:ajax_search_courses' %}",
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { return { term: params.term }; },
-            processResults: function (data) { return { results: data.results }; },
-            cache: true
-        }
-    });
-
-    // --- (แก้ไข) ควบคุมช่อง Section และ อาจารย์ ---
     const courseSelect = $('#id_course');
-    const sectionInput = $('#id_section'); // เปลี่ยนชื่อตัวแปรเพื่อความชัดเจน
+    const sectionSelect = $('#id_section');
     const professorSelect = $('#id_professor');
 
-    // เริ่มต้นให้ช่อง section และ อาจารย์เป็น disabled
-    sectionInput.prop('disabled', true);
-    professorSelect.prop('disabled', true);
+    // ทำให้ Dropdown สวยงามด้วย Select2
+    courseSelect.select2({ placeholder: '--- เลือกรีวิวรายวิชา (ไม่บังคับ) ---', allowClear: true });
+    professorSelect.select2({ placeholder: '--- เลือกรีวิวอาจารย์ (ไม่บังคับ) ---', allowClear: true });
+    sectionSelect.select2({ placeholder: '--- กรุณาเลือกรายวิชาก่อน ---' });
 
-    // Event: เมื่อมีการเลือกรายวิชา
-    courseSelect.on('select2:select', function (e) {
-        const courseId = e.params.data.id;
+    // Event: เมื่อมีการเลือกหรือล้างการเลือกรายวิชา
+    courseSelect.on('change', function() {
+        const courseId = $(this).val();
 
-        // --- 1. (แก้ไข) เปิดใช้งานช่อง Section Input ---
-        // ไม่ต้องมี AJAX call แล้ว แค่เปิดให้กรอกได้
-        sectionInput.prop('disabled', false);
-
-        // --- 2. โหลด Professors (เหมือนเดิม) ---
-        professorSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
-        $.ajax({
-            url: "{% url 'review:ajax_get_professors' %}",
-            data: { 'course_id': courseId },
-            success: function (data) {
-                professorSelect.empty().append('<option value="">--- เลือกอาจารย์ผู้สอน ---</option>');
-                if (data.professors.length > 0) {
-                    data.professors.forEach(function(prof) {
-                        professorSelect.append(new Option(prof.name, prof.id));
-                    });
-                } else {
-                    professorSelect.append('<option value="">ไม่พบข้อมูลอาจารย์</option>');
+        if (courseId) {
+            // ถ้ามี courseId, ให้ไปโหลด Section
+            sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+            $.ajax({
+                url: "{% url 'review:ajax_get_sections' %}",
+                data: { 'course_id': courseId },
+                success: function (data) {
+                    sectionSelect.empty().append('<option value="">--- เลือก Section (ไม่บังคับ) ---</option>');
+                    if (data.sections.length > 0) {
+                        data.sections.forEach(function(sec) {
+                            sectionSelect.append(new Option(sec.text, sec.id));
+                        });
+                    } else {
+                        sectionSelect.append('<option value="">ไม่พบ Section ที่คุณเคยลงทะเบียน</option>');
+                    }
+                    sectionSelect.trigger('change'); // อัปเดต Select2
                 }
-            }
-        });
-    });
-
-    // Event: เมื่อล้างการเลือกรายวิชา
-    courseSelect.on('select2:unselect', function (e) {
-        // (แก้ไข) Reset ทั้ง Section และ Professor
-        sectionInput.val('').prop('disabled', true); // ล้างค่าในช่อง input และปิดการใช้งาน
-        professorSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true);
+            });
+        } else {
+            // ถ้าไม่มี courseId (ล้างการเลือก), ให้ Reset และปิดช่อง Section
+            sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true).trigger('change');
+        }
     });
 });
 </script>

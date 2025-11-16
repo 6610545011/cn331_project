@@ -1,0 +1,111 @@
+{% extends 'core/template.html' %}
+{% load static %}
+
+{% block title %}My Profile - {{ user.username }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    
+    <!-- ======================== -->
+    <!--  ส่วน Profile Header ที่นำกลับมา -->
+    <!-- ======================== -->
+    <header class="profile-header">
+        <div class="profile-picture-wrapper">
+            {% if user.imgurl %}
+                <img src="{{ user.imgurl }}" alt="Profile Picture" class="profile-picture">
+            {% else %}
+                <div class="profile-picture-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+        </div>
+        <h1 class="profile-username">{{ user.username }}</h1>
+        <p class="profile-email">{{ user.email }}</p>
+        <a href="#" class="edit-profile-btn"><i class="fas fa-pencil-alt"></i> Edit Profile</a>
+    </header>
+
+    <!-- ======================== -->
+    <!--  ส่วน Tabs Navigation    -->
+    <!-- ======================== -->
+    <nav class="profile-tabs">
+        <div class="tabs-wrapper">
+            <button class="profile-tab-btn active" data-target="#reviews-pane">
+                <i class="fas fa-feather-alt"></i> My Reviews <span class="badge">{{ user_reviews.count }}</span>
+            </button>
+            <button class="profile-tab-btn" data-target="#bookmarks-pane">
+                <i class="fas fa-bookmark"></i> My Bookmarks <span class="badge">{{ bookmarked_reviews.count }}</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ======================== -->
+    <!--  ส่วน Tabs Content       -->
+    <!-- ======================== -->
+    <div class="tab-content-wrapper">
+        <!-- My Reviews Tab Pane -->
+        <div class="profile-tab-pane active" id="reviews-pane">
+            {% if user_reviews %}
+                <ul class="result-list card-list">
+                {% for review in user_reviews %}
+                    <li class="result-item">
+                        {% include "review/includes/review_block.html" with review=review %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comment-slash empty-icon"></i>
+                    <h2>No Reviews Yet</h2>
+                    <p>You haven't written any reviews. Share your experience!</p>
+                    <a href="#" class="action-btn primary">Write Your First Review</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- My Bookmarks Tab Pane -->
+        <div class="profile-tab-pane" id="bookmarks-pane">
+            {% if bookmarked_reviews %}
+                <ul class="result-list card-list">
+                {% for bookmark in bookmarked_reviews %}
+                    <li class="result-item">
+                        {% include "review/includes/review_block.html" with review=bookmark.review %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-bookmark empty-icon"></i>
+                    <h2>No Bookmarks</h2>
+                    <p>You haven't bookmarked any reviews yet. Start exploring!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Custom JavaScript for Tabs (เหมือนเดิม) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.profile-tab-btn');
+    const panes = document.querySelectorAll('.profile-tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            panes.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            const targetPane = document.querySelector(tab.getAttribute('data-target'));
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
