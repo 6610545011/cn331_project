@@ -9,7 +9,6 @@ from core.models import Course, Prof, Section
 from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
 from .models import Review, Bookmark, Report, ReviewUpvote
 
-
 @login_required
 def write_review(request):
     # ... (ส่วนนี้ไม่ต้องแก้ไข) ...
@@ -122,46 +121,51 @@ def report_review(request, review_id):
 
 @login_required 
 @require_POST
-@transaction.atomic
 def vote_review(request, review_id):
+    # 1. ตรวจสอบและแปลงข้อมูลที่รับเข้ามา
     try:
         data = json.loads(request.body)
         vote_type = int(data.get('vote_type'))
     except (json.JSONDecodeError, TypeError, ValueError):
         return JsonResponse({'status': 'error', 'message': 'Invalid request format.'}, status=400)
-    
-    form = ReviewUpvoteForm({'vote_type': vote_type})
-    if not form.is_valid():
+
+    # 2. ตรวจสอบความถูกต้องของ vote_type โดยตรง (แทนการใช้ Form)
+    if vote_type not in [1, -1]:
         return JsonResponse({'status': 'error', 'message': 'Invalid vote type.'}, status=400)
+
+    review = get_object_or_404(Review, pk=review_id)
     
-    cleaned_vote_type = form.cleaned_data['vote_type']
-    
-    # Lock the review object to prevent race conditions on its votes.
-    # This is the key to preventing the 'database is locked' error.
-    review = get_object_or_404(Review.objects.select_for_update(), pk=review_id)
-    
-    # Now, safely get the existing vote or prepare to create one.
-    vote = ReviewUpvote.objects.filter(user=request.user, review=review).first()
-    
-    user_vote_status = cleaned_vote_type
-    
-    if vote is None:
-        # If no vote exists, create one.
-        ReviewUpvote.objects.create(
+    # 3. ใช้ transaction.atomic เพื่อความปลอดภัยของข้อมูล
+    with transaction.atomic():
+        # หา vote ที่มีอยู่เดิม
+        vote, created = ReviewUpvote.objects.get_or_create(
             user=request.user,
             review=review,
-            vote_type=cleaned_vote_type
+            # ใช้ defaults เพื่อกำหนด vote_type เฉพาะตอนที่สร้างใหม่เท่านั้น
+            defaults={'vote_type': vote_type}
         )
-    else:
-        # If a vote exists, check if we're toggling it off or changing it.
-        if vote.vote_type == cleaned_vote_type:
-            vote.delete()
-            user_vote_status = 0  # 0 means no vote
-        else:
-            vote.vote_type = cleaned_vote_type
-            vote.save()
 
-    # Recalculate the score after the changes.
-    new_score = review.votes.aggregate(score=models.Sum('vote_type')).get('score') or 0
+        if not created:
+            # ถ้า vote มีอยู่แล้ว (ไม่ได้สร้างใหม่)
+            if vote.vote_type == vote_type:
+                # ถ้ากดซ้ำ -> ลบทิ้ง
+                vote.delete()
+                user_vote_status = 0  # 0 หมายถึงไม่มี vote
+            else:
+                # ถ้ากดตรงข้าม -> อัปเดต
+                vote.vote_type = vote_type
+                vote.save()
+                user_vote_status = vote_type
+        else:
+            # ถ้าเพิ่งสร้าง vote ใหม่
+            user_vote_status = vote_type
+
+    # 4. คำนวณคะแนนใหม่โดยใช้ property จาก model ที่เราสร้างไว้
+    # การทำแบบนี้ทำให้ View ไม่ต้องรู้ว่าคะแนนคำนวณอย่างไร
+    new_score = review.vote_score
     
-    return JsonResponse({'status': 'ok', 'new_score': new_score, 'user_vote': user_vote_status})
+    return JsonResponse({
+        'status': 'ok',
+        'new_score': new_score,
+        'user_vote': user_vote_status
+    })

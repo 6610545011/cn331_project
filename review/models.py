@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from core.models import Course, Section, Prof
 from django.utils import timezone
+from django.db.models import Sum
 
 # Tag for categorizing reviews
 class Tag(models.Model):
@@ -28,6 +29,13 @@ class Review(models.Model):
     rating = models.IntegerField() # Assuming rating is an integer score (e.g., 1 to 5)
     incognito = models.BooleanField(default=False)
     date_created = models.DateTimeField(default=timezone.now)
+
+    @property
+    def vote_score(self):
+        """Calculates the total vote score for the review."""
+        # ใช้ aggregation เพื่อหาผลรวมของ vote_type ทั้งหมด (1 สำหรับ upvote, -1 สำหรับ downvote)
+        result = self.votes.aggregate(score=Sum('vote_type'))
+        return result['score'] or 0 # ถ้ายังไม่มีใคร vote เลย ให้คืนค่า 0
 
     def __str__(self):
         return f"Review by {self.user.email} for {self.course.course_code}"

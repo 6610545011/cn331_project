@@ -1,33 +1,31 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}{{ prof.name }} - Thammasat Study Plan{% endblock title %}
+{% block title %}{{ prof.prof_name }} - Thammasat Study Plan{% endblock title %} {# <--- แก้ไข .name เป็น .prof_name #}
 
 {% block extra_head %}
-{# ใช้ CSS ไฟล์เดียวกับหน้ารายละเอียดวิชาเพื่อความสอดคล้อง #}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
 <div class="detail-container">
     
-    {# --- ส่วนหัว: ข้อมูลหลักของอาจารย์ --- #}
     <div class="detail-header">
         <div class="header-content">
-            {% if prof.img_url %}
-                <img src="{{ prof.img_url }}" alt="Photo of {{ prof.name }}" class="profile-image">
+            {% if prof.imgurl %} {# <--- แก้ไข .img_url เป็น .imgurl #}
+                <img src="{{ prof.imgurl }}" alt="Photo of {{ prof.prof_name }}" class="profile-image"> {# <--- แก้ไข .img_url เป็น .imgurl #}
             {% endif %}
             <div class="header-text">
-                <h1>{{ prof.prof_name }}</h1>
-                <p class="sub-heading">
+                <h1>{{ prof.prof_name }}</h1> {# <--- แก้ไข .name เป็น .prof_name #}
+                
+                {# ส่วนนี้อาจต้องปรับตาม model ของคุณ ถ้าไม่มี campus, room ใน Prof model โดยตรง #}
+                {# <p class="sub-heading">
                     <strong>Campus:</strong> {{ prof.campus.name }} | 
                     <strong>Room:</strong> {{ prof.room.name }}
-                </p>
+                </p> #}
+
                 {% if prof.email %}
                     <p><strong>Email:</strong> <a href="mailto:{{ prof.email }}">{{ prof.email }}</a></p>
-                {% endif %}
-                {% if prof.website %}
-                    <p><strong>Website:</strong> <a href="{{ prof.website }}" target="_blank" rel="noopener noreferrer">{{ prof.website }}</a></p>
                 {% endif %}
                 <p>{{ prof.description }}</p>
             </div>
@@ -35,8 +33,6 @@
     </div>
 
     <div class="detail-content">
-        
-        {# --- ส่วนที่ 1: รายการ Section ที่สอน --- #}
         <h3>Sections Taught</h3>
         <div class="card-list">
             {% for section in prof.teaching_sections.all %}
@@ -51,15 +47,13 @@
                 <p>This professor is not currently assigned to any sections.</p>
             {% endfor %}
         </div>
+    </div>
 
-        {# --- ส่วนที่ 2: รายการรีวิว --- #}
-
-
-        <div class="detail-content">
+    <div class="detail-content">
         <h3>Reviews</h3>
         <div class="card-list">
+            {# โค้ดส่วนนี้ถูกต้องแล้ว เพราะ view ส่ง 'reviews' มาให้ #}
             {% for review in reviews %}
-                {% comment %} Use the reusable review block template {% endcomment %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
                 <p>No reviews for this professor yet. Be the first to write one!</p>
@@ -68,3 +62,7 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_scripts %}
+    {# The review actions script is now loaded globally in main.js #}
+{% endblock extra_scripts %}

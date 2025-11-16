@@ -5,7 +5,6 @@
 {% block title %}Search Results for "{{ query }}" - Thammasat Study Plan{% endblock title %}
 
 {% block extra_head %}
-{# ลิงก์ไปยัง CSS ของหน้า search #}
 <link rel="stylesheet" href="{% static 'core/css/search_page.css' %}">
 {% endblock extra_head %}
 
@@ -13,100 +12,22 @@
 <div class="search-page-container">
     <h1>Search Results</h1>
 
-    {# --- Search Bar and Sorting Controls --- #}
     <form method="get" action="{% url 'core:search' %}" class="search-form">
-        <div class="search-input-group">
-            <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
-            <button type="submit">Search</button>
-        </div>
-        <div class="sort-controls">
-            <select name="sort_by" id="sort-by-select">
-                <option value="alphabetical" {% if sort_by == 'alphabetical' %}selected{% endif %}>Sort by Alphabet</option>
-                {# Add other sort options here in the future #}
-            </select>
-            <select name="order" id="order-select">
-                <option value="asc" {% if order == 'asc' %}selected{% endif %}>Ascending</option>
-                <option value="desc" {% if order == 'desc' %}selected{% endif %}>Descending</option>
-            </select>
-        </div>
+        <input type="text" name="q" placeholder="Search for courses, professors..." value="{{ query }}">
+        <button type="submit"><i class="fas fa-search"></i></button>
     </form>
 
     {% if results %}
-        {# --- Tab Navigation --- #}
         <div class="search-tabs">
-            <a class="tab-link active" data-target="#all-results">All ({{ results|length }})</a>
-            {% if professors %}<a class="tab-link" data-target="#professors-results">Professors ({{ professors.count }})</a>{% endif %}
-            {% if courses %}<a class="tab-link" data-target="#courses-results">Courses ({{ courses.count }})</a>{% endif %}
-            {% if sections %}<a class="tab-link" data-target="#sections-results">Sections ({{ sections.count }})</a>{% endif %}
-            {% if reviews %}<a class="tab-link" data-target="#reviews-results">Reviews ({{ reviews.count }})</a>{% endif %}
+            {% if professors %}<a class="tab-link active" data-target="#professors-results">Professors ({{ professors.count }})</a>{% endif %}
+            {% if courses %}<a class="tab-link {% if not professors %}active{% endif %}" data-target="#courses-results">Courses ({{ courses.count }})</a>{% endif %}
+            {% if sections %}<a class="tab-link {% if not professors and not courses %}active{% endif %}" data-target="#sections-results">Sections ({{ sections.count }})</a>{% endif %}
+            {% if reviews %}<a class="tab-link {% if not professors and not courses and not sections %}active{% endif %}" data-target="#reviews-results">Reviews ({{ reviews.count }})</a>{% endif %}
         </div>
 
-        {# --- Tab Content --- #}
         <div class="tab-content">
-            
-            {# Panel for "All" results #}
-            <div id="all-results" class="tab-panel active">
-                {% if professors %}
-                <div class="result-category">
-                    <h3>Professors</h3>
-                    <ul class="result-list">
-                        {% for prof in professors %}
-                            <li class="result-item">
-                                <h4><a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a></h4>
-                                <p>{{ prof.description|default:"No description available."|truncatewords:30 }}</p>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-
-                {% if courses %}
-                <div class="result-category">
-                    <h3>Courses</h3>
-                    <ul class="result-list">
-                        {% for course in courses %}
-                            <li class="result-item">
-                                <h4><a href="{% url 'core:course_detail' pk=course.pk %}">{{ course.course_name }} ({{ course.course_code }})</a></h4>
-                                <p>{{ course.description|default:"No description available."|truncatewords:30 }}</p>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-
-                {% if sections %}
-                <div class="result-category">
-                    <h3>Sections</h3>
-                    <ul class="result-list">
-                        {% for section in sections %}
-                            <li class="result-item">
-                                <h4><a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }} (Section: {{ section.section_number }})</a></h4>
-                                <p>Taught by: 
-                                    {% for teacher in section.teachers.all %}<a href="{% url 'core:professor_detail' pk=teacher.pk %}">{{ teacher.prof_name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}N/A{% endfor %}
-                                </p>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-
-                {% if reviews %}
-                <div class="result-category">
-                    <h3>Reviews</h3>
-                    <ul class="result-list card-list">
-                        {% for review in reviews %}
-                            <li class="result-item">
-                                {% include "review/includes/review_block.html" with review=review %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-            </div>
-
-            {# Panel for "Professors" #}
             {% if professors %}
-            <div id="professors-results" class="tab-panel">
+            <div id="professors-results" class="tab-panel active">
                 <ul class="result-list">
                     {% for prof in professors %}
                         <li class="result-item">
@@ -118,9 +39,8 @@
             </div>
             {% endif %}
 
-            {# Panel for "Courses" #}
             {% if courses %}
-            <div id="courses-results" class="tab-panel">
+            <div id="courses-results" class="tab-panel {% if not professors %}active{% endif %}">
                 <ul class="result-list">
                     {% for course in courses %}
                         <li class="result-item">
@@ -132,9 +52,8 @@
             </div>
             {% endif %}
 
-            {# Panel for "Sections" #}
             {% if sections %}
-            <div id="sections-results" class="tab-panel">
+            <div id="sections-results" class="tab-panel {% if not professors and not courses %}active{% endif %}">
                 <ul class="result-list">
                     {% for section in sections %}
                         <li class="result-item">
@@ -154,14 +73,11 @@
             </div>
             {% endif %}
 
-            {# Panel for "Reviews" #}
             {% if reviews %}
-            <div id="reviews-results" class="tab-panel">
+            <div id="reviews-results" class="tab-panel {% if not professors and not courses and not sections %}active{% endif %}">
                 <ul class="result-list card-list">
                     {% for review in reviews %}
-                        <li class="result-item">
-                            {% include "review/includes/review_block.html" with review=review %}
-                        </li>
+                        {% include "review/includes/review_block.html" with review=review %}
                     {% endfor %}
                 </ul>
             </div>
@@ -169,8 +85,7 @@
         </div>
 
     {% else %}
-        {# --- "No Results" Message --- #}
-        <div class="no-results" style="text-align: center; padding: 2rem;">
+        <div class="no-results">
             <p>No results found for "<strong>{{ query }}</strong>".</p>
             <p>Please try a different search term.</p>
         </div>
@@ -179,33 +94,26 @@
 {% endblock content %}
 
 {% block extra_scripts %}
-{# --- JavaScript for Tab functionality and Sorting --- #}
+{% include "review/includes/review_actions_js.html" %}
 <script>
-jQuery(function($) {
-    // --- Tab Switching Logic ---
-    $('.tab-link').on('click', function(e) {
-        e.preventDefault();
-        
-        // Remove active state from all tabs and panels
-        $('.tab-link').removeClass('active');
-        $('.tab-panel').removeClass('active');
-        
-        // Add active state to the clicked tab and its target panel
-        $(this).addClass('active');
-        const targetId = $(this).data('target');
-        $(targetId).addClass('active');
-    });
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.tab-link');
+    const panels = document.querySelectorAll('.tab-panel');
 
-    // --- Auto-submit form on sort change ---
-    $('#sort-by-select, #order-select').on('change', function() {
-        $('.search-form').submit();
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+
+            this.classList.add('active');
+            const target = document.querySelector(this.dataset.target);
+            if (target) {
+                target.classList.add('active');
+            }
+        });
     });
 });
 </script>
-
-{# --- Load Review Actions JavaScript ONLY if there are reviews --- #}
-{% if reviews %}
-    {% include "review/includes/review_actions_js.html" %}
-{% endif %}
-
 {% endblock extra_scripts %}
