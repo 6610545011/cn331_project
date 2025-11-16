@@ -37,7 +37,7 @@ def search(request):
     reviews_queryset = Review.objects.annotate(
         is_bookmarked=Exists(user_bookmark_subquery),
         score=Coalesce(Sum('votes__vote_type'), 0),
-        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user=request.user)), 0)
+        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
     ).select_related('course', 'prof', 'user').distinct()
 
     if query:
@@ -107,7 +107,7 @@ def prof_detail(request, pk):
         is_bookmarked=Exists(user_bookmark_subquery),
         # แก้ไข: เปลี่ยนชื่อ annotation จาก 'vote_score' เป็น 'score'
         score=Coalesce(Sum('votes__vote_type'), 0),
-        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user=request.user)), 0)
+        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
     ).distinct()
 
     return render(request, 'core/prof_detail.html', {'prof': prof, 'reviews': reviews})
@@ -124,7 +124,7 @@ def course_detail(request, pk):
         is_bookmarked=Exists(user_bookmark_subquery),
         # แก้ไข: เปลี่ยนชื่อ annotation จาก 'vote_score' เป็น 'score'
         score=Coalesce(Sum('votes__vote_type'), 0),
-        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user=request.user)), 0)
+        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
     ).distinct()
 
     return render(request, 'core/course_detail.html', {'course': course, 'reviews': reviews})

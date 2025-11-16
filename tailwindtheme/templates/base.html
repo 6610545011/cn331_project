@@ -1,26 +1,229 @@
 {% load static tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <title>Django Tailwind</title>
+    <title>{% block title %}THAMMASAT STUDY PLAN{% endblock %}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="https://res.cloudinary.com/dz614nkdd/image/upload/v1763222471/favicon_rw1nf2.ico" type="image/x-icon">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
     {% tailwind_css %}
+    
+    <style>
+        * {
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #f5f5f5;
+        }
+        
+        .sidebar-menu {
+            background: linear-gradient(180deg, #ff8c00 0%, #ff7600 100%);
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .sidebar-menu a {
+            color: #fff;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 12px 16px;
+            border-radius: 6px;
+            display: block;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+        
+        .header-top {
+            background: linear-gradient(90deg, #ff8c00 0%, #ff7600 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff7600 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
+        }
+        
+        .card-review {
+            background: linear-gradient(135deg, #2a2a4e 0%, #1a1a3e 100%);
+            border-left: 4px solid #ff8c00;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-review:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.2);
+        }
+        
+        .help-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .help-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .overlay-menu {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Smooth transitions */
+        .transition-smooth {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-gray-50 text-black font-serif leading-normal tracking-normal">
-
-    <div class="toast toast-top toast-end">
-        <div class="alert alert-info">
-            <span>Hello from daisyUi 👋</span>
+<body class="min-h-screen">
+    <!-- Overlay for Mobile Menu -->
+    <div class="fixed inset-0 overlay-menu z-40 hidden" id="menuOverlay"></div>
+    
+    <!-- Side Navigation -->
+    <nav class="fixed right-0 top-0 w-80 h-screen sidebar-menu transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto" id="sideNav">
+        <div class="pt-8 pb-6 px-8 border-b-4 border-yellow-500 bg-gradient-to-b from-orange-500 to-orange-600">
+            <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762098249/0fec3bf5-8d0f-4eb2-bf1a-e63061206edf.png" alt="sTUdyPlan Logo" class="h-32 w-auto mx-auto">
         </div>
-    </div>
-
-<div class="container mx-auto">
-    <section class="flex items-center justify-center h-screen">
-        <h1 class="text-5xl">Django + Tailwind = ❤️</h1>
-    </section>
-</div>
+        <ul class="space-y-1 mt-8 px-4">
+            <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}"><i class="fas fa-home mr-3"></i>หน้าแรก</a></li>
+            <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'course_review' or request.resolver_match.url_name == 'search' %}active{% endif %}"><i class="fas fa-search mr-3"></i>ค้นหารีวิว</a></li>
+            <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}"><i class="fas fa-pen-fancy mr-3"></i>เขียนรีวิว</a></li>
+            <li><a href="#" class=""><i class="fas fa-calendar mr-3"></i>แผนการเรียน</a></li>
+            <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}"><i class="fas fa-info-circle mr-3"></i>เกี่ยวกับ</a></li>
+            <hr class="my-6 border-yellow-500">
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'users:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fas fa-user mr-3"></i>โปรไฟล์</a></li>
+                <li>
+                    <form action="{% url 'users:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left py-3 px-4 rounded-lg font-semibold transition text-red-300 hover:bg-red-600 hover:text-white"><i class="fas fa-sign-out-alt mr-3"></i>ออกจากระบบ</button>
+                    </form>
+                </li>
+            {% else %}
+                <li><a href="{% url 'users:login' %}" class=""><i class="fas fa-sign-in-alt mr-3"></i>เข้าสู่ระบบ</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    <!-- Top Header -->
+    <header class="header-top fixed top-0 left-0 right-0 h-20 z-40 flex items-center justify-between px-4 md:px-8">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'core:homepage' %}" class="flex items-center gap-2 hover:opacity-80 transition">
+                <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762097931/bcb28b14-e0a7-442f-9353-ce5f11301fe8.png" alt="Logo" class="h-12 w-auto">
+                <span class="hidden md:block text-white font-bold text-xl">THAMMASAT</span>
+            </a>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            {% if user.is_authenticated %}
+                <div class="hidden lg:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="font-semibold text-white text-sm">{{ user.username }}</p>
+                        <p class="text-orange-100 text-xs">Student</p>
+                    </div>
+                    <a href="{% url 'users:profile' %}" class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-white transition">
+                        {% if user.imgurl %}
+                            <img src="{{ user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
+                        {% else %}
+                            <i class="fas fa-user text-gray-600 text-lg"></i>
+                        {% endif %}
+                    </a>
+                </div>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="hidden md:inline-block btn-primary">เข้าสู่ระบบ</a>
+            {% endif %}
+            
+            <button class="text-white text-2xl hover:text-orange-200 transition" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 md:px-8 min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Help Button -->
+    <a href="{% url 'core:about' %}" class="help-button fixed bottom-8 right-8 text-2xl">
+        <i class="fas fa-question"></i>
+    </a>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const sideNav = document.getElementById('sideNav');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        menuToggle.addEventListener('click', () => {
+            sideNav.classList.toggle('translate-x-full');
+            menuOverlay.classList.toggle('hidden');
+        });
+        
+        menuOverlay.addEventListener('click', () => {
+            sideNav.classList.add('translate-x-full');
+            menuOverlay.classList.add('hidden');
+        });
+        
+        // Close menu when clicking on a link
+        document.querySelectorAll('#sideNav a').forEach(link => {
+            link.addEventListener('click', () => {
+                sideNav.classList.add('translate-x-full');
+                menuOverlay.classList.add('hidden');
+            });
+        });
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

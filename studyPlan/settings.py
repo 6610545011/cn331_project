@@ -127,3 +127,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = 'users.User'
+
+# Redirect login-required decorators to the users app login view
+LOGIN_URL = '/users/login/'

@@ -2,68 +2,137 @@
 {% load static %}
 {% load core_extras %}
 
-{% block title %}{{ course.course_name }} - Thammasat Study Plan{% endblock title %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
-{% endblock extra_head %}
+{% block title %}{{ course.course_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
 {% block content %}
-<div class="detail-container">
-    <div class="detail-header">
-        <h1>{{ course.course_code }} - {{ course.course_name }}</h1>
-        <p class="sub-heading">{{ course.description }}</p>
-        <p class="sub-heading">
-            <strong>Taught by:</strong>
-            {% for prof in course.all_professors %}
-                <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
-            {% empty %}
-                Instructor information not available.
-            {% endfor %}
-        </p>
+<div class="container mx-auto max-w-4xl">
+    <!-- Header Section -->
+    <div class="card-review p-8 mb-8">
+        <div class="mb-6">
+            <span class="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <i class="fas fa-book mr-2"></i>{{ course.course_code }}
+            </span>
+            <h1 class="text-4xl font-bold mb-3">{{ course.course_name }}</h1>
+            <p class="text-gray-300 text-lg mb-4">{{ course.description }}</p>
+            
+            <div class="border-t border-orange-400 pt-4 mt-4">
+                <p class="text-gray-300">
+                    <strong class="text-orange-400">
+                        <i class="fas fa-chalkboard-user mr-2"></i>ผู้สอน:
+                    </strong>
+                    {% for prof in course.all_professors %}
+                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition">
+                            {{ prof.prof_name }}
+                        </a>{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        <span class="text-gray-500">ไม่มีข้อมูล</span>
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Sections</h3>
-        <div class="card-list">
+    <!-- Sections Section -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+            <i class="fas fa-layer-group text-orange-400"></i>เซคชั่นของรายวิชา
+        </h2>
+        
+        <div class="space-y-4">
             {% for section in course.sections.all %}
-                <div class="info-card">
-                    <h4>Section {{ section.section_number }}</h4>
-                    <p>
-                        <strong>Professor(s):</strong>
-                        {% for prof in section.teachers.all %}
-                            <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            Not assigned
-                        {% endfor %}
-                    </p>
-                    {% if section.campus %}<p><strong>Campus:</strong> {{ section.campus.name }}</p>{% endif %}
-                    {# แก้ไข: เปลี่ยนจาก date_time เป็น datetime ตาม model #}
-                    {% if section.datetime %}<p><strong>Time:</strong> {{ section.datetime }}</p>{% endif %}
-                    {% if section.room %}<p><strong>Location:</strong> {{ section.room }}</p>{% endif %}
+                <div class="card-review p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-orange-400 mb-3">
+                                <i class="fas fa-graduation-cap mr-2"></i>เซคชั่น {{ section.section_number }}
+                            </h3>
+                            <div class="space-y-2 text-gray-300">
+                                {% if section.teachers.all %}
+                                    <p>
+                                        <strong>ผู้สอน:</strong><br>
+                                        {% for prof in section.teachers.all %}
+                                            <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300">
+                                                {{ prof.prof_name }}
+                                            </a>{% if not forloop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="space-y-2 text-gray-300">
+                                {% if section.campus %}
+                                    <p>
+                                        <strong class="text-white">
+                                            <i class="fas fa-map-marker-alt text-orange-400 mr-2"></i>วิทยาเขต:
+                                        </strong>
+                                        {{ section.campus.name }}
+                                    </p>
+                                {% endif %}
+                                {% if section.datetime %}
+                                    <p>
+                                        <strong class="text-white">
+                                            <i class="fas fa-clock text-orange-400 mr-2"></i>เวลา:
+                                        </strong>
+                                        {{ section.datetime }}
+                                    </p>
+                                {% endif %}
+                                {% if section.room %}
+                                    <p>
+                                        <strong class="text-white">
+                                            <i class="fas fa-door-open text-orange-400 mr-2"></i>ห้อง:
+                                        </strong>
+                                        {{ section.room }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             {% empty %}
-                <p>No sections available for this course.</p>
+                <div class="card-review p-8 text-center">
+                    <p class="text-gray-400">
+                        <i class="fas fa-info-circle mr-2"></i>ไม่มีข้อมูลเซคชั่นสำหรับรายวิชานี้
+                    </p>
+                </div>
             {% endfor %}
         </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Reviews</h3>
-        <div class="card-list">
+    <!-- Reviews Section -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+            <i class="fas fa-star text-orange-400"></i>รีวิว
+        </h2>
+        
+        <div class="space-y-4">
             {% for review in course.reviews.all %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
-                <p>No reviews for this course yet. Be the first to write one!</p>
+                <div class="card-review p-12 text-center">
+                    <div class="text-5xl text-orange-400 mb-4">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <p class="text-gray-400 mb-4">ยังไม่มีรีวิวสำหรับรายวิชานี้</p>
+                    <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
+                        <i class="fas fa-pen mr-2"></i>เขียนรีวิวแรก
+                    </a>
+                </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<style>
+    .gradient-text {
+        background: linear-gradient(135deg, #ff8c00 0%, #ff6b6b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
 {% endblock content %}
 
-{# ======================================================== #}
-{#  เพิ่มส่วนนี้เข้ามาเพื่อโหลด JavaScript ของระบบ Review  #}
-{# ======================================================== #}
 {% block extra_scripts %}
     {% if course.reviews.all %}
         {% include "review/includes/review_actions_js.html" %}
