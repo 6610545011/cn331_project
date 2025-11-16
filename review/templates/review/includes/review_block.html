@@ -3,8 +3,11 @@
     The controlling JavaScript is loaded separately.
 {% endcomment %}
 <div class="info-card review-card">
-    <div class="review-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h4>{{ review.head }}</h4>
+    <div class="review-header">
+        <div class="review-head-left">
+            <div class="review-avatar">{{ review.user.username|slice:":1"|upper }}</div>
+            <h4>{{ review.head }}</h4>
+        </div>
         {% if user.is_authenticated %}
         <div class="btn-group">
             <button class="btn btn-sm bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
@@ -12,14 +15,32 @@
                     data-url="{% url 'review:toggle_bookmark' review.id %}">
                 <i class="fas fa-bookmark"></i> Bookmark
             </button>
-            {# หมายเหตุ: ปุ่ม Report นี้ต้องใช้ Bootstrap JS หรือ custom JS เพื่อให้ Modal ทำงาน #}
-            <button class="btn btn-sm btn-outline-danger report-btn" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}">
+            {# Use Bootstrap modal for report popup #}
+            <button class="btn btn-sm btn-outline-danger report-btn" data-review-id="{{ review.id }}" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}">
                 <i class="fas fa-flag"></i> Report
             </button>
+            {% if request.resolver_match.url_name == 'users:profile' and user == review.user %}
+            <button class="btn btn-sm btn-outline-danger delete-review-btn" data-review-id="{{ review.id }}" data-url="{% url 'review:delete_review' review.id %}">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+            {% endif %}
         </div>
         {% endif %}
     </div>
-    <p class="review-rating"><strong>Rating:</strong> {{ review.rating }}/5</p>
+    <p class="review-rating">
+        <strong>Rating:</strong>
+        <span class="review-stars" aria-label="Rating: {{ review.rating }} out of 5">
+            {% comment %} Render 5 stars; filled for <= rating, outline otherwise {% endcomment %}
+            {% for _ in "12345" %}
+                {% if forloop.counter <= review.rating %}
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                {% else %}
+                    <i class="far fa-star" aria-hidden="true"></i>
+                {% endif %}
+            {% endfor %}
+        </span>
+        <span class="visually-hidden">{{ review.rating }} out of 5</span>
+    </p>
     <p>{{ review.body }}</p>
     <div class="review-meta">
         <span class="review-author">
@@ -46,10 +67,11 @@
         </div>
         {% endif %}
     </div>
+    {# inline report removed; modal below will provide popup UI #}
 </div>
 {% if user.is_authenticated %}
 <!-- Report Modal -->
-<div class="modal fade" id="reportModal-{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel-{{ review.id }}" aria-hidden="true">
+<div class="modal fade" id="reportModal-{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel-{{ review.id }}" aria-hidden="true" style="display:none;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

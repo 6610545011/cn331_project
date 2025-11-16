@@ -51,14 +51,13 @@
         <!-- My Reviews Tab Pane -->
         <div class="profile-tab-pane active" id="reviews-pane">
             {% if user_reviews %}
+                <ul class="result-list card-list">
                 {% for review in user_reviews %}
-                <div class="review-card">
-                    <!-- เนื้อหา Review Card -->
-                    <h3><a href="#">{{ review.course.course_code }} - {{ review.course.course_name }}</a></h3>
-                    <h4>{{ review.head }}</h4>
-                    <p>{{ review.body|truncatewords:40 }}</p>
-                </div>
+                    <li class="result-item">
+                        {% include "review/includes/review_block.html" with review=review %}
+                    </li>
                 {% endfor %}
+                </ul>
             {% else %}
                 <div class="empty-state">
                     <i class="fas fa-comment-slash empty-icon"></i>
@@ -72,14 +71,13 @@
         <!-- My Bookmarks Tab Pane -->
         <div class="profile-tab-pane" id="bookmarks-pane">
             {% if bookmarked_reviews %}
+                <ul class="result-list card-list">
                 {% for bookmark in bookmarked_reviews %}
-                <div class="review-card">
-                    <!-- เนื้อหา Bookmark Card -->
-                    <h3><a href="#">{{ bookmark.review.course.course_code }} - {{ bookmark.review.course.course_name }}</a></h3>
-                    <h4>{{ bookmark.review.head }}</h4>
-                    <p>{{ bookmark.review.body|truncatewords:40 }}</p>
-                </div>
+                    <li class="result-item">
+                        {% include "review/includes/review_block.html" with review=bookmark.review %}
+                    </li>
                 {% endfor %}
+                </ul>
             {% else %}
                 <div class="empty-state">
                     <i class="fas fa-book-bookmark empty-icon"></i>

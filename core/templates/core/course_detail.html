@@ -65,7 +65,5 @@
 {#  เพิ่มส่วนนี้เข้ามาเพื่อโหลด JavaScript ของระบบ Review  #}
 {# ======================================================== #}
 {% block extra_scripts %}
-    {% if course.reviews.all %}
-        {% include "review/includes/review_actions_js.html" %}
-    {% endif %}
+    {# review actions are handled globally by core/js/main.js; avoid including the per-page script to prevent duplicate bindings #}
 {% endblock extra_scripts %}
