@@ -24,7 +24,9 @@ def write_review(request):
             messages.success(request, 'ขอบคุณสำหรับรีวิวของคุณ!')
             return redirect('core:homepage')
     else:
-        form = ReviewForm()
+        # Ensure the form is instantiated with the current user
+        # so dropdowns (courses/professors) are filtered correctly.
+        form = ReviewForm(user=request.user)
 
     context = {
         'form': form
