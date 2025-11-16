@@ -1,249 +1,131 @@
 {% extends "core/template.html" %}
-
 {% load static %}
 
-{% block title %}Write Review{% endblock %}
+{% block title %}Write Review - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'review/css/review_form.css' %}">
+{% endblock extra_head %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
-    <!-- Page Title -->
-    <h1 style="color: #c41e3a; font-size: 32px; margin-bottom: 10px; text-align: center;">
-        <i class="fas fa-pen-fancy"></i> Write Review
-    </h1>
-    <p style="color: #666; text-align: center; margin-bottom: 40px; font-size: 16px;">Share your experience with this course</p>
+<main class="content-area">
+    <div class="review-form-container">
+        <h1>เขียนรีวิว</h1>
+        
+        {# แสดงข้อความ error ทั่วไป (เช่น "กรุณาเลือกอย่างน้อยหนึ่งรายการ") #}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-    <!-- Review Form Card -->
-    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <form method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        <form method="post" novalidate>
             {% csrf_token %}
-
-            <!-- Course Selection -->
-            <div>
-                <label style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-book"></i> Course *
-                </label>
-                {% if form.course %}
-                    {{ form.course }}
-                {% else %}
-                    <select name="course" id="id_course" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; background: white; color: #000;" required>
-                        <option value="">-- Select a course --</option>
-                        {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.code }} - {{ course.name_en }}</option>
-                        {% endfor %}
-                    </select>
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">Select the course you want to review</small>
-                {% if form.course.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.course.errors.0 }}</div>
-                {% endif %}
+            
+            <div class="form-group">
+                {{ form.course.label_tag }}
+                {{ form.course }}
+                {% if form.course.errors %}<div class="errors">{{ form.course.errors }}</div>{% endif %}
             </div>
 
-            <!-- Section Selection -->
-            <div>
-                <label style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-layer-group"></i> Section
-                </label>
-                {% if form.section %}
-                    {{ form.section }}
-                {% else %}
-                    <select name="section" id="id_section" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; background: white; color: #000;">
-                        <option value="">-- Select a section (optional) --</option>
-                    </select>
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">Optional: Select a specific section</small>
-                {% if form.section.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.section.errors.0 }}</div>
-                {% endif %}
+            <div class="form-group">
+                {{ form.section.label_tag }}
+                {{ form.section }}
+                {% if form.section.errors %}<div class="errors">{{ form.section.errors }}</div>{% endif %}
             </div>
 
-            <!-- Professor Selection -->
-            <div>
-                <label style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-user-tie"></i> Professor
-                </label>
-                {% if form.prof %}
-                    {{ form.prof }}
-                {% else %}
-                    <select name="prof" id="id_prof" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; background: white; color: #000;">
-                        <option value="">-- Select a professor (optional) --</option>
-                    </select>
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">Optional: Select the instructor</small>
-                {% if form.prof.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.prof.errors.0 }}</div>
-                {% endif %}
+            <div class="form-group">
+                {{ form.prof.label_tag }}
+                {{ form.prof }}
+                {% if form.prof.errors %}<div class="errors">{{ form.prof.errors }}</div>{% endif %}
             </div>
 
-            <!-- Rating -->
-            <div>
-                <label style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-star"></i> Rating *
-                </label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    {% for choice, label in form.rating.field.choices %}
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #000;">
-                            <input type="radio" name="rating" value="{{ choice }}" style="cursor: pointer; width: 18px; height: 18px;" {% if form.rating.value == choice %}checked{% endif %} required>
-                            <span style="color: #ff8c00; font-size: 18px;">
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= label %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="fas fa-star" style="opacity: 0.2;"></i>
-                                    {% endif %}
-                                {% endfor %}
-                            </span>
-                        </label>
+            <hr style="margin: 30px 0; border-top: 1px solid #eee;">
+
+            <div class="form-group">
+                {{ form.header.label_tag }}
+                {{ form.header }}
+                {% if form.header.errors %}<div class="errors">{{ form.header.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.body.label_tag }}
+                {{ form.body }}
+                {% if form.body.errors %}<div class="errors">{{ form.body.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group rating-group">
+                {{ form.rating.label_tag }}
+                <div class="star-rating">
+                    {% for radio in form.rating reversed %}
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} ดาว"><i class="fas fa-star"></i></label>
                     {% endfor %}
                 </div>
-                {% if form.rating.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.rating.errors.0 }}</div>
-                {% endif %}
+                {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
             </div>
 
-            <!-- Heading/Title -->
-            <div>
-                <label for="id_head" style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-heading"></i> Title *
-                </label>
-                <input type="text" name="head" id="id_head" maxlength="200" 
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; color: #000; box-sizing: border-box;"
-                       placeholder="e.g., Great course, highly recommend!" 
-                       value="{{ form.head.value|default:'' }}" required>
-                {% if form.head.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.head.errors.0 }}</div>
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">A brief summary of your review (max 200 characters)</small>
+            <div class="form-group incognito-group">
+                {{ form.incognito }}
+                {{ form.incognito.label_tag }}
+                {% if form.incognito.errors %}<div class="errors">{{ form.incognito.errors }}</div>{% endif %}
             </div>
 
-            <!-- Review Body -->
-            <div>
-                <label for="id_body" style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-align-left"></i> Review *
-                </label>
-                <textarea name="body" id="id_body" 
-                          style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; color: #000; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 150px;"
-                          placeholder="Share your detailed thoughts about this course. What did you learn? What could be improved?" required>{{ form.body.value|default:'' }}</textarea>
-                {% if form.body.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.body.errors.0 }}</div>
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">Share your detailed experience (max 2000 characters)</small>
-            </div>
-
-            <!-- Tags -->
-            <div>
-                <label for="id_tags" style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-tags"></i> Tags
-                </label>
-                {% if form.tags %}
+            <div class="form-group tag-group">
+                {{ form.tags.label_tag }}
+                <div class="tag-checkboxes">
                     {{ form.tags }}
-                {% else %}
-                    <input type="text" name="tags" id="id_tags" 
-                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; color: #000; box-sizing: border-box;"
-                           placeholder="e.g., challenging, interesting, well-organized (comma separated)">
-                {% endif %}
-                <small style="color: #999; display: block; margin-top: 4px;">Add tags to help others find relevant reviews (optional, comma separated)</small>
-                {% if form.tags.errors %}
-                    <div style="color: #e74c3c; margin-top: 8px; font-size: 13px;">{{ form.tags.errors.0 }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Incognito Checkbox -->
-            <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f9f9f9; border-radius: 6px;">
-                <input type="checkbox" name="incognito" id="id_incognito" 
-                       style="width: 18px; height: 18px; cursor: pointer;" {% if form.incognito.value %}checked{% endif %}>
-                <label for="id_incognito" style="color: #000; cursor: pointer; margin: 0; flex: 1;">
-                    <strong>Post anonymously</strong>
-                    <small style="color: #999; display: block; margin-top: 4px;">Your name will appear as "Anonymous" in the review</small>
-                </label>
-            </div>
-
-            <!-- Form Errors -->
-            {% if form.non_field_errors %}
-                <div style="background: #ffebee; color: #c41e3a; padding: 12px; border-radius: 6px; border-left: 4px solid #c41e3a;">
-                    <strong>Error:</strong>
-                    {% for error in form.non_field_errors %}
-                        <div>{{ error }}</div>
-                    {% endfor %}
                 </div>
-            {% endif %}
-
-            <!-- Submit Buttons -->
-            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
-                <button type="submit" style="padding: 12px 30px; background: linear-gradient(135deg, #ff8c00, #ff7600); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
-                    <i class="fas fa-paper-plane"></i> Submit Review
-                </button>
-                <a href="{% url 'core:homepage' %}" style="padding: 12px 30px; background: #f0f0f0; color: #000; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-times"></i> Cancel
-                </a>
+                {% if form.tags.errors %}<div class="errors">{{ form.tags.errors }}</div>{% endif %}
             </div>
+
+            <button type="submit" class="btn-submit">ส่งรีวิว</button>
         </form>
     </div>
+</main>
+{% endblock content %}
 
-    <!-- Tips Section -->
-    <div style="background: #f0f7ff; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; margin-top: 30px;">
-        <h3 style="color: #ff8c00; margin-top: 0;"><i class="fas fa-lightbulb"></i> Tips for a great review</h3>
-        <ul style="color: #333; line-height: 1.8; margin: 0;">
-            <li>Be honest and constructive</li>
-            <li>Focus on your learning experience</li>
-            <li>Mention specific aspects: difficulty, teaching style, workload</li>
-            <li>Be respectful and professional</li>
-            <li>Avoid sharing personal information</li>
-        </ul>
-    </div>
-</div>
-
-<style>
-    select, textarea, input[type="text"] {
-        transition: border-color 0.3s;
-    }
-    
-    select:focus, textarea:focus, input[type="text"]:focus {
-        outline: none;
-        border-color: #ff8c00 !important;
-        box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
-    }
-    
-    button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-</style>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+{% block extra_scripts %}
 <script>
 $(document).ready(function() {
     const courseSelect = $('#id_course');
     const sectionSelect = $('#id_section');
-    const professorSelect = $('#id_prof');
+    const professorSelect = $('#id_professor');
 
-    // Event: When selecting or clearing course
+    // ทำให้ Dropdown สวยงามด้วย Select2
+    courseSelect.select2({ placeholder: '--- เลือกรีวิวรายวิชา (ไม่บังคับ) ---', allowClear: true });
+    professorSelect.select2({ placeholder: '--- เลือกรีวิวอาจารย์ (ไม่บังคับ) ---', allowClear: true });
+    sectionSelect.select2({ placeholder: '--- กรุณาเลือกรายวิชาก่อน ---' });
+
+    // Event: เมื่อมีการเลือกหรือล้างการเลือกรายวิชา
     courseSelect.on('change', function() {
         const courseId = $(this).val();
 
         if (courseId) {
-            sectionSelect.prop('disabled', false).html('<option>Loading...</option>');
+            // ถ้ามี courseId, ให้ไปโหลด Section
+            sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
             $.ajax({
                 url: "{% url 'review:ajax_get_sections' %}",
                 data: { 'course_id': courseId },
                 success: function (data) {
-                    sectionSelect.empty().append('<option value="">-- Select Section (optional) --</option>');
+                    sectionSelect.empty().append('<option value="">--- เลือก Section (ไม่บังคับ) ---</option>');
                     if (data.sections.length > 0) {
                         data.sections.forEach(function(sec) {
                             sectionSelect.append(new Option(sec.text, sec.id));
                         });
                     } else {
-                        sectionSelect.append('<option value="">No sections found</option>');
+                        sectionSelect.append('<option value="">ไม่พบ Section ที่คุณเคยลงทะเบียน</option>');
                     }
-                    sectionSelect.trigger('change');
+                    sectionSelect.trigger('change'); // อัปเดต Select2
                 }
             });
         } else {
-            sectionSelect.empty().append('<option value="">-- Select course first --</option>').prop('disabled', true).trigger('change');
+            // ถ้าไม่มี courseId (ล้างการเลือก), ให้ Reset และปิดช่อง Section
+            sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true).trigger('change');
         }
     });
 });
 </script>
-{% endblock %}
+{% endblock extra_scripts %}

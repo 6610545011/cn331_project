@@ -44,7 +44,7 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         # ระบุฟิลด์ทั้งหมดที่จะใช้ในฟอร์ม
-        fields = ['course', 'section', 'professor', 'header', 'rating', 'body', 'incognito', 'tags']
+        fields = ['course', 'section', 'prof', 'header', 'rating', 'body', 'incognito', 'tags']
         
         labels = {
             'body': 'เนื้อหารีวิว',
@@ -61,6 +61,8 @@ class ReviewForm(forms.ModelForm):
         # 2. รับ 'user' เข้ามาเพื่อใช้กรองข้อมูลใน Dropdown
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        # keep a reference to user for use in clean()
+        self.user = user
 
         if user:
             # กรอง "รายวิชา" ให้แสดงเฉพาะที่ user เคยลงทะเบียน
@@ -78,8 +80,37 @@ class ReviewForm(forms.ModelForm):
         # ทำให้ช่อง Section เริ่มต้นเป็น disabled (จะถูกเปิดใช้งานด้วย JavaScript)
         self.fields['section'].widget.attrs['disabled'] = True
 
-        # จัดการเรื่องชื่อฟิลด์ prof/professor เพื่อให้ ModelForm ทำงานกับ 'prof' ได้ถูกต้อง
-        self.fields['professor'].name = 'prof'
+        # Rename the 'professor' form field to 'prof' so it maps to the model's field name.
+        # Keep the HTML id as 'id_professor' so templates/JS continue to work.
+        if 'professor' in self.fields:
+            prof_field = self.fields.pop('professor')
+            self.fields['prof'] = prof_field
+            self.fields['prof'].widget.attrs.setdefault('id', 'id_professor')
+
+        # If form is bound (POST), ensure the section queryset includes the submitted choice
+        # so ModelChoiceField validation will succeed.
+        if self.is_bound:
+            # Attempt to read the selected course from submitted data
+            course_val = None
+            # The key is simply 'course' because field name matches
+            if 'course' in self.data:
+                course_val = self.data.get('course')
+            elif self.initial.get('course'):
+                course_val = getattr(self.initial.get('course'), 'id', None)
+
+            if course_val:
+                try:
+                    course_id = int(course_val)
+                    sections_qs = Section.objects.filter(course_id=course_id)
+                    # Optionally restrict to sections the user enrolled in
+                    if user:
+                        sections_qs = sections_qs.filter(students=user)
+                    self.fields['section'].queryset = sections_qs.distinct().order_by('section_number')
+                    # If a section was submitted, enable the widget so validation runs normally
+                    if 'section' in self.data and self.data.get('section'):
+                        self.fields['section'].widget.attrs.pop('disabled', None)
+                except (TypeError, ValueError):
+                    pass
 
     def clean(self):
         # 3. หัวใจของการตรวจสอบ Logic ทั้งหมด
@@ -105,12 +136,37 @@ class ReviewForm(forms.ModelForm):
         # กรณี 2.2: ถ้าเลือก Course และ Professor -> Professor ต้องเคยสอน Course นั้น
         if course and prof:
             if not Section.objects.filter(course=course, teachers=prof).exists():
-                self.add_error('professor', f"{prof.prof_name} ไม่ได้สอนในรายวิชา {course.course_code}")
+                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนในรายวิชา {course.course_code}")
+
+        # If user selected a professor but no course, try to infer a course.
+        # Prefer a course where the user was enrolled with that professor.
+        if prof and not course:
+            inferred_course = None
+            try:
+                if hasattr(self, 'user') and self.user:
+                    qs = Section.objects.filter(teachers=prof, students=self.user)
+                    if qs.exists():
+                        inferred_course = qs.first().course
+                if not inferred_course:
+                    qs_any = Section.objects.filter(teachers=prof)
+                    if qs_any.exists():
+                        inferred_course = qs_any.first().course
+            except Exception:
+                inferred_course = None
+
+            if inferred_course:
+                cleaned_data['course'] = inferred_course
+                course = inferred_course
+            else:
+                raise forms.ValidationError(
+                    "เมื่อเลือกอาจารย์ผู้สอนโดยไม่เลือกรายวิชา ระบบไม่พบรายวิชาที่เชื่อมกับอาจารย์ท่านนี้ — กรุณาเลือกรายวิชาหรือเลือกอาจารย์ที่มีการสอนในระบบ",
+                    code='no_course_for_prof'
+                )
 
         # กรณี 2.3: ถ้าเลือก Professor และ Section -> Professor ต้องสอน Section นั้น
         if prof and section:
             if prof not in section.teachers.all():
-                self.add_error('professor', f"{prof.prof_name} ไม่ได้สอนใน Section {section.section_number}")
+                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนใน Section {section.section_number}")
 
         return cleaned_data
 

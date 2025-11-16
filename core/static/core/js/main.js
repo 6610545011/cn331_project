@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.getElementById('menuToggle');
     const sideNav = document.getElementById('sideNav');
@@ -66,6 +65,28 @@ document.body.addEventListener('click', function(e) {
             }
         })
         .catch(error => console.error('Error toggling bookmark:', error));
+    }
+
+    const deleteBtn = e.target.closest('.delete-review-btn');
+    if (deleteBtn) {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to delete this review?')) return;
+        const url = deleteBtn.dataset.url;
+        const reviewCard = deleteBtn.closest('.review-card');
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                if (reviewCard) reviewCard.remove();
+            }
+        })
+        .catch(error => console.error('Error deleting review:', error));
     }
 });
 
@@ -137,13 +158,24 @@ document.body.addEventListener('submit', function(e) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'ok') {
-                const scoreSpan = document.querySelector(`.vote-score[data-review-id="${reviewId}"]`);
-                scoreSpan.textContent = data.new_score;
+                    // Update all score displays for this review (real-time on page)
+                    const scoreSpans = document.querySelectorAll(`.vote-score[data-review-id="${reviewId}"]`);
+                    scoreSpans.forEach(s => { s.textContent = data.new_score; });
 
-                upvoteBtn.classList.toggle('btn-success', data.user_vote == 1);
-                upvoteBtn.classList.toggle('btn-outline-success', data.user_vote != 1);
-                downvoteBtn.classList.toggle('btn-danger', data.user_vote == -1);
-                downvoteBtn.classList.toggle('btn-outline-danger', data.user_vote != -1);
+                    // Update all vote buttons/forms for this review across the page
+                    const voteForms = document.querySelectorAll(`.vote-form[data-review-id="${reviewId}"]`);
+                    voteForms.forEach(formEl => {
+                        const upBtn = formEl.querySelector('.upvote-btn');
+                        const downBtn = formEl.querySelector('.downvote-btn');
+                        if (upBtn) {
+                            upBtn.classList.toggle('btn-success', data.user_vote == 1);
+                            upBtn.classList.toggle('btn-outline-success', data.user_vote != 1);
+                        }
+                        if (downBtn) {
+                            downBtn.classList.toggle('btn-danger', data.user_vote == -1);
+                            downBtn.classList.toggle('btn-outline-danger', data.user_vote != -1);
+                        }
+                    });
             }
         })
         .catch(error => console.error('Error submitting vote:', error))
@@ -152,4 +184,63 @@ document.body.addEventListener('submit', function(e) {
             downvoteBtn.disabled = false;
         });
     }
+});
+
+// Modal helpers and fallback show/hide for report modal when Bootstrap is not available
+document.addEventListener('shown.bs.modal', function(evt) {
+    const modal = evt.target;
+    if (!modal) return;
+    const ta = modal.querySelector('textarea');
+    if (ta) ta.focus();
+});
+
+document.addEventListener('hidden.bs.modal', function(evt) {
+    const modal = evt.target;
+    if (!modal) return;
+    const alert = modal.querySelector('[id^="report-alert-"]');
+    if (alert) alert.innerHTML = '';
+    const form = modal.querySelector('form.report-form');
+    if (form) form.reset();
+});
+
+// Fallback: if Bootstrap JS is not loaded, provide simple show/hide behavior for report modal
+document.body.addEventListener('click', function(e) {
+    const rb = e.target.closest('.report-btn');
+    if (!rb) return;
+    const reviewId = rb.dataset.reviewId;
+    const modalEl = document.getElementById(`reportModal-${reviewId}`);
+    console.log('Report button clicked:', { reviewId, modalExists: !!modalEl, bootstrap: typeof bootstrap });
+    if (!modalEl) return;
+    if (typeof bootstrap === 'undefined') {
+        e.preventDefault();
+        modalEl.style.display = 'block';
+        modalEl.classList.add('show');
+        modalEl.removeAttribute('aria-hidden');
+        modalEl.setAttribute('aria-modal', 'true');
+        if (!document.getElementById('_fallback_backdrop')) {
+            const bd = document.createElement('div');
+            bd.id = '_fallback_backdrop';
+            bd.className = 'modal-backdrop fade show';
+            document.body.appendChild(bd);
+        }
+        const ta = modalEl.querySelector('textarea');
+        if (ta) ta.focus();
+    }
+});
+
+// Fallback: close modal when clicking Cancel / close icon if Bootstrap not present
+document.body.addEventListener('click', function(e) {
+    const dismissBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close');
+    if (!dismissBtn) return;
+    console.log('Dismiss clicked (fallback handler):', { bootstrap: typeof bootstrap });
+    if (typeof bootstrap !== 'undefined') return;
+    const modalEl = e.target.closest('.modal');
+    if (!modalEl) return;
+    e.preventDefault();
+    modalEl.style.display = 'none';
+    modalEl.classList.remove('show');
+    modalEl.setAttribute('aria-hidden', 'true');
+    modalEl.removeAttribute('aria-modal');
+    const bd = document.getElementById('_fallback_backdrop');
+    if (bd) bd.remove();
 });

@@ -42,6 +42,7 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
             })
             .catch(error => console.error('Error toggling bookmark:', error));
         }
+        
     });
 
     // Use event delegation for form submissions
@@ -76,6 +77,17 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) {
                             modal.hide();
+                        }
+                        // Fallback hide when Bootstrap JS is not present
+                        if (typeof bootstrap === 'undefined') {
+                            if (modalEl) {
+                                modalEl.style.display = 'none';
+                                modalEl.classList.remove('show');
+                                modalEl.setAttribute('aria-hidden', 'true');
+                                modalEl.removeAttribute('aria-modal');
+                            }
+                            const bd = document.getElementById('_fallback_backdrop');
+                            if (bd) bd.remove();
                         }
                         alertContainer.innerHTML = '';
                     }, 2500);
@@ -127,6 +139,71 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
                 downvoteBtn.disabled = false;
             });
         }
+    });
+
+    // Bootstrap modal helpers: autofocus textarea when opened, clear alerts when closed
+    document.addEventListener('shown.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (!modal) return;
+        const ta = modal.querySelector('textarea');
+        if (ta) ta.focus();
+    });
+
+    document.addEventListener('hidden.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (!modal) return;
+        const alert = modal.querySelector('[id^="report-alert-"]');
+        if (alert) alert.innerHTML = '';
+        const form = modal.querySelector('form.report-form');
+        if (form) form.reset();
+    });
+
+    // Fallback: if Bootstrap JS is not loaded, provide simple show/hide behavior
+    document.body.addEventListener('click', function(e) {
+        const rb = e.target.closest('.report-btn');
+        if (!rb) return;
+        const reviewId = rb.dataset.reviewId;
+        const modalEl = document.getElementById(`reportModal-${reviewId}`);
+        if (!modalEl) return;
+        // If bootstrap is available it will handle the popup via data-bs attributes
+        if (typeof bootstrap === 'undefined') {
+            e.preventDefault();
+            // show modal fallback
+            modalEl.style.display = 'block';
+            modalEl.classList.add('show');
+            modalEl.removeAttribute('aria-hidden');
+            modalEl.setAttribute('aria-modal', 'true');
+            // add backdrop if not present
+            if (!document.getElementById('_fallback_backdrop')) {
+                const bd = document.createElement('div');
+                bd.id = '_fallback_backdrop';
+                bd.className = 'modal-backdrop fade show';
+                document.body.appendChild(bd);
+            }
+            // autofocus textarea
+            const ta = modalEl.querySelector('textarea');
+            if (ta) ta.focus();
+        }
+    });
+
+    // Also ensure modal is hidden after successful submit even without bootstrap
+
+    // Fallback: close modal when clicking an element that would dismiss it (Cancel button / close icon)
+    document.body.addEventListener('click', function(e) {
+        const dismissBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close');
+        if (!dismissBtn) return;
+        if (typeof bootstrap !== 'undefined') return; // Bootstrap handles this normally
+
+        // find closest modal ancestor
+        const modalEl = e.target.closest('.modal');
+        if (!modalEl) return;
+        e.preventDefault();
+        modalEl.style.display = 'none';
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.removeAttribute('aria-modal');
+        const bd = document.getElementById('_fallback_backdrop');
+        if (bd) bd.remove();
     });
 }
 </script>

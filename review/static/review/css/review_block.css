@@ -1,0 +1,180 @@
+/* Styles for review blocks used across search, profile, course/prof pages */
+.review-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(20,20,20,0.03);
+    margin-bottom: 14px;
+}
+
+.review-head-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#6ee7b7,#60a5fa);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.review-card .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.review-card .review-header h4 {
+    margin: 0;
+    font-size: 1.06rem;
+    color: #222;
+    line-height: 1.2;
+}
+
+.review-card .btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.review-rating {
+    color: #d97706; /* golden */
+    font-weight: 600;
+    margin: 6px 0;
+}
+
+.review-tags {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0;
+}
+
+.review-tags strong {
+    color: #333;
+}
+
+.review-stars {
+    margin-left: 8px;
+    display: inline-block;
+}
+.review-stars .fa-star {
+    color: #f59e0b; /* gold */
+    margin-right: 2px;
+}
+.review-stars .far {
+    color: #d1d5db; /* light grey for empty star */
+}
+
+/* Ensure stars are visible on dark profile background (override) */
+.profile-container .review-stars .fa-star,
+.profile-tab-pane .review-stars .fa-star {
+    color: #ffd166;
+}
+.profile-container .review-stars .far,
+.profile-tab-pane .review-stars .far {
+    color: rgba(255,255,255,0.35);
+}
+
+.review-rating .star {
+    color: #f59e0b;
+    margin-left: 6px;
+}
+
+.review-card p {
+    margin: 8px 0;
+    color: #333;
+    line-height: 1.45;
+}
+
+.review-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: #666;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.review-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-actions .vote-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vote-score {
+    font-weight: 700;
+    padding: 0 8px;
+}
+
+.vote-btn {
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+/* Inline report styles removed — using Bootstrap modal instead */
+
+.bookmark-btn i,
+.vote-btn i {
+    margin-right: 6px;
+}
+
+/* Smaller screens tweaks */
+@media (max-width: 600px) {
+    .review-card { padding: 12px; }
+    .review-header h4 { font-size: 1rem; }
+    .review-meta { font-size: 0.85rem; }
+    .btn-group .btn { padding: 6px 8px; }
+}
+
+/* Modal textarea slightly larger for readability */
+.report-form textarea {
+    min-height: 120px;
+}
+
+/* Profile-specific tweaks: make text white for review blocks inside profile views */
+.profile-container .review-card,
+.profile-tab-pane .review-card {
+    color: #ffffff;
+}
+.profile-container .review-card p,
+.profile-tab-pane .review-card p,
+.profile-container .review-card .review-meta,
+.profile-tab-pane .review-card .review-meta,
+.profile-container .review-card .review-header h4,
+.profile-tab-pane .review-card .review-header h4,
+.profile-container .review-card .review-rating,
+.profile-tab-pane .review-card .review-rating,
+.profile-container .review-card .review-tags,
+.profile-tab-pane .review-card .review-tags {
+    color: #ffffff;
+}
+
+.profile-container .review-card .review-tags strong,
+.profile-tab-pane .review-card .review-tags strong {
+    color: #ffffff;
+}
+
+/* If profile uses a dark background, slightly darken the card background for contrast */
+.profile-container .review-card,
+.profile-tab-pane .review-card {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.08);
+}
