@@ -53,6 +53,16 @@
     margin: 6px 0;
 }
 
+.review-tags {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0;
+}
+
+.review-tags strong {
+    color: #333;
+}
+
 .review-stars {
     margin-left: 8px;
     display: inline-block;
@@ -151,7 +161,14 @@
 .profile-container .review-card .review-header h4,
 .profile-tab-pane .review-card .review-header h4,
 .profile-container .review-card .review-rating,
-.profile-tab-pane .review-card .review-rating {
+.profile-tab-pane .review-card .review-rating,
+.profile-container .review-card .review-tags,
+.profile-tab-pane .review-card .review-tags {
+    color: #ffffff;
+}
+
+.profile-container .review-card .review-tags strong,
+.profile-tab-pane .review-card .review-tags strong {
     color: #ffffff;
 }
 
