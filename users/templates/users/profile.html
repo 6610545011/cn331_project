@@ -26,6 +26,7 @@
             {% endif %}
         </div>
         <h1 class="profile-username">{{ user.username }}</h1>
+        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p class="profile-email">{{ user.email }}</p>
         <a href="{% url 'users:edit_profile' %}" class="edit-profile-btn"><i class="fas fa-pencil-alt"></i> Edit Profile</a>
     </header>
