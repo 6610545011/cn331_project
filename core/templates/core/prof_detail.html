@@ -1,7 +1,7 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}{{ prof.prof_name }} - Thammasat Study Plan{% endblock title %} {# <--- แก้ไข .name เป็น .prof_name #}
+{% block title %}{{ prof.prof_name }} - Thammasat Study Plan{% endblock title %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
@@ -12,28 +12,25 @@
     
     <div class="detail-header">
         <div class="header-content">
-            {% if prof.imgurl %} {# <--- แก้ไข .img_url เป็น .imgurl #}
-                <img src="{{ prof.imgurl }}" alt="Photo of {{ prof.prof_name }}" class="profile-image"> {# <--- แก้ไข .img_url เป็น .imgurl #}
-            {% endif %}
             <div class="header-text">
-                <h1>{{ prof.prof_name }}</h1> {# <--- แก้ไข .name เป็น .prof_name #}
+                <h1>{{ prof.prof_name }}</h1>
                 
-                {# ส่วนนี้อาจต้องปรับตาม model ของคุณ ถ้าไม่มี campus, room ใน Prof model โดยตรง #}
-                {# <p class="sub-heading">
-                    <strong>Campus:</strong> {{ prof.campus.name }} | 
-                    <strong>Room:</strong> {{ prof.room.name }}
-                </p> #}
 
                 {% if prof.email %}
                     <p><strong>Email:</strong> <a href="mailto:{{ prof.email }}">{{ prof.email }}</a></p>
                 {% endif %}
                 <p>{{ prof.description }}</p>
             </div>
+            {% if prof.imgurl %}
+                <div class="profile-image-container">
+                    <img src="{{ prof.imgurl }}" alt="Photo of {{ prof.prof_name }}" class="profile-image">
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="detail-content">
-        <h3>Sections Taught</h3>
+        <h3>Sections Teaching</h3>
         <div class="card-list">
             {% for section in prof.teaching_sections.all %}
                 <div class="info-card">
@@ -52,7 +49,6 @@
     <div class="detail-content">
         <h3>Reviews</h3>
         <div class="card-list">
-            {# โค้ดส่วนนี้ถูกต้องแล้ว เพราะ view ส่ง 'reviews' มาให้ #}
             {% for review in reviews %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
@@ -64,5 +60,4 @@
 {% endblock content %}
 
 {% block extra_scripts %}
-    {# The review actions script is now loaded globally in main.js #}
 {% endblock extra_scripts %}
