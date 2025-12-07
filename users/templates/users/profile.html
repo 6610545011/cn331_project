@@ -40,7 +40,7 @@
                 <i class="fas fa-feather-alt"></i> My Reviews <span class="badge">{{ user_reviews.count }}</span>
             </button>
             <button class="profile-tab-btn" data-target="#bookmarks-pane">
-                <i class="fas fa-bookmark"></i> My Bookmarks <span class="badge">{{ bookmarked_reviews.count }}</span>
+                <i class="fas fa-bookmark"></i> My Bookmarks <span class="badge">{{ bookmarked_reviews.count|add:bookmarked_courses.count }}</span>
             </button>
         </div>
     </nav>
@@ -71,8 +71,25 @@
 
         <!-- My Bookmarks Tab Pane -->
         <div class="profile-tab-pane" id="bookmarks-pane">
-            {% if bookmarked_reviews %}
+            {% if bookmarked_reviews or bookmarked_courses %}
                 <ul class="result-list card-list">
+                <h1>bookmarked courses</h1>
+                {% for bookmark in bookmarked_courses %}
+                    <li class="result-item">
+                        <div class="info-card course-bookmark-card">
+                            <a href="{% url 'core:course_detail' bookmark.course.course_code %}" class="view-course-btn">
+                                <h3 > {{ bookmark.course.course_code }} - {{ bookmark.course.course_name }}</h3>
+                            </a>
+                            <p class="course-description">{{ bookmark.course.description }}</p>
+                            <p>
+                                <strong>Credit:</strong> {{ bookmark.course.credit }}
+                            </p>
+
+                        </div>
+                    </li>
+                {% endfor %}
+                <br>
+                <h1>bookmarked reviews</h1>
                 {% for bookmark in bookmarked_reviews %}
                     <li class="result-item">
                         {% include "review/includes/review_block.html" with review=bookmark.review %}
@@ -83,7 +100,7 @@
                 <div class="empty-state">
                     <i class="fas fa-book-bookmark empty-icon"></i>
                     <h2>No Bookmarks</h2>
-                    <p>You haven't bookmarked any reviews yet. Start exploring!</p>
+                    <p>You haven't bookmarked any reviews or courses yet. Start exploring!</p>
                 </div>
             {% endif %}
         </div>

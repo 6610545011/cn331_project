@@ -166,3 +166,51 @@
 .review-card .review-meta strong {
     color: #666;
 }
+
+/* --- Course Bookmark Button --- */
+.course-bookmark-container {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+}
+
+.detail-container {
+    position: relative;
+}
+
+.course-bookmark-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border: 2px solid #ddd;
+    background-color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.course-bookmark-btn:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.course-bookmark-btn.bookmarked {
+    border-color: #007bff;
+    background-color: #e7f1ff;
+}
+
+.course-bookmark-btn.bookmarked .bookmark-icon {
+    stroke: #007bff;
+    fill: #007bff;
+}
+
+.course-bookmark-btn .bookmark-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #666;
+    transition: all 0.3s ease;
+}

@@ -198,3 +198,47 @@
 .review-card h3 a:hover {
     color: var(--header-yellow);
 }
+
+/* --- Course Bookmark Card --- */
+.course-bookmark-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.course-bookmark-card {
+    background-color: var(--content-purple);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.course-bookmark-card:hover {
+    border-color: var(--header-yellow);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.course-bookmark-card h4 {
+    color: var(--text-white);
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.course-bookmark-link:hover .course-bookmark-card h4 {
+    color: var(--header-yellow);
+}
+
+.course-description {
+    color: var(--text-light-gray);
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.course-bookmark-card p {
+    color: var(--text-light-gray);
+    margin: 8px 0;
+}

@@ -1,7 +1,10 @@
 # core/views.py
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Exists, OuterRef, Sum
+from django.db.models import Q, Exists, OuterRef, Sum, F
 from django.db.models.functions import Coalesce
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .models import Prof, Course, Section
 from itertools import chain
 from review.models import Bookmark, Review
@@ -115,8 +118,29 @@ def prof_detail(request, pk):
 
 def course_detail(request, course_code):
     course = Course.objects.get(course_code__iexact=course_code)
+    
+    # Check if the course is bookmarked by the current user (review=None)
+    course_is_bookmarked = False
+    if request.user.is_authenticated:
+        course_is_bookmarked = Bookmark.objects.filter(
+            user=request.user,
+            course=course,
+            review=None
+        ).exists()
+    
     # สร้าง subquery สำหรับเช็ค bookmark (เฉพาะ user ที่ login)
-    user_bookmark_subquery = Bookmark.objects.filter(user=request.user, review=OuterRef('pk')) if request.user.is_authenticated else Bookmark.objects.none()
+    # A review is bookmarked if either:
+    # 1. The specific review is bookmarked (review=OuterRef('pk'))
+    # 2. The course is bookmarked (review=None)
+    if request.user.is_authenticated:
+        user_bookmark_subquery = Bookmark.objects.filter(
+            user=request.user,
+            course=course
+        ).filter(
+            Q(review=OuterRef('pk')) | Q(review=None)
+        )
+    else:
+        user_bookmark_subquery = Bookmark.objects.none()
     
     # Annotate รีวิวสำหรับคอร์สนี้
     reviews = course.reviews.select_related('user', 'prof').annotate(
@@ -126,4 +150,30 @@ def course_detail(request, course_code):
         user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user=request.user)), 0)
     ).distinct()
 
-    return render(request, 'core/course_detail.html', {'course': course, 'reviews': reviews})
+    return render(request, 'core/course_detail.html', {
+        'course': course,
+        'reviews': reviews,
+        'course_is_bookmarked': course_is_bookmarked
+    })
+
+
+@login_required
+@require_POST
+def toggle_course_bookmark(request, course_id):
+    """
+    Toggles a bookmark on a course for the current user.
+    Creates a bookmark if it doesn't exist, deletes it if it does.
+    """
+    course = get_object_or_404(Course, id=course_id)
+    
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user,
+        course=course,
+        review=None
+    )
+
+    if not created:
+        bookmark.delete()
+        return JsonResponse({'status': 'ok', 'bookmarked': False})
+    
+    return JsonResponse({'status': 'ok', 'bookmarked': True})

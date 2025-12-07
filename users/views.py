@@ -29,7 +29,7 @@ def login_view(request):
 @login_required
 def profile_view(request):
     """
-    แสดงหน้าโปรไฟล์ของผู้ใช้ พร้อมกับรีวิวที่เขียนและรีวิวที่บุ๊คมาร์คไว้
+    แสดงหน้าโปรไฟล์ของผู้ใช้ พร้อมกับรีวิวที่เขียนและรีวิว/คอร์สที่บุ๊คมาร์คไว้
     """
     user = request.user
 
@@ -40,11 +40,17 @@ def profile_view(request):
     # ดึงข้อมูลบุ๊คมาร์คที่เป็นรีวิว (review is not null)
     bookmarked_reviews = Bookmark.objects.filter(user=user, review__isnull=False).select_related(
         'review__course', 'review__user', 'review__prof'
-    ).order_by('-id') # เรียงตามล่าสุดที่บุ๊คมาร์ค
+    ).order_by('-id')
+    
+    # ดึงข้อมูลบุ๊คมาร์คที่เป็นคอร์ส (review is null)
+    bookmarked_courses = Bookmark.objects.filter(user=user, review__isnull=True).select_related(
+        'course'
+    ).order_by('-id')
 
     context = {
         'user_reviews': user_reviews,
         'bookmarked_reviews': bookmarked_reviews,
+        'bookmarked_courses': bookmarked_courses,
     }
     
     return render(request, 'users/profile.html', context)
