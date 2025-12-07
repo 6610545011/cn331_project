@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import LoginForm
+from .forms import LoginForm, ChangeImageForm
 from review.models import Review, Bookmark
 
 def login_view(request):
@@ -48,3 +48,27 @@ def profile_view(request):
     }
     
     return render(request, 'users/profile.html', context)
+
+@login_required
+def edit_profile_view(request):
+    """
+    Edit user profile, including changing the profile image URL
+    """
+    user = request.user
+    
+    if request.method == 'POST':
+        form = ChangeImageForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile image updated successfully!")
+            return redirect('users:profile')
+        else:
+            messages.error(request, "Please enter a valid image URL.")
+    else:
+        form = ChangeImageForm(instance=user)
+    
+    context = {
+        'form': form,
+    }
+    
+    return render(request, 'users/edit_profile.html', context)
