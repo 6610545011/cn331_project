@@ -34,7 +34,7 @@
         <div class="card-list">
             {% for section in prof.teaching_sections.all %}
                 <div class="info-card">
-                    <h4><a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }}</a></h4>
+                    <h4><a href="{% url 'core:course_detail' course_code=section.course.course_code %}">{{ section.course.course_code }} - {{ section.course.course_name }}</a></h4>
                     <p>
                         <strong>Section:</strong> {{ section.section_number }}
                         {% if section.campus %}| <strong>Campus:</strong> {{ section.campus.name }}{% endif %}

@@ -44,7 +44,7 @@
                 <ul class="result-list">
                     {% for course in courses %}
                         <li class="result-item">
-                            <h4><a href="{% url 'core:course_detail' pk=course.pk %}">{{ course.course_name }} ({{ course.course_code }})</a></h4>
+                            <h4><a href="{% url 'core:course_detail' course_code=course.course_code %}">{{ course.course_name }} ({{ course.course_code }})</a></h4>
                             <p>{{ course.description|default:"No description available."|truncatewords:30 }}</p>
                         </li>
                     {% endfor %}
@@ -58,7 +58,7 @@
                     {% for section in sections %}
                         <li class="result-item">
                             <h4>
-                                <a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }} (Section: {{ section.section_number }})</a>
+                                <a href="{% url 'core:course_detail' course_code=section.course.course_code %}">{{ section.course.course_code }} - {{ section.course.course_name }} (Section: {{ section.section_number }})</a>
                             </h4>
                             <p>Taught by: 
                                 {% for teacher in section.teachers.all %}

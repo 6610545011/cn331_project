@@ -113,8 +113,8 @@ def prof_detail(request, pk):
     return render(request, 'core/prof_detail.html', {'prof': prof, 'reviews': reviews})
 
 
-def course_detail(request, pk):
-    course = get_object_or_404(Course.objects.prefetch_related('sections__teachers', 'sections__campus'), pk=pk)
+def course_detail(request, course_code):
+    course = get_object_or_404(Course.objects.prefetch_related('sections__teachers', 'sections__campus'), course_code=course_code)
     
     # สร้าง subquery สำหรับเช็ค bookmark (เฉพาะ user ที่ login)
     user_bookmark_subquery = Bookmark.objects.filter(user=request.user, review=OuterRef('pk')) if request.user.is_authenticated else Bookmark.objects.none()
