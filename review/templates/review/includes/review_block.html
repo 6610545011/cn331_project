@@ -83,7 +83,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reportModalLabel-{{ review.id }}">Report Review TODO make it a popup</h5>
+                <h5 class="modal-title" id="reportModalLabel-{{ review.id }}"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="reportForm-{{ review.id }}" class="report-form" data-url="{% url 'review:report_review' review.id %}" method="post">
