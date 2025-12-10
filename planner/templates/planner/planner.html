@@ -1,0 +1,53 @@
+{% extends 'core/template.html' %}
+{% load static %}
+
+{% block title %}My Planner{% endblock %}
+
+{% block extra_head %}
+<style>
+.planner-grid { width: 100%; border-collapse: collapse; }
+.planner-grid th, .planner-grid td { border: 1px solid #e0e0e0; padding: 6px; text-align: center; }
+.planner-grid th { background: #fafafa; position: sticky; top: 70px; z-index: 2; }
+.slot-label { width: 80px; font-weight: 600; }
+.cell-empty { background: #fff; }
+.cell-occupied { background: #cfe8ff; }
+.cell-section { background: #a8d5a2; }
+.planner-container { overflow-x: auto; }
+.day-header { font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>My Schedule Planner</h2>
+<p>Add or remove course sections to build your schedule. This view shows 30-minute slots from 08:00 to 20:00.</p>
+
+<div class="planner-container">
+  <table class="planner-grid">
+    <thead>
+      <tr>
+        <th class="slot-label">Time</th>
+        {% for d in days %}
+          <th class="day-header">{{ d }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="slot-label">{{ row.label }}</td>
+        {% for cell in row.cells %}
+          {% if cell %}
+            <td class="cell-occupied"></td>
+          {% else %}
+            <td class="cell-empty"></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p>Credits: {{ planner.total_credits }}</p>
+
+{% endblock %}

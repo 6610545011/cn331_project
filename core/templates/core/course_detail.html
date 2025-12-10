@@ -97,6 +97,15 @@
                             </div>
                         </div>
                     </div>
+                    {% if user.is_authenticated %}
+                    <div class="mt-4 flex items-center gap-3">
+                        <select class="variant-select px-3 py-2 border rounded" data-section-id="{{ section.id }}">
+                            <option value="">Select plan...</option>
+                        </select>
+                        <button class="add-to-variant-btn bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded" data-section-id="{{ section.id }}">Add to Plan</button>
+                        <button class="create-variant-btn px-3 py-2 border rounded" data-section-id="{{ section.id }}">New Plan</button>
+                    </div>
+                    {% endif %}
                 </div>
             {% empty %}
                 <div class="card-review p-8 text-center">
@@ -185,6 +194,95 @@ if (typeof window.courseBookmarkLoaded === 'undefined') {
             })
             .catch(error => console.error('Error toggling course bookmark:', error));
         }
+    });
+}
+</script>
+<script>
+// Planner variant UI scripts
+if (typeof window.plannerVariantLoaded === 'undefined') {
+    window.plannerVariantLoaded = true;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken2 = getCookie('csrftoken');
+
+    // populate variant select boxes
+    function loadVariants() {
+        fetch('{% url "planner:list_variants" %}', { credentials: 'same-origin' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const selects = document.querySelectorAll('.variant-select');
+                    selects.forEach(sel => {
+                        // clear existing
+                        sel.innerHTML = '<option value="">Select plan...</option>';
+                        data.variants.forEach(v => {
+                            const opt = document.createElement('option');
+                            opt.value = v.id;
+                            opt.textContent = v.name + ' (' + v.credits + ' cr)';
+                            sel.appendChild(opt);
+                        });
+                    });
+                }
+            }).catch(console.error);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadVariants);
+
+    // click handlers
+    document.body.addEventListener('click', function(ev) {
+        const createBtn = ev.target.closest('.create-variant-btn');
+        if (createBtn) {
+            ev.preventDefault();
+            const name = prompt('Name your new plan (e.g. Plan 1):');
+            if (!name) return;
+            const form = new FormData();
+            form.append('name', name);
+            fetch('{% url "planner:create_variant" %}', { method: 'POST', body: form, credentials: 'same-origin', headers: {'X-CSRFToken': csrftoken2} })
+                .then(r => r.json()).then(j => {
+                    if (j.ok) {
+                        loadVariants();
+                        alert('Created: ' + j.name);
+                    } else {
+                        alert('Error: ' + (j.error || 'unknown'));
+                    }
+                }).catch(err => alert('Network error'));
+        }
+
+        const addBtn = ev.target.closest('.add-to-variant-btn');
+        if (addBtn) {
+            ev.preventDefault();
+            const sectionId = addBtn.dataset.sectionId;
+            // find select in the same card
+            const sel = document.querySelector('.variant-select[data-section-id="' + sectionId + '"]');
+            if (!sel) return alert('Select a plan first');
+            const variantId = sel.value;
+            if (!variantId) return alert('Please select a plan');
+            const url = '{% url "planner:variant_add_section" 0 0 %}'.replace('/0/0/', '/' + variantId + '/' + sectionId + '/');
+            fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrftoken2 } })
+                .then(r => r.json()).then(j => {
+                    if (j.ok) {
+                        alert('Added to plan' + (j.warning ? '\n' + j.warning : ''));
+                        // Optionally reload or update UI
+                        loadVariants();
+                    } else {
+                        alert('Failed: ' + JSON.stringify(j));
+                    }
+                }).catch(err => alert('Network error'));
+        }
+
     });
 }
 </script>

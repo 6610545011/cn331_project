@@ -217,7 +217,7 @@
             <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}"><i class="fas fa-home"></i><span>HOME</span></a></li>
             <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}"><i class="fas fa-search"></i><span>COURSE REVIEW</span></a></li>
             <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}"><i class="fas fa-plus-circle"></i><span>WRITE REVIEW</span></a></li>
-            <li><a href="#"><i class="fas fa-calendar"></i><span>SCHEDULE PLAN</span></a></li>
+            <li><a href="{% url 'planner:planner_view' %}" class="{% if request.resolver_match.namespace == 'planner' %}active{% endif %}"><i class="fas fa-calendar"></i><span>SCHEDULE PLAN</span></a></li>
             <li><a href="{% url 'users:profile' %}#bookmarks" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fas fa-bookmark"></i><span>BOOKMARK</span></a></li>
             <li><a href="{% url 'users:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fas fa-user"></i><span>PROFILE</span></a></li>
             
