@@ -1,152 +1,250 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {# The title block can be overridden by child templates #}
-    <title>{% block title %}Thammasat Study Plan{% endblock title %}</title>
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="https://res.cloudinary.com/dz614nkdd/image/upload/v1763222471/favicon_rw1nf2.ico" type="image/x-icon">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}THAMMASAT STUDY PLAN{% endblock title %}</title>
     
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <!-- Favicon (use static file placed at core/static/core/img/favicon.ico) -->
+    <link rel="shortcut icon" href="{% static 'core/img/favicon.ico' %}" type="image/x-icon">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome for Icons (Removed duplicate) -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+    
     <!-- Review block styles -->
     <link rel="stylesheet" href="{% static 'review/css/review_block.css' %}">
 
-    {% block extra_head %}{% endblock extra_head %}
-
     <style>
-        /* Styles for the circular profile picture in the header */
-        .profile-pic-placeholder {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            background-color: #e9e9e9; /* Fallback background */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #000;
+        }
+        
+        /* Top Header */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(90deg, #c41e3a 0%, #dc143c 100%);
             display: flex;
             align-items: center;
-            justify-content: center;
-            border: 2px solid #fff; /* Optional: adds a nice border */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        .profile-pic-placeholder img {
-            width: 100%;
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-section img {
+            height: 105px; /* changed to 105px as requested */
+            width: auto;
+        }
+        
+        .logo-text {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff7600 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Side Navigation */
+        .side-nav {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: linear-gradient(180deg, #ffb347 0%, #ffad33 100%);
+            overflow-y: auto;
+            z-index: 50;
+            padding: 20px 0;
+        }
+        
+        .side-nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
             height: 100%;
-            object-fit: cover; /* Ensures the image covers the area without distortion */
         }
-        .profile-pic-placeholder .fa-user {
-            color: #888; /* Color for the fallback icon */
+        
+        .side-nav li {
+            margin: 0;
+        }
+        
+        .side-nav li.spacer {
+            flex-grow: 1;
+        }
+        
+        .side-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .side-nav a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-left-color: #ff8c00;
+        }
+        
+        .side-nav a.active {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-left-color: #c41e3a;
+            font-weight: 700;
+        }
+        
+        .side-nav i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Container */
+        .main-container {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 30px 40px;
+            min-height: calc(100vh - 70px);
+            background-color: #f5f5f5;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-nav {
+                width: 70px;
+            }
+            
+            .side-nav a {
+                padding: 15px 10px;
+                justify-content: center;
+            }
+            
+            .side-nav a span {
+                display: none;
+            }
+            
+            .main-container {
+                margin-left: 70px;
+                padding: 20px;
+            }
         }
     </style>
+    
+    {% block extra_head %}{% endblock %}
 </head>
+
 <body>
-    <div class="overlay" id="overlay"></div>
-    <nav class="side-nav minimized" id="sideNav">
-        <div class="top-header" style="margin-top:0; padding-top:0;">
-            <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762098249/0fec3bf5-8d0f-4eb2-bf1a-e63061206edf.png" alt="sTUdyPlan Logo" style="height:120px; margin-top:0;">
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="logo-section">
+            <a href="{% url 'core:homepage' %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <img src="{% static 'core/img/logo.png' %}" alt="Logo">
+            </a>
         </div>
-        <ul>
-            <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}">homepage</a></li>
-            <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'course_review' %}active{% endif %}">course review</a></li>
-            <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}">write review</a></li>
-            <li><a href="#" class="{% if request.resolver_match.url_name == 'schedule_plan' %}active{% endif %}">schedule plan</a></li>
-            <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">about</a></li>
-            
+        
+        <div class="header-right">
             {% if user.is_authenticated %}
-                <!-- แสดงเมื่อล็อกอินแล้ว -->
-                <li><a href="{% url 'users:profile' %}">profile</a></li>
-                <li class="logout-li">
-                    <form action="{% url 'users:logout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-button">logout</button>
-                    </form>
-                </li>
+                <span style="color: white; font-weight: 600;">{{ user.username }}</span>
+                <a href="{% url 'users:profile' %}" class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden" style="display: inline-flex; width: 40px; height: 40px; border-radius: 50%; background-color: #ddd; align-items: center; justify-content: center; overflow: hidden;">
+                    {% if user.imgurl %}
+                        <img src="{{ user.imgurl }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <i class="fas fa-user" style="color: #666;"></i>
+                    {% endif %}
+                </a>
             {% else %}
-                <!-- แสดงเมื่อยังไม่ล็อกอิน -->
-                <li><a href="{% url 'users:login' %}">login</a></li>
+                <a href="{% url 'users:login' %}" class="login-btn">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </a>
             {% endif %}
+        </div>
+    </header>
+    
+    <!-- Side Navigation -->
+    <nav class="side-nav" id="sideNav">
+        <ul>
+            <li><a href="{% url 'core:homepage' %}" class="{% if request.resolver_match.url_name == 'homepage' %}active{% endif %}"><i class="fas fa-home"></i><span>HOME</span></a></li>
+            <li><a href="{% url 'core:search' %}" class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}"><i class="fas fa-search"></i><span>COURSE REVIEW</span></a></li>
+            <li><a href="{% url 'review:write_review' %}" class="{% if request.resolver_match.url_name == 'write_review' %}active{% endif %}"><i class="fas fa-plus-circle"></i><span>WRITE REVIEW</span></a></li>
+            <li><a href="#"><i class="fas fa-calendar"></i><span>SCHEDULE PLAN</span></a></li>
+            <li><a href="{% url 'users:profile' %}#bookmarks" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fas fa-bookmark"></i><span>BOOKMARK</span></a></li>
+            <li><a href="{% url 'users:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fas fa-user"></i><span>PROFILE</span></a></li>
+            
+            <!-- Spacer to push bottom items down -->
+            <li class="spacer"></li>
+            
+            <!-- Bottom items -->
+            <li style="border-top: 2px solid rgba(255, 255, 255, 0.3); padding-top: 10px;">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:logout' %}"><i class="fas fa-sign-out-alt"></i><span>LOGOUT</span></a>
+                {% else %}
+                    <a href="{% url 'users:login' %}"><i class="fas fa-sign-in-alt"></i><span>LOGIN</span></a>
+                {% endif %}
+            </li>
+            <li><a href="{% url 'core:about' %}"><i class="fas fa-info-circle"></i><span>CONTACT</span></a></li>
         </ul>
     </nav>
-
-    <!-- ================================== -->
-    <!--         TOP BAR (EXTRACTED)        -->
-    <!-- ================================== -->
-    <header class="top-header">
-        <div class="logo-placeholder">
-            <a href="{% url 'core:homepage' %}">
-                <img src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762097931/bcb28b14-e0a7-442f-9353-ce5f11301fe8.png" alt="sTUdyPlan Logo">
-            </a>
-        </div>
-            
-        {% if user.is_authenticated %}
-        <!-- แสดงผลเมื่อล็อกอินแล้ว -->
-        <div class="user-info">
-            <div class="user-details">
-                <span class="user-name">{{ user.username }}</span>
-                <span class="user-id">Student</span> 
-            </div>
-            <a href="{% url 'users:profile' %}" class="profile-pic-link">
-                <div class="profile-pic-placeholder">
-                    {% if user.imgurl %}
-                        <img src="{{ user.imgurl }}" alt="{{ user.username }}'s profile picture">
-                    {% else %}
-                        <i class="fas fa-user"></i>
-                    {% endif %}
-                </div>
-            </a>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-        {% else %}
-        <div class="header-actions">
-            <a href="{% url 'users:login' %}" class="btn-login">Login</a>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-        {% endif %}
-    </header>
-
-    <div class="main-container" id="mainContainer">
-        <!-- ================================== -->
-        <!--      MAIN CONTENT PLACEHOLDER      -->
-        <!-- ================================== -->
-        {% block content %}
-        {# The unique content from other pages will be injected here. #}
-        {% endblock content %}
-
-        <a href="{% url 'core:about' %}" class="help-button">?</a>
-    </div>
-
-    <!-- ================================== -->
-    <!--         JAVASCRIPT LOADING         -->
-    <!-- ================================== -->
-
-    <!-- 1. โหลดไลบรารีหลัก (jQuery) ก่อนเสมอ -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- 2. โหลดไลบรารีเสริมที่ต้องใช้ jQuery (Select2) -->
+    <!-- Main Content -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- 3. โหลดสคริปต์หลักของเว็บ (main.js) -->
-    <script src="{% static 'core/js/main.js' %}"></script>
-
-    <!-- 4. โหลดสคริปต์เฉพาะของแต่ละหน้า (ถ้ามี) -->
-    {% block extra_scripts %}{% endblock extra_scripts %}
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

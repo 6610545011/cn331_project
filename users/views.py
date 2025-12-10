@@ -1,6 +1,6 @@
 # users/views.py
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import LoginForm, ChangeImageForm
@@ -25,6 +25,14 @@ def login_view(request):
     # ถ้าเป็น GET request หรือ form ไม่ผ่าน ก็แสดงหน้าฟอร์มเปล่าๆ
     form = LoginForm()
     return render(request, 'users/login.html', {'form': form})
+
+def logout_view(request):
+    """
+    Logout view that handles both GET and POST requests.
+    """
+    logout(request)
+    messages.info(request, "You have been logged out.")
+    return redirect('users:login')
 
 @login_required
 def profile_view(request):

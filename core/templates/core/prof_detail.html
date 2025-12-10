@@ -1,25 +1,53 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}{{ prof.prof_name }} - Thammasat Study Plan{% endblock title %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
-{% endblock extra_head %}
+{% block title %}{{ prof.prof_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
 {% block content %}
-<div class="detail-container">
-    
-    <div class="detail-header">
-        <div class="header-content">
-            <div class="header-text">
-                <h1>{{ prof.prof_name }}</h1>
-                
-
-                {% if prof.email %}
-                    <p><strong>Email:</strong> <a href="mailto:{{ prof.email }}">{{ prof.email }}</a></p>
+<div class="container mx-auto max-w-4xl">
+    <!-- Profile Header -->
+    <div class="card-review p-8 mb-8">
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0">
+                {% if prof.imgurl %}
+                    <img 
+                        src="{{ prof.imgurl }}" 
+                        alt="Photo of {{ prof.prof_name }}" 
+                        class="w-48 h-48 rounded-xl object-cover shadow-lg"
+                    >
+                {% else %}
+                    <div class="w-48 h-48 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-user text-6xl text-white"></i>
+                    </div>
                 {% endif %}
-                <p>{{ prof.description }}</p>
+            </div>
+            
+            <!-- Profile Info -->
+            <div class="flex-1">
+                <h1 class="text-4xl font-bold mb-2">{{ prof.prof_name }}</h1>
+                
+                <span class="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    <i class="fas fa-chalkboard-user mr-2"></i>ศาสตราจารย์
+                </span>
+                
+                {% if prof.email %}
+                    <p class="text-gray-300 mb-2">
+                        <strong class="text-orange-400">
+                            <i class="fas fa-envelope mr-2"></i>อีเมล:
+                        </strong>
+                        <a href="mailto:{{ prof.email }}" class="text-orange-400 hover:text-orange-300 transition">
+                            {{ prof.email }}
+                        </a>
+                    </p>
+                {% endif %}
+                
+                {% if prof.description %}
+                    <p class="text-gray-300 mt-4">
+                        <strong class="text-orange-400">เกี่ยวกับ:</strong><br>
+                        {{ prof.description }}
+                    </p>
+                {% endif %}
             </div>
             {% if prof.imgurl %}
                 <div class="profile-image-container">
@@ -29,30 +57,62 @@
         </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Sections Teaching</h3>
-        <div class="card-list">
+    <!-- Sections Taught -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+            <i class="fas fa-book-open text-orange-400"></i>รายวิชาที่สอน
+        </h2>
+        
+        <div class="space-y-4">
             {% for section in prof.teaching_sections.all %}
-                <div class="info-card">
-                    <h4><a href="{% url 'core:course_detail' course_code=section.course.course_code %}">{{ section.course.course_code }} - {{ section.course.course_name }}</a></h4>
-                    <p>
-                        <strong>Section:</strong> {{ section.section_number }}
-                        {% if section.campus %}| <strong>Campus:</strong> {{ section.campus.name }}{% endif %}
-                    </p>
+                <div class="card-review p-6 hover:shadow-lg transition">
+                    <h3 class="text-xl font-bold text-orange-400 mb-3">
+                        <a href="{% url 'core:course_detail' pk=section.course.pk %}" class="hover:text-orange-300 transition">
+                            {{ section.course.course_code }} - {{ section.course.course_name }}
+                        </a>
+                    </h3>
+                    <div class="flex gap-6 text-gray-300">
+                        <span>
+                            <strong class="text-white">เซคชั่น:</strong>
+                            {{ section.section_number }}
+                        </span>
+                        {% if section.campus %}
+                            <span>
+                                <strong class="text-white">วิทยาเขต:</strong>
+                                {{ section.campus.name }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
             {% empty %}
-                <p>This professor is not currently assigned to any sections.</p>
+                <div class="card-review p-8 text-center">
+                    <p class="text-gray-400">
+                        <i class="fas fa-info-circle mr-2"></i>ศาสตราจารย์คนนี้ยังไม่ได้รับมอบหมายเซคชั่นใด
+                    </p>
+                </div>
             {% endfor %}
         </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Reviews</h3>
-        <div class="card-list">
+    <!-- Reviews -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+            <i class="fas fa-star text-orange-400"></i>รีวิว
+        </h2>
+        
+        <div class="space-y-4">
             {% for review in reviews %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
-                <p>No reviews for this professor yet. Be the first to write one!</p>
+                <div class="card-review p-12 text-center">
+                    <div class="text-5xl text-orange-400 mb-4">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <p class="text-gray-400 mb-4">ยังไม่มีรีวิวสำหรับศาสตราจารย์คนนี้</p>
+                    <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
+                        <i class="fas fa-pen mr-2"></i>เขียนรีวิวแรก
+                    </a>
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -60,4 +120,5 @@
 {% endblock content %}
 
 {% block extra_scripts %}
+    {% include "review/includes/review_actions_js.html" %}
 {% endblock extra_scripts %}

@@ -7,6 +7,11 @@
 <link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -70,8 +75,13 @@
         </div>
 
         <!-- My Bookmarks Tab Pane -->
+<<<<<<< HEAD
         <div class="profile-tab-pane" id="bookmarks-pane">
             {% if bookmarked_reviews or bookmarked_courses %}
+=======
+        <div class="profile-tab-pane" id="bookmarks-pane" id="bookmarks">
+            {% if bookmarked_reviews %}
+>>>>>>> front
                 <ul class="result-list card-list">
                 <h1>bookmarked courses</h1>
                 {% for bookmark in bookmarked_courses %}
@@ -113,17 +123,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.profile-tab-btn');
     const panes = document.querySelectorAll('.profile-tab-pane');
 
+    // Function to activate tab
+    function activateTab(targetPane) {
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        
+        // Find the tab that corresponds to this pane
+        const targetId = targetPane.id;
+        let correspondingTab = null;
+        
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-target') === '#' + targetId) {
+                correspondingTab = tab;
+            }
+        });
+        
+        if (correspondingTab) {
+            correspondingTab.classList.add('active');
+        }
+        targetPane.classList.add('active');
+    }
+
+    // Handle tab button clicks
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            panes.forEach(p => p.classList.remove('active'));
-            tab.classList.add('active');
             const targetPane = document.querySelector(tab.getAttribute('data-target'));
             if (targetPane) {
-                targetPane.classList.add('active');
+                activateTab(targetPane);
             }
         });
     });
+
+    // Handle anchor link on page load
+    if (window.location.hash === '#bookmarks') {
+        const bookmarksPane = document.getElementById('bookmarks-pane');
+        if (bookmarksPane) {
+            activateTab(bookmarksPane);
+        }
+    }
 });
 </script>
 {% endblock %}
