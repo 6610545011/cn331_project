@@ -4,13 +4,90 @@
 {% block title %}My Profile - {{ user.username }}{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
-    html {
-        scroll-behavior: smooth;
+    :root {
+        --primary-color: #c41e3a;
+        --secondary-color: #ff8c00;
+        --secondary-hover: #ff7600;
+        --bg-color: #f0f7ff;
+        --card-bg: #ffffff;
+        --text-color: #333;
+        --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        --radius: 12px;
     }
+
+    body { background-color: var(--bg-color); color: var(--text-color); }
+    
+    .profile-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    
+    /* Header */
+    .profile-header { 
+        background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); 
+        padding: 40px; text-align: center; margin-bottom: 30px; position: relative; overflow: hidden; 
+    }
+    .profile-header::before { 
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100px; 
+        background: linear-gradient(135deg, var(--primary-color), #a01830); z-index: 0; 
+    }
+    .profile-picture-wrapper { 
+        position: relative; z-index: 1; width: 120px; height: 120px; margin: 0 auto 20px; 
+        border-radius: 50%; background: white; padding: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+    }
+    .profile-picture, .profile-picture-placeholder { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .profile-picture-placeholder { display: flex; align-items: center; justify-content: center; background: #eee; color: #aaa; font-size: 50px; }
+    .profile-info { position: relative; z-index: 1; }
+    .profile-username { color: var(--primary-color); font-size: 28px; margin-bottom: 5px; font-weight: 700; }
+    
+    .edit-profile-btn { 
+        display: inline-block; padding: 10px 24px; 
+        background: linear-gradient(135deg, var(--secondary-color), var(--secondary-hover)); 
+        color: white; border-radius: 30px; text-decoration: none; font-weight: 600; transition: transform 0.2s; 
+    }
+    .edit-profile-btn:hover { transform: translateY(-2px); color: white; box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3); }
+
+    /* Tabs */
+    .profile-tabs { 
+        display: flex; justify-content: center; margin-bottom: 30px; background: var(--card-bg); 
+        padding: 10px; border-radius: var(--radius); box-shadow: var(--shadow); 
+    }
+    .profile-tab-btn { 
+        background: none; border: none; padding: 12px 24px; font-size: 16px; font-weight: 600; 
+        color: #666; cursor: pointer; border-radius: 8px; transition: all 0.3s; margin: 0 5px; 
+    }
+    .profile-tab-btn.active { background-color: rgba(255, 140, 0, 0.1); color: var(--secondary-color); }
+    .badge { background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
+
+    /* Cards */
+    .result-list { list-style: none; padding: 0; }
+    .result-item { margin-bottom: 20px; }
+    .info-card { 
+        background: var(--card-bg); border-radius: var(--radius); padding: 20px; 
+        box-shadow: var(--shadow); border-left: 4px solid var(--secondary-color); transition: transform 0.2s; 
+    }
+    .info-card:hover { transform: translateY(-3px); }
+    
+    .section-title { 
+        font-size: 20px; color: var(--text-color); margin: 30px 0 15px; 
+        border-bottom: 2px solid #eee; padding-bottom: 10px; 
+    }
+    
+    .view-course-btn h3 { color: var(--primary-color); font-size: 18px; margin-bottom: 10px; }
+    .view-course-btn { text-decoration: none; }
+    
+    .empty-state { 
+        text-align: center; padding: 60px 20px; background: var(--card-bg); 
+        border-radius: var(--radius); box-shadow: var(--shadow); color: #666; 
+    }
+    .empty-icon { font-size: 48px; color: #ddd; margin-bottom: 20px; }
+    
+    /* Animations */
+    .profile-tab-pane { display: none; animation: fadeIn 0.3s ease; }
+    .profile-tab-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    html { scroll-behavior: smooth; }
 </style>
 {% endblock %}
 
@@ -30,10 +107,12 @@
                 </div>
             {% endif %}
         </div>
-        <h1 class="profile-username">{{ user.username }}</h1>
-        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-        <p class="profile-email">{{ user.email }}</p>
-        <a href="{% url 'users:edit_profile' %}" class="edit-profile-btn"><i class="fas fa-pencil-alt"></i> Edit Profile</a>
+        <div class="profile-info">
+            <h1 class="profile-username">{{ user.username }}</h1>
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+            <a href="{% url 'users:edit_profile' %}" class="edit-profile-btn"><i class="fas fa-pencil-alt"></i> Edit Profile</a>
+        </div>
     </header>
 
     <!-- ======================== -->
@@ -57,10 +136,12 @@
         <!-- My Reviews Tab Pane -->
         <div class="profile-tab-pane active" id="reviews-pane">
             {% if user_reviews %}
-                <ul class="result-list card-list">
+                <ul class="result-list">
                 {% for review in user_reviews %}
                     <li class="result-item">
-                        {% include "review/includes/review_block.html" with review=review %}
+                        <div class="info-card" style="border-left: 4px solid var(--primary-color);">
+                            {% include "review/includes/review_block.html" with review=review %}
+                        </div>
                     </li>
                 {% endfor %}
                 </ul>
@@ -75,36 +156,36 @@
         </div>
 
         <!-- My Bookmarks Tab Pane -->
-<<<<<<< HEAD
         <div class="profile-tab-pane" id="bookmarks-pane">
             {% if bookmarked_reviews or bookmarked_courses %}
-=======
-        <div class="profile-tab-pane" id="bookmarks-pane" id="bookmarks">
-            {% if bookmarked_reviews %}
->>>>>>> front
-                <ul class="result-list card-list">
-                <h1>bookmarked courses</h1>
+                <ul class="result-list">
+                {% if bookmarked_courses %}
+                <h2 class="section-title"><i class="fas fa-book"></i> Bookmarked Courses</h2>
                 {% for bookmark in bookmarked_courses %}
                     <li class="result-item">
-                        <div class="info-card course-bookmark-card">
+                        <div class="info-card">
                             <a href="{% url 'core:course_detail' bookmark.course.course_code %}" class="view-course-btn">
                                 <h3 > {{ bookmark.course.course_code }} - {{ bookmark.course.course_name }}</h3>
                             </a>
-                            <p class="course-description">{{ bookmark.course.description }}</p>
+                            <p class="course-description">{{ bookmark.course.description|truncatechars:150 }}</p>
                             <p>
                                 <strong>Credit:</strong> {{ bookmark.course.credit }}
                             </p>
-
                         </div>
                     </li>
                 {% endfor %}
-                <br>
-                <h1>bookmarked reviews</h1>
+                {% endif %}
+                
+                {% if bookmarked_reviews %}
+                <h2 class="section-title"><i class="fas fa-star"></i> Bookmarked Reviews</h2>
                 {% for bookmark in bookmarked_reviews %}
                     <li class="result-item">
-                        {% include "review/includes/review_block.html" with review=bookmark.review %}
+                        <div class="info-card" style="border-left: 4px solid var(--primary-color);">
+                            {% include "review/includes/review_block.html" with review=bookmark.review %}
+                        </div>
                     </li>
                 {% endfor %}
+                {% endif %}
                 </ul>
             {% else %}
                 <div class="empty-state">
