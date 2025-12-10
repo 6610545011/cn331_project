@@ -67,7 +67,7 @@
 
                         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                             <h3 style="font-size: 1.2rem; font-weight: 600; color: #ff8c00; margin-bottom: 10px;">
-                                <a href="{% url 'core:course_detail' pk=course.pk %}" style="color: #ff8c00; text-decoration: none;">
+                                <a href="{% url 'core:course_detail' course.course_code %}" style="color: #ff8c00; text-decoration: none;">
                                     {{ course.course_name }} ({{ course.course_code }})
                                 </a>
                             </h3>
@@ -86,7 +86,7 @@
                     {% for section in sections %}
                         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                             <h3 style="font-size: 1.2rem; font-weight: 600; color: #ff8c00; margin-bottom: 10px;">
-                                <a href="{% url 'core:course_detail' pk=section.course.pk %}" style="color: #ff8c00; text-decoration: none;">
+                                <a href="{% url 'core:course_detail' section.course.course_code %}" style="color: #ff8c00; text-decoration: none;">
                                     {{ section.course.course_code }} - {{ section.course.course_name }} (เซคชั่น: {{ section.section_number }})
                                 </a>
                             </h3>

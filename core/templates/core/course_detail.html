@@ -4,19 +4,165 @@
 
 {% block title %}{{ course.course_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
+{% block extra_head %}
+<style>
+    /* Course Detail Styling */
+    .course-header {
+        background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 118, 0, 0.05));
+        border-radius: 12px;
+        border-left: 5px solid #ff8c00;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .course-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255, 140, 0, 0.2), transparent);
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+    }
+    
+    .course-title {
+        background: linear-gradient(135deg, #ff8c00, #ff7600);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .course-code-badge {
+        background: linear-gradient(135deg, #ff8c00, #ff7600);
+        box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .course-code-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .course-code-badge:hover::before {
+        left: 100%;
+    }
+    
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    
+    .section-item {
+        background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 140, 0, 0.02));
+        border: 1px solid rgba(255, 140, 0, 0.2);
+        border-radius: 8px;
+        padding: 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .section-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff8c00, #ff7600);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    
+    .section-item:hover {
+        border-color: #ff8c00;
+        box-shadow: 0 15px 40px rgba(255, 140, 0, 0.25);
+        transform: translateY(-8px);
+    }
+    
+    .section-item:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .section-number {
+        display: inline-block;
+        background: linear-gradient(135deg, #ff8c00, #ff7600);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+    }
+    
+    .course-header-divider {
+        border-color: #ff8c00;
+        position: relative;
+        margin: 16px 0;
+    }
+    
+    .course-header-divider::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #ff8c00, transparent);
+    }
+    
+    .review-section-header {
+        border-bottom: 3px solid #ff8c00;
+        position: relative;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .review-section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #ff8c00, transparent);
+    }
+</style>
+{% endblock extra_head %}
+
 {% block content %}
-<div class="container mx-auto max-w-4xl">
+<div class="container mx-auto max-w-4xl px-4 py-8">
+    <!-- Breadcrumb / Back Link -->
+    <div class="mb-6">
+        <a href="{% url 'core:homepage' %}" class="text-orange-400 hover:text-orange-300 flex items-center gap-2 transition">
+            <i class="fas fa-arrow-left"></i>Back to Home
+        </a>
+    </div>
+
     <!-- Header Section -->
-    <div class="card-review p-8 mb-8">
-        <div class="mb-6">
-            <span class="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+    <div class="card-review p-8 mb-8 course-header">
+        <div class="mb-6 relative z-10">
+            <span class="course-code-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
                 <i class="fas fa-book mr-2"></i>{{ course.course_code }}
             </span>
-            <h1 class="text-4xl font-bold mb-3">{{ course.course_name }}</h1>
-            <p class="text-gray-300 text-lg mb-4">{{ course.description }}</p>
+            <h1 class="text-4xl font-bold mb-3 course-title">{{ course.course_name }}</h1>
+            <p class="text-gray-300 text-lg mb-4 leading-relaxed">{{ course.description }}</p>
             
-            <div class="border-t border-orange-400 pt-4 mt-4">
-                <p class="text-gray-300">
+            <div class="course-header-divider border-t border-orange-400 pt-4 mt-4">
+                <p class="text-gray-300 mb-3">
                     <strong class="text-orange-400">
                         <i class="fas fa-chalkboard-user mr-2"></i>ผู้สอน:
                     </strong>
@@ -28,12 +174,20 @@
                         <span class="text-gray-500">ไม่มีข้อมูล</span>
                     {% endfor %}
                 </p>
+                {% if course.credit %}
+                <p class="text-gray-300">
+                    <strong class="text-orange-400">
+                        <i class="fas fa-credit-card mr-2"></i>หน่วยกิต:
+                    </strong>
+                    {{ course.credit }}
+                </p>
+                {% endif %}
             </div>
         </div>
     </div>
 
     {% if user.is_authenticated %}
-    <div class="course-bookmark-container">
+    <div class="course-bookmark-container mb-6">
         <button class="course-bookmark-btn {% if course_is_bookmarked %}bookmarked{% endif %}" 
                 data-course-id="{{ course.id }}" 
                 data-url="{% url 'core:toggle_course_bookmark' course.id %}">
@@ -45,20 +199,25 @@
     {% endif %}
 
     <div class="detail-content">
-        <h3>Sections</h3>
-        <div class="card-list">
+        <h3 class="text-3xl font-bold mb-6 flex items-center gap-3 review-section-header">
+            <i class="fas fa-graduation-cap text-orange-400"></i>Sections
+        </h3>
+        <div class="section-grid">
     
             {% for section in course.sections.all %}
-                <div class="card-review p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="section-item">
+                    <div class="section-number">
+                        <i class="fas fa-tag mr-2"></i>Section {{ section.section_number }}
+                    </div>
+                    <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <h3 class="text-xl font-bold text-orange-400 mb-3">
-                                <i class="fas fa-graduation-cap mr-2"></i>เซคชั่น {{ section.section_number }}
+                            <h3 class="text-xl font-bold text-orange-400 mb-3 flex items-center gap-2">
+                                <i class="fas fa-tag"></i>เซคชั่น {{ section.section_number }}
                             </h3>
                             <div class="space-y-2 text-gray-300">
                                 {% if section.teachers.all %}
                                     <p>
-                                        <strong>ผู้สอน:</strong><br>
+                                        <strong class="text-white">ผู้สอน:</strong><br>
                                         {% for prof in section.teachers.all %}
                                             <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300">
                                                 {{ prof.prof_name }}
@@ -119,7 +278,7 @@
 
     <!-- Reviews Section -->
     <div class="mb-8">
-        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 review-section-header">
             <i class="fas fa-star text-orange-400"></i>รีวิว
         </h2>
         

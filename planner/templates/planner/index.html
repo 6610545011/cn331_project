@@ -1,285 +1,579 @@
 {% extends 'core/template.html' %}
 {% load static %}
 
-{% block title %}Class Schedule{% endblock %}
+{% block title %}Schedule Plan{% endblock %}
 
 {% block extra_head %}
+<!-- Google Fonts (Optional: เพื่อให้ฟอนต์เหมือนในรูปมากขึ้น) -->
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  .timetable-wrap { margin: 12px 0 28px; overflow-x: auto; }
-  .timetable-grid { display: grid; grid-auto-rows: 60px; border: 1px solid #e5e7eb; }
-  /* first column for day labels (fixed) + 24 slot columns */
-  .timetable-grid { grid-template-columns: 140px repeat(24, 1fr); }
-  .time-header { background: #f3f4f6; border-bottom: 1px solid #e5e7eb; display: contents; }
-  .time-cell { padding: 8px; font-weight: 600; text-align: center; border-left: 1px solid #eaeaea; }
-  .day-label { background: #f9fafb; padding: 12px; border-right: 1px solid #eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; }
-
-  .slot-cell { border-left: 1px solid #f1f5f9; border-bottom: 1px dashed #f3f4f6; }
-
-  .course-block {
-    padding: 6px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    font-size: 12px; line-height: 1.1; display: flex; flex-direction: column; justify-content: center;
-    overflow: hidden;
+  :root {
+    /* --- TU Palette --- */
+    --tu-red: #b01f24;       /* สีแดงธรรมศาสตร์ (Header/Accents) */
+    --tu-orange: #f97316;    /* สีส้ม (Buttons/Icons) */
+    --tu-yellow: #fbbf24;    /* สีเหลือง (Sidebar Background - Reference) */
+    
+    --bg-body: #f3f4f6;      /* สีพื้นหลังสีเทาอ่อน */
+    --bg-surface: #ffffff;
+    --text-primary: #111827; /* สีดำเข้ม */
+    --text-secondary: #6b7280;
+    
+    --radius-pill: 50px;     /* ความโค้งของ Search bar */
+    --radius-card: 0.5rem;
   }
 
-  /* container for visual layout */
-  .timetable-container { min-width: 1100px; }
+  body {
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    font-family: 'Prompt', sans-serif; /* ใช้ฟอนต์ Prompt หรือ Default */
+  }
 
-  /* bottom table */
-  .course-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-  .course-table th, .course-table td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
-  .course-table th { background: #f3f4f6; }
+  /* --- Page Header Style (เหมือนในรูป) --- */
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .page-icon {
+    color: var(--tu-orange);
+    font-size: 2rem;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
 
-  @media (max-width: 900px) {
-    .timetable-grid { grid-template-columns: 100px repeat(24, minmax(40px, 1fr)); }
-    .timetable-container { min-width: 900px; }
+  /* --- Search Bar Style (เหมือนในรูปเป๊ะ) --- */
+  .search-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .search-input-wrapper {
+    position: relative;
+    flex: 1;
+  }
+  #course-search-input {
+    width: 100%;
+    padding: 14px 24px;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-pill);
+    font-size: 1rem;
+    background: #fff;
+    outline: none;
+    transition: box-shadow 0.2s;
+  }
+  #course-search-input:focus {
+    border-color: var(--tu-orange);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+  }
+  .search-btn-icon {
+    background-color: var(--tu-orange);
+    color: white;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%; /* กลมดิก */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+  }
+  .search-btn-icon:hover {
+    background-color: #ea580c;
+    transform: scale(1.05);
+  }
+
+  /* --- Timetable Grid --- */
+  .timetable-wrap {
+    margin-bottom: 40px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border-top: 4px solid var(--tu-red); /* แถบสีแดงด้านบนตาราง */
+  }
+
+  .timetable-scroll-container {
+    overflow-x: auto;
+    position: relative;
+    padding-bottom: 10px;
+  }
+
+  .timetable-grid {
+    display: grid;
+    grid-template-columns: 100px repeat(24, 1fr);
+    grid-auto-rows: 60px;
+    min-width: 1200px;
+  }
+
+  /* Sticky Headers */
+  .time-cell {
+    background: #fdfdfd;
+    border-bottom: 2px solid #e5e7eb;
+    border-right: 1px solid #f3f4f6;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .day-label {
+    background: #fff;
+    border-right: 2px solid #e5e7eb;
+    border-bottom: 1px solid #f3f4f6;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+  }
+  /* ทำให้วันมีสีสันด้านซ้ายเหมือนตารางเรียน */
+  .day-label:nth-of-type(1) { border-left: 5px solid #fbbf24; } /* Mon - Yellow */
+  .day-label:nth-of-type(2) { border-left: 5px solid #f472b6; } /* Tue - Pink */
+  .day-label:nth-of-type(3) { border-left: 5px solid #22c55e; } /* Wed - Green */
+  .day-label:nth-of-type(4) { border-left: 5px solid #f97316; } /* Thu - Orange */
+  .day-label:nth-of-type(5) { border-left: 5px solid #3b82f6; } /* Fri - Blue */
+  .day-label:nth-of-type(6) { border-left: 5px solid #a855f7; } /* Sat - Purple */
+  .day-label:nth-of-type(7) { border-left: 5px solid #ef4444; } /* Sun - Red */
+
+  .corner-cell {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    background: #fdfdfd;
+    border-bottom: 2px solid #e5e7eb;
+    border-right: 2px solid #e5e7eb;
+  }
+
+  .slot-cell {
+    border-right: 1px dashed #e5e7eb;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .course-block {
+    margin: 1px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #000000; /* Text white for contrast on colored blocks */
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    z-index: 1;
+    overflow: hidden;
+  }
+  .course-block:hover {
+    transform: scale(1.02);
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+
+  /* --- Cards & Components --- */
+  .card-box {
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+  }
+  .card-header {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-header svg { color: var(--tu-red); }
+
+  /* Result Grid */
+  .result-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    margin-top: 20px;
+  }
+  
+  /* Course Table */
+  .course-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .course-table th {
+    background: #f9fafb;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #e5e7eb;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .course-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+  }
+  .btn-primary { background: var(--tu-orange); }
+  .btn-primary:hover { background: #ea580c; }
+  .btn-danger { background: #dc2626; }
+  .btn-danger:hover { background: #b91c1c; }
+  
+  /* Toast */
+  #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+  .toast {
+    background: #1f2937; color: white; padding: 12px 24px; border-radius: 50px;
+    margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  /* Credits Badge */
+  .credits-badge {
+    background: #fff;
+    border: 2px solid var(--tu-red);
+    color: var(--tu-red);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 1.2rem;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<h2>Class Schedule</h2>
-<p>30-minute slots from {{ slot_start_hour }}:00 — {{ slot_start_hour|add:slot_count|default:20 }}:00</p>
-
-<!-- Search and Browse Courses Section -->
-{% if user.is_authenticated %}
-<div style="margin-bottom:30px; padding:20px; border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px;">
-  <h3 style="margin-top:0; margin-bottom:16px;">Browse & Add Courses</h3>
+<div style="max-width: 1400px; margin: 0 auto; padding: 30px;">
   
-  <!-- Search Input -->
-  <div style="margin-bottom:16px;">
-    <input type="text" id="course-search-input" placeholder="Search by course code or name..." style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:4px; font-size:14px;">
-    <div id="search-status" style="color:#666; font-size:12px; margin-top:6px;"></div>
-  </div>
-
-  <!-- Results Display (Grid of Cards) -->
-  <div id="search-results" style="display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));">
-  </div>
-</div>
-{% endif %}
-
-<div class="timetable-wrap">
-  <div class="timetable-container">
-    <div class="timetable-grid">
-      {# Top-left empty cell (corner) #}
-      <div class="time-header time-cell" style="grid-column:1 / 2; grid-row:1 / 2;"></div>
-
-      {# Actual header time columns (columns 2..25) - we keep labels minimal in this template #}
-      {% for label in slot_labels %}
-        <div class="time-cell" style="grid-column: {{ forloop.counter0|add:2 }} / {{ forloop.counter0|add:3 }}; grid-row: 1 / 2;">{{ label }}</div>
-      {% endfor %}
-
-      {# Days rows: row index starts at 2 (row 1 is header) #}
-      {% for day in days_enum %}
-        <div class="day-label" style="grid-column:1 / 2; grid-row: {{ day.idx|add:2 }} / {{ day.idx|add:3 }};">{{ day.name }}</div>
-        {% for col in slot_indices %}
-          <div class="slot-cell" style="grid-column: {{ forloop.counter0|add:2 }} / {{ forloop.counter0|add:3 }}; grid-row: {{ day.idx|add:2 }} / {{ day.idx|add:3 }};"></div>
-        {% endfor %}
-      {% endfor %}
-
-      {# Course blocks positioned using CSS Grid coordinates computed in the view #}
-      {% for item in items %}
-        <div class="course-block" style="grid-column: {{ item.css_start_col }} / span {{ item.css_span_col }}; grid-row: {{ item.day|add:2 }} / span 1; background: {{ item.color }};">
-          <strong>{{ item.course_code }} • Sec {{ item.section_number }}</strong>
-          {% if item.room %}<small>{{ item.room }}</small>{% endif %}
+  <!-- Page Header (Style เหมือนรูป) -->
+  <div class="page-header">
+    <div class="page-icon">
+      <!-- ไอคอนปฏิทินสีส้ม -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"></path></svg>
+    </div>
+    <h1 class="page-title">SCHEDULE PLAN</h1>
+    
+    <!-- Credits Indicator (Right side) -->
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 0.9rem; font-weight: 600; color: #666;">Total Credits:</span>
+        <div class="credits-badge">
+             {{ planner_total_credits }} <span style="font-size:0.8rem; font-weight:600;">/ 22</span>
         </div>
-      {% endfor %}
-
     </div>
   </div>
+
+  <!-- Search Section (ทรง Pill เหมือนรูป) -->
+  {% if user.is_authenticated %}
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <input type="text" id="course-search-input" placeholder="Search course review or add to plan...">
+      </div>
+      <button class="search-btn-icon" id="search-trigger-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </button>
+    </div>
+    
+    <!-- Search Results (Hidden initially) -->
+    <div id="search-results" class="result-grid"></div>
+    <div id="search-status" style="margin-bottom: 20px; font-weight: 600; color: var(--tu-orange);"></div>
+  {% endif %}
+
+  <!-- Timetable Grid -->
+  <div class="timetable-wrap">
+    <div class="timetable-scroll-container">
+      <div class="timetable-grid">
+        
+        {# Corner #}
+        <div class="corner-cell" style="grid-column:1 / 2; grid-row:1 / 2;"></div>
+
+        {# Header: Time Slots #}
+        {% for label in slot_labels %}
+          <div class="time-cell" style="grid-column: {{ forloop.counter0|add:2 }} / {{ forloop.counter0|add:3 }}; grid-row: 1 / 2;">
+            {{ label }}
+          </div>
+        {% endfor %}
+
+        {# Body: Days and Slots #}
+        {% for day in days_enum %}
+          <div class="day-label" style="grid-column:1 / 2; grid-row: {{ day.idx|add:2 }} / {{ day.idx|add:3 }};">
+            {{ day.name }}
+          </div>
+          {% for col in slot_indices %}
+            <div class="slot-cell" style="grid-column: {{ forloop.counter0|add:2 }} / {{ forloop.counter0|add:3 }}; grid-row: {{ day.idx|add:2 }} / {{ day.idx|add:3 }};"></div>
+          {% endfor %}
+        {% endfor %}
+
+        {# Course Blocks #}
+        {% for item in items %}
+          <div class="course-block" style="grid-column: {{ item.css_start_col }} / span {{ item.css_span_col }}; grid-row: {{ item.day|add:2 }} / span 1; background: {{ item.color }};">
+            <div style="font-weight: 800; font-size: 0.9rem;">{{ item.course_code }}</div>
+            <div style="font-size: 0.8rem; opacity: 0.9;">Sec {{ item.section_number }}</div>
+            <div style="font-size: 0.75rem; margin-top:2px;">{{ item.room|default:"-" }}</div>
+          </div>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Section -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    
+    <!-- Left: Enrolled List -->
+    <div class="card-box">
+      <h3 class="card-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        Registered Courses
+      </h3>
+      {% if course_rows %}
+      <div style="overflow-x:auto;">
+        <table class="course-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Sec</th>
+              <th>Credit</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in course_rows %}
+              <tr>
+                <td style="font-weight:700; color:var(--tu-red);">{{ row.course_code }}</td>
+                <td>{{ row.course_name }}</td>
+                <td>{{ row.section_number }}</td>
+                <td>{{ row.credit }}</td>
+                <td>
+                  <button class="remove-section-btn btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" data-section-id="{{ row.section_id }}">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p style="color: #999; text-align: center; padding: 20px;">No courses registered yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Right: Save & History -->
+    {% if user.is_authenticated %}
+    <div>
+      <!-- Save Card -->
+      <div class="card-box" style="border-top: 4px solid var(--tu-orange);">
+        <h3 class="card-header" style="font-size: 1rem;">
+           💾 Save Plan
+        </h3>
+        <div style="display: flex; gap: 8px;">
+          <input id="variant-name" type="text" placeholder="Plan Name (e.g. Plan A)" style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:6px;">
+          <button id="save-variant-btn" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+
+      <!-- History Card -->
+      <div class="card-box" style="background: #fdfdfd;">
+        <h3 class="card-header" style="font-size: 1rem; color: #4b5563;">
+           Saved Plans
+        </h3>
+        <div id="variant-history"></div>
+        <div id="variant-history-empty" style="text-align:center; font-size:0.85rem; color:#9ca3af; padding: 10px; display:none;">- Empty -</div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
 </div>
 
-<!-- Save current planner as named schedule and history -->
-{% if user.is_authenticated %}
-  <div style="margin-top:18px; padding:12px; border:1px solid #e6edf3; background:#fbfdff; border-radius:6px;">
-    <h3 style="margin-top:0; margin-bottom:8px;">Save Current Schedule</h3>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <input id="variant-name" type="text" placeholder="Schedule name (e.g. Fall 2026 plan)" style="flex:1; padding:8px; border:1px solid #d1d5db; border-radius:4px;">
-      <button id="save-variant-btn" style="padding:8px 12px; background:#06b6d4; color:#fff; border-radius:6px; border:none;">Save</button>
-      <div id="save-variant-msg" style="font-size:13px; color:#666; margin-left:8px;"></div>
-    </div>
-
-    <div style="margin-top:14px; border-top:1px dashed #e6eef6; padding-top:12px;">
-      <h4 style="margin:0 0 8px 0;">Schedule History</h4>
-      <div id="variant-history" style="display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));"></div>
-      <div id="variant-history-empty" style="color:#777; font-size:13px; display:none;">No saved schedules yet.</div>
-    </div>
-  </div>
-{% endif %}
-
-<h3>Enrolled Courses</h3>
-{% if course_rows %}
-<table class="course-table">
-  <thead>
-    <tr>
-      <th>Course Code</th>
-      <th>Course Name</th>
-      <th>Section</th>
-      <th>Professor</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in course_rows %}
-      <tr>
-        <td>{{ row.course_code }}</td>
-        <td>{{ row.course_name }}</td>
-        <td>{{ row.section_number }}</td>
-        <td>{{ row.professor }}</td>
-        <td><button class="remove-section-btn" data-section-id="{{ row.section_id }}" style="padding:4px 8px; background:#dc2626; color:#fff; border:none; border-radius:4px; cursor:pointer;">Remove</button></td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p style="color:#6b7280; font-style:italic;">No sections added to planner yet.</p>
-{% endif %}
+<!-- Toast Container -->
+<div id="toast-container"></div>
 
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
+/* --- Utils --- */
 function getCookie(name) {
   const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
   return v ? v.pop() : '';
 }
-
 const csrfToken = getCookie('csrftoken');
 
-// Handle remove section
-document.body.addEventListener('click', function(e) {
-  const removeBtn = e.target.closest('.remove-section-btn');
-  if (removeBtn) {
-    e.preventDefault();
-    const sectionId = removeBtn.dataset.sectionId;
-    if (!confirm('Remove this section from planner?')) return;
-    const url = '{% url "planner:remove_section" 0 %}'.replace('/0/', '/' + sectionId + '/');
-    fetch(url, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {'X-CSRFToken': csrfToken}
-    }).then(r => r.json()).then(j => {
-      if (j.ok) {
-        location.reload();
-      } else {
-        alert('Error: ' + (j.error || 'unknown'));
-      }
-    }).catch(e => alert('Network error'));
-  }
+function showToast(message, type='success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  
+  // Icon and Color based on theme
+  let icon = '<span style="color:#4ade80">✔</span>'; // Green tick
+  if(type === 'error') icon = '<span style="color:#f87171">✖</span>'; // Red x
+  
+  toast.innerHTML = `${icon} <span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+/* --- Search & Add --- */
+const searchInput = document.getElementById('course-search-input');
+const searchResults = document.getElementById('search-results');
+const searchStatus = document.getElementById('search-status');
+let searchTimeout;
+
+if (searchInput) {
+  searchInput.addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const q = e.target.value.trim();
+    searchStatus.innerHTML = '';
+    
+    if (q.length < 2) {
+      searchResults.innerHTML = '';
+      return;
+    }
+
+    searchStatus.textContent = 'Searching...';
+
+    searchTimeout = setTimeout(() => {
+      fetch(`{% url "planner:search_sections" %}?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+          searchStatus.textContent = '';
+          if (!data.results || data.results.length === 0) {
+            searchStatus.textContent = 'No courses found.';
+            searchResults.innerHTML = '';
+            return;
+          }
+          
+          searchResults.innerHTML = '';
+          const userSectionIds = new Set({{ user_section_ids|safe }});
+          
+          data.results.forEach(section => {
+            const isAdded = userSectionIds.has(section.id);
+            const card = document.createElement('div');
+            
+            // Card Style for Search Results
+            card.style.cssText = `
+              padding: 16px; 
+              border: 1px solid #e5e7eb; 
+              border-left: 4px solid var(--tu-red);
+              border-radius: 6px; 
+              background: white;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+              transition: transform 0.2s;
+            `;
+            
+            card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-weight:800; color:var(--tu-red); font-size:1.1rem;">${section.code}</span>
+                <span style="font-size:0.8rem; font-weight:700; background:#f3f4f6; padding:2px 8px; border-radius:4px;">${section.credit} Cr</span>
+              </div>
+              <div style="font-weight:600; font-size:0.9rem; margin-bottom:4px;">${section.name}</div>
+              <div style="font-size:0.85rem; color:#666; margin-bottom:12px;">Sec ${section.sec} • ${section.prof_name || 'Staff'}</div>
+              
+              <button class="add-btn btn" 
+                data-section-id="${section.id}" 
+                style="width:100%; ${isAdded ? 'background:#d1d5db; cursor:not-allowed;' : 'background:var(--tu-orange);'}"
+                ${isAdded ? 'disabled' : ''}>
+                ${isAdded ? 'Added' : '+ Add to Plan'}
+              </button>
+            `;
+            searchResults.appendChild(card);
+          });
+
+          document.querySelectorAll('.add-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', () => addSectionToPlanner(btn.dataset.sectionId));
+          });
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Search error', 'error');
+        });
+    }, 300);
+  });
+}
+
+function addSectionToPlanner(sectionId) {
+  const fd = new FormData();
+  fd.append('section_id', sectionId);
+
+  fetch(`/planner/add/${sectionId}/`, {
+    method: 'POST',
+    body: fd,
+    credentials: 'same-origin',
+    headers: {'X-CSRFToken': csrfToken}
+  }).then(r => r.json()).then(j => {
+    if (j.ok) {
+      showToast('Course added successfully!');
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showToast(j.error || 'Failed to add', 'error');
+    }
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+/* --- Remove Section --- */
+document.querySelectorAll('.remove-section-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        if (!confirm('Remove this course?')) return;
+        const sectionId = this.dataset.sectionId;
+        const url = '{% url "planner:remove_section" 0 %}'.replace('/0/', '/' + sectionId + '/');
+        
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'X-CSRFToken': csrfToken}
+        }).then(r => r.json()).then(j => {
+            if (j.ok) {
+                showToast('Removed successfully');
+                setTimeout(() => location.reload(), 500);
+            } else {
+                showToast(j.error, 'error');
+            }
+        });
+    });
 });
 
-
-  // Course search UI handler
-  const searchInput = document.getElementById('course-search-input');
-  const searchResults = document.getElementById('search-results');
-  const searchStatus = document.getElementById('search-status');
-  let searchTimeout;
-
-  if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-      clearTimeout(searchTimeout);
-      const q = e.target.value.trim();
-      searchStatus.textContent = '';
-      searchResults.innerHTML = '';
-
-      if (q.length < 2) {
-        searchStatus.textContent = '';
-        return;
-      }
-
-      searchStatus.textContent = 'Searching...';
-      searchStatus.style.color = '#666';
-
-      searchTimeout = setTimeout(() => {
-        fetch(`{% url "planner:search_sections" %}?q=${encodeURIComponent(q)}`)
-          .then(r => r.json())
-          .then(data => {
-            searchStatus.textContent = '';
-            if (!data.results || data.results.length === 0) {
-              searchStatus.textContent = 'No courses found';
-              searchStatus.style.color = '#999';
-              searchResults.innerHTML = '';
-              return;
-            }
-            
-            searchResults.innerHTML = '';
-            const userSectionIds = new Set({{ user_section_ids|safe }});
-            
-            data.results.forEach(section => {
-              const isAlreadyAdded = userSectionIds.has(section.id);
-              const card = document.createElement('div');
-              card.style.cssText = `
-                padding:14px; 
-                border:1px solid #e5e7eb; 
-                background:#fff; 
-                border-radius:6px; 
-                box-shadow:0 1px 3px rgba(0,0,0,0.1);
-                transition:all 0.2s;
-              `;
-              
-              card.innerHTML = `
-                <div style="margin-bottom:8px;">
-                  <p style="margin:0; font-weight:600; color:#1f2937; font-size:14px;">${section.code} Sec ${section.sec}</p>
-                  <p style="margin:4px 0 0 0; color:#666; font-size:13px;">${section.name}</p>
-                  <p style="margin:4px 0 0 0; color:#f97316; font-weight:500; font-size:12px;">${section.credit} credits</p>
-                </div>
-                <button class="add-course-btn" data-section-id="${section.id}" style="
-                  width:100%; 
-                  padding:8px; 
-                  background:${isAlreadyAdded ? '#d1d5db' : '#f97316'}; 
-                  color:#fff; 
-                  border:none; 
-                  border-radius:4px; 
-                  cursor:${isAlreadyAdded ? 'not-allowed' : 'pointer'}; 
-                  font-size:12px; 
-                  font-weight:500;
-                  opacity:${isAlreadyAdded ? '0.6' : '1'};
-                  transition:all 0.2s;
-                " ${isAlreadyAdded ? 'disabled' : ''}>
-                  ${isAlreadyAdded ? '✓ Added' : '+ Add to Plan'}
-                </button>
-              `;
-              searchResults.appendChild(card);
-            });
-
-            // Attach click handlers to add buttons
-            document.querySelectorAll('.add-course-btn:not([disabled])').forEach(btn => {
-              btn.addEventListener('click', () => addSectionToPlanner(btn.dataset.sectionId, btn.parentElement.querySelector('p').textContent));
-            });
-          })
-          .catch(err => {
-            searchStatus.textContent = 'Search error';
-            searchStatus.style.color = '#d00';
-          });
-      }, 300); // debounce 300ms
-    });
-  }
-
-  // Add section to planner (via search)
-  function addSectionToPlanner(sectionId, label) {
-    const searchStatus = document.getElementById('search-status');
-    const fd = new FormData();
-    fd.append('section_id', sectionId);
-
-    fetch(`/planner/add/${sectionId}/`, {
-      method: 'POST',
-      body: fd,
-      credentials: 'same-origin',
-      headers: {'X-CSRFToken': csrfToken}
-    }).then(r => r.json()).then(j => {
-      if (j.ok) {
-        searchStatus.style.color = '#0a0';
-        searchStatus.textContent = 'Added successfully! Reloading...';
-        setTimeout(() => location.reload(), 600);
-      } else {
-        searchStatus.style.color = '#d00';
-        searchStatus.textContent = j.error || 'Error adding course';
-      }
-    }).catch(err => {
-      searchStatus.style.color = '#d00';
-      searchStatus.textContent = 'Network error';
-    });
-  }
-// --- Variant (save/load/history) client logic ---
+/* --- Variants (Save/Load) --- */
 function fetchVariants(){
   fetch('{% url "planner:list_variants" %}')
     .then(r=>r.json()).then(j=>{
@@ -292,54 +586,64 @@ function fetchVariants(){
       }
       empty.style.display = 'none';
       j.variants.forEach(v => {
-        const card = document.createElement('div');
-        card.style.cssText = 'padding:10px; border:1px solid #e6eef6; background:#fff; border-radius:6px;';
-        card.innerHTML = `
-          <div style="font-weight:600; margin-bottom:6px;">${v.name}</div>
-          <div style="color:#666; font-size:13px; margin-bottom:8px;">Credits: ${v.credits}</div>
-          <div style="display:flex; gap:8px;">
-            <button class="load-variant-btn" data-variant-id="${v.id}" style="flex:1; padding:6px; background:#06b6d4; color:#fff; border-radius:4px; border:none;">Load</button>
-            <button class="delete-variant-btn" data-variant-id="${v.id}" style="padding:6px; background:#ef4444; color:#fff; border-radius:4px; border:none;">Delete</button>
+        const item = document.createElement('div');
+        item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;";
+        item.innerHTML = `
+          <div>
+            <div style="font-weight:700; color:#333;">${v.name}</div>
+            <div style="font-size:0.75rem; color:#888;">${v.credits} Credits</div>
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button class="load-btn btn" data-id="${v.id}" style="padding:4px 8px; font-size:0.75rem; background:#3b82f6;">Load</button>
+            <button class="del-btn btn" data-id="${v.id}" style="padding:4px 8px; font-size:0.75rem; background:#ef4444;">x</button>
           </div>
         `;
-        container.appendChild(card);
+        container.appendChild(item);
       });
 
-      // bind events
-      document.querySelectorAll('.load-variant-btn').forEach(btn => btn.addEventListener('click', function(){
-        if (!confirm('Replace current planner with this saved schedule?')) return;
-        const vid = this.dataset.variantId;
-        fetch(`/planner/variant/${vid}/load/`, {method:'POST', credentials:'same-origin', headers:{'X-CSRFToken': csrfToken}})
-          .then(r=>r.json()).then(j=>{ if (j.ok) location.reload(); else alert(j.error||'Error loading variant'); });
-      }));
+      container.querySelectorAll('.load-btn').forEach(b => b.onclick = function() {
+        if(!confirm('Load this plan?')) return;
+        fetch(`/planner/variant/${this.dataset.id}/load/`, {method:'POST', headers:{'X-CSRFToken': csrfToken}})
+        .then(r=>r.json()).then(j=>{ 
+            if(j.ok) { showToast('Plan loaded!'); setTimeout(()=>location.reload(), 500); }
+            else showToast(j.error, 'error'); 
+        });
+      });
 
-      document.querySelectorAll('.delete-variant-btn').forEach(btn => btn.addEventListener('click', function(){
-        if (!confirm('Delete this saved schedule?')) return;
-        const vid = this.dataset.variantId;
-        fetch(`/planner/variant/${vid}/delete/`, {method:'POST', credentials:'same-origin', headers:{'X-CSRFToken': csrfToken}})
-          .then(r=>r.json()).then(j=>{ if (j.ok) fetchVariants(); else alert(j.error||'Error deleting'); });
-      }));
-    }).catch(err=>{ console.error('Error fetching variants', err); });
+      container.querySelectorAll('.del-btn').forEach(b => b.onclick = function() {
+        if(!confirm('Delete?')) return;
+        fetch(`/planner/variant/${this.dataset.id}/delete/`, {method:'POST', headers:{'X-CSRFToken': csrfToken}})
+        .then(r=>r.json()).then(j=>{ 
+            if(j.ok) { fetchVariants(); }
+            else showToast(j.error, 'error'); 
+        });
+      });
+
+    });
 }
 
-// Save current planner as variant
 const saveBtn = document.getElementById('save-variant-btn');
 if (saveBtn){
   saveBtn.addEventListener('click', function(){
-    const name = (document.getElementById('variant-name')||{}).value || '';
-    const msg = document.getElementById('save-variant-msg');
-    if (!name){ msg.style.color='#d00'; msg.textContent = 'Please enter a name.'; return; }
-    msg.style.color='#666'; msg.textContent = 'Saving...';
+    const nameInput = document.getElementById('variant-name');
+    const name = nameInput.value.trim();
+    if (!name) { showToast('Please enter a name', 'error'); return; }
+    
     const fd = new FormData(); fd.append('name', name);
-    fetch('{% url "planner:save_current_variant" %}', {method:'POST', body:fd, credentials:'same-origin', headers:{'X-CSRFToken': csrfToken}})
+    fetch('{% url "planner:save_current_variant" %}', {method:'POST', body:fd, headers:{'X-CSRFToken': csrfToken}})
       .then(r=>r.json()).then(j=>{
-        if (j.ok){ msg.style.color='#0a0'; msg.textContent = 'Saved.'; setTimeout(()=>{ msg.textContent=''; fetchVariants(); },700); }
-        else { msg.style.color='#d00'; msg.textContent = j.error || 'Error saving'; }
-      }).catch(err=>{ msg.style.color='#d00'; msg.textContent='Network error'; });
+        if (j.ok){ 
+            showToast('Schedule saved!'); 
+            nameInput.value = ''; 
+            fetchVariants(); 
+        } else { 
+            showToast(j.error, 'error'); 
+        }
+      });
   });
 }
 
-// Initial load
+// Init
 if (document.getElementById('variant-history')) fetchVariants();
 </script>
 {% endblock %}

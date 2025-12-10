@@ -138,6 +138,7 @@ def planner_view(request):
 		'user_sections': user_sections,
 		'user_section_ids': user_section_ids,  # JS array for marking added sections
 		'all_sections': all_sections,
+		'planner_total_credits': planner.total_credits(),
 	}
 	return render(request, 'planner/index.html', context)
 
