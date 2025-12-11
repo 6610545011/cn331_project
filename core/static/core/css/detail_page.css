@@ -214,3 +214,50 @@
     stroke: #666;
     transition: all 0.3s ease;
 }
+
+a {
+        color: #FF8C00;
+}
+a:visited {
+        color: #8B0000;
+}
+
+/* === Profile header: move image to right on wider screens === */
+/* Apply without Tailwind: use the header-row, profile-pic and profile-info classes added to the template */
+.header-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+    .header-row {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+    .header-row .profile-pic {
+        order: 2;
+        margin-left: 1rem;
+        flex-shrink: 0;
+    }
+    .header-row .profile-info {
+        order: 1;
+        flex: 1 1 auto;
+    }
+}
+
+/* Ensure the image (or placeholder div) fits the intended size */
+.header-row .profile-pic .prof-image {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 1rem;
+    display: block;
+}
+
+/* If the placeholder is a centered icon, keep the centering */
+.header-row .profile-pic .prof-image i {
+    line-height: 300px;
+}

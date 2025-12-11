@@ -18,14 +18,15 @@
     
     <!-- Profile Header -->
     <div class="card-review p-8 mb-8 prof-header">
-        <div class="flex flex-col md:flex-row gap-8 items-start">
+        <div class="flex flex-col md:flex-row gap-8 items-start header-row" style="padding-left:20px">
             <!-- Profile Picture -->
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 profile-pic">
                 {% if prof.imgurl %}
                     <img 
                         src="{{ prof.imgurl }}" 
                         alt="Photo of {{ prof.prof_name }}" 
                         class="w-56 h-56 rounded-xl object-cover shadow-2xl border-4 border-orange-400 prof-image"
+                        style="width: 300px; height: 300px; object-fit: cover; border-radius: 1rem;"
                     >
                 {% else %}
                     <div class="w-56 h-56 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-2xl border-4 border-orange-400 prof-image">
@@ -35,7 +36,7 @@
             </div>
             
             <!-- Profile Info -->
-            <div class="flex-1">
+            <div class="flex-1 profile-info">
                 <h1 class="text-4xl font-bold mb-2 prof-name">{{ prof.prof_name }}</h1>
                 
                 <span class="prof-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
@@ -45,7 +46,7 @@
                 {% if prof.email %}
                     <p class="text-gray-300 mb-2">
                         <strong class="text-orange-400">
-                            <i class="fas fa-envelope mr-2"></i>อีเมล:
+                            <i class="fas fa-envelope mr-2"> อีเมล: </i>
                         </strong>
                         <a href="mailto:{{ prof.email }}" class="text-orange-400 hover:text-orange-300 transition">
                             {{ prof.email }}
@@ -55,14 +56,14 @@
                 
                 {% if prof.description %}
                     <p class="text-gray-300 mt-4 leading-relaxed">
-                        <strong class="text-orange-400 block mb-2">เกี่ยวกับ:</strong>
+                        <i class="fas fa-envelope mr-2"> เกี่ยวกับ: </i>
                         {{ prof.description }}
                     </p>
                 {% endif %}
             </div>
         </div>
     </div>
-
+    <br>
     <!-- Sections Taught -->
     <div class="mb-8">
         <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b-2 border-orange-400 pb-4 section-header">
@@ -90,6 +91,7 @@
                             </span>
                         {% endif %}
                     </div>
+                    <br>
                 </div>
             {% empty %}
                 <div class="card-review p-8 text-center">
