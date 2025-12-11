@@ -5,142 +5,7 @@
 {% block title %}{{ course.course_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
 {% block extra_head %}
-<style>
-    /* Course Detail Styling */
-    .course-header {
-        background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 118, 0, 0.05));
-        border-radius: 12px;
-        border-left: 5px solid #ff8c00;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .course-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255, 140, 0, 0.2), transparent);
-        border-radius: 50%;
-        transform: translate(50%, -50%);
-    }
-    
-    .course-title {
-        background: linear-gradient(135deg, #ff8c00, #ff7600);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .course-code-badge {
-        background: linear-gradient(135deg, #ff8c00, #ff7600);
-        box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .course-code-badge::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-        transition: left 0.6s ease;
-    }
-    
-    .course-code-badge:hover::before {
-        left: 100%;
-    }
-    
-    .section-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-    }
-    
-    .section-item {
-        background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 140, 0, 0.02));
-        border: 1px solid rgba(255, 140, 0, 0.2);
-        border-radius: 8px;
-        padding: 24px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .section-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #ff8c00, #ff7600);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.4s ease;
-    }
-    
-    .section-item:hover {
-        border-color: #ff8c00;
-        box-shadow: 0 15px 40px rgba(255, 140, 0, 0.25);
-        transform: translateY(-8px);
-    }
-    
-    .section-item:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .section-number {
-        display: inline-block;
-        background: linear-gradient(135deg, #ff8c00, #ff7600);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
-    }
-    
-    .course-header-divider {
-        border-color: #ff8c00;
-        position: relative;
-        margin: 16px 0;
-    }
-    
-    .course-header-divider::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 60px;
-        height: 2px;
-        background: linear-gradient(90deg, #ff8c00, transparent);
-    }
-    
-    .review-section-header {
-        border-bottom: 3px solid #ff8c00;
-        position: relative;
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-    
-    .review-section-header::after {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 0;
-        width: 60px;
-        height: 3px;
-        background: linear-gradient(90deg, #ff8c00, transparent);
-    }
-</style>
+<link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
@@ -158,16 +23,16 @@
             <span class="course-code-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
                 <i class="fas fa-book mr-2"></i>{{ course.course_code }}
             </span>
-            <h1 class="text-4xl font-bold mb-3 course-title">{{ course.course_name }}</h1>
-            <p class="text-gray-300 text-lg mb-4 leading-relaxed">{{ course.description }}</p>
+            <h1 class="text-4xl font-bold mb-3 course-title" style="padding-left: 10px">{{ course.course_name }}</h1>
+            <p class="text-gray-300 text-lg mb-4 leading-relaxed"  style="padding-left: 10px">{{ course.description }}</p>
             
             <div class="course-header-divider border-t border-orange-400 pt-4 mt-4">
                 <p class="text-gray-300 mb-3">
                     <strong class="text-orange-400">
-                        <i class="fas fa-chalkboard-user mr-2"></i>ผู้สอน:
+                        <i class="fas fa-chalkboard-user mr-2"  style="padding-left: 10px"> ผู้สอน: </i>
                     </strong>
                     {% for prof in course.all_professors %}
-                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition">
+                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition" >
                             {{ prof.prof_name }}
                         </a>{% if not forloop.last %}, {% endif %}
                     {% empty %}
@@ -177,7 +42,7 @@
                 {% if course.credit %}
                 <p class="text-gray-300">
                     <strong class="text-orange-400">
-                        <i class="fas fa-credit-card mr-2"></i>หน่วยกิต:
+                        <i class="fas fa-credit-card mr-2" style="padding-left: 10px"> หน่วยกิต: </i>
                     </strong>
                     {{ course.credit }}
                 </p>
@@ -212,7 +77,7 @@
                     <div class="grid grid-cols-1 gap-4">
                         <div>
                             <h3 class="text-xl font-bold text-orange-400 mb-3 flex items-center gap-2">
-                                <i class="fas fa-tag"></i>เซคชั่น {{ section.section_number }}
+                                <i class="fas fa-tag" style="padding-right: 5px"> </i>Section {{ section.section_number }}
                             </h3>
                             <div class="space-y-2 text-gray-300">
                                 {% if section.teachers.all %}
@@ -232,7 +97,7 @@
                                 {% if section.campus %}
                                     <p>
                                         <strong class="text-white">
-                                            <i class="fas fa-map-marker-alt text-orange-400 mr-2"></i>วิทยาเขต:
+                                            <i class="fas fa-map-marker-alt text-orange-400 mr-2"style="padding-right: 5px"></i>วิทยาเขต:
                                         </strong>
                                         {{ section.campus.name }}
                                     </p>
@@ -240,7 +105,7 @@
                                 {% if section.datetime %}
                                     <p>
                                         <strong class="text-white">
-                                            <i class="fas fa-clock text-orange-400 mr-2"></i>เวลา:
+                                            <i class="fas fa-clock text-orange-400 mr-2"style="padding-right: 5px"></i>เวลา:
                                         </strong>
                                         {{ section.datetime }}
                                     </p>
@@ -248,7 +113,7 @@
                                 {% if section.room %}
                                     <p>
                                         <strong class="text-white">
-                                            <i class="fas fa-door-open text-orange-400 mr-2"></i>ห้อง:
+                                            <i class="fas fa-door-open text-orange-400 mr-2"style="padding-right: 5px"></i>ห้อง:
                                         </strong>
                                         {{ section.room }}
                                     </p>
@@ -300,14 +165,6 @@
     </div>
 </div>
 
-<style>
-    .gradient-text {
-        background: linear-gradient(135deg, #ff8c00 0%, #ff6b6b 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-</style>
 {% endblock content %}
 
 {% block extra_scripts %}
