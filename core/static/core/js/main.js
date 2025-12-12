@@ -61,7 +61,7 @@ document.body.addEventListener('click', function(e) {
             if (data.status === 'ok') {
                 bookmarkBtn.classList.toggle('btn-primary', data.bookmarked);
                 bookmarkBtn.classList.toggle('btn-outline-primary', !data.bookmarked);
-                bookmarkBtn.innerHTML = data.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+                bookmarkBtn.innerHTML = data.bookmarked ? '<i class="fas fa-bookmark"></i>' : '<i class="far fa-bookmark"></i>';
             }
         })
         .catch(error => console.error('Error toggling bookmark:', error));
