@@ -117,12 +117,12 @@
     flex-wrap: wrap;
 }
 
-/* Icon-only buttons (Flat style like the example image) */
+/* Icon-only buttons */
 .icon-btn {
     background: none !important;
     border: none !important;
     color: #c41e3a !important;
-    font-size: 30px !important;  /* large icon */
+    font-size: 30px !important;
     width: auto !important;
     height: auto !important;
     padding: 4px !important;
@@ -138,14 +138,14 @@
     transform: scale(1.12);
 }
 
-/* Active state → darker red */
+/* Active → darker red */
 .bookmark-btn.active,
 .report-btn.active {
     color: #a5152f !important;
 }
 
 /* ============================================================
-   NEW DESIGN — VOTE BUTTONS (Like / Dislike)
+   NEW DESIGN — VOTE BUTTONS
    ============================================================ */
 .review-actions {
     margin-left: auto;
@@ -171,7 +171,6 @@
     transform: scale(1.15);
 }
 
-/* Pressed (already voted) */
 .vote-btn.btn-success,
 .vote-btn.btn-danger {
     color: #a5152f !important;
@@ -185,19 +184,19 @@
     color: #c41e3a;
 }
 
-/* Smaller screen tweaks */
+/* ======================== */
 @media (max-width: 600px) {
     .review-card { padding: 12px; }
     .review-header h4 { font-size: 1rem; }
     .review-meta { font-size: 0.85rem; }
 }
 
-/* Profile-specific tweaks */
+/* Profile-specific */
 .profile-container .review-card,
 .profile-tab-pane .review-card {
-    color: #ffffff;
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.08);
+    color: #000000;
+    background: #ffffff;
+    border-color: #ececec;
 }
 
 .profile-container .review-card p,
@@ -210,27 +209,27 @@
 .profile-tab-pane .review-card .review-rating,
 .profile-container .review-card .review-tags,
 .profile-tab-pane .review-card .review-tags {
-    color: #ffffff;
+    color: #333333;
 }
 
 .profile-container .review-card .review-tags strong,
 .profile-tab-pane .review-card .review-tags strong {
-    color: #ffffff;
+    color: #333333;
 }
 
 /* Modal textarea */
 .report-form textarea {
     min-height: 120px;
 }
-/* ============================================================
-   HARD RESET — ล้างสไตล์ Bootstrap ของปุ่มทั้งหมดในรีวิว
-   ============================================================ */
 
+/* ============================================================
+   HARD RESET
+   ============================================================ */
 .review-card .btn,
 .review-card button,
 .review-card .vote-btn,
 .review-card .icon-btn {
-    all: unset;                 /* ล้างสไตล์ Bootstrap ทั้งหมด */
+    all: unset;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -238,26 +237,31 @@
 }
 
 /* ============================================================
-   TOP RIGHT — Bookmark & Report (Icon-only)
+   TOP RIGHT — Bookmark & Report (Final Override)
    ============================================================ */
-.icon-btn {
-    font-size: 30px !important;
+
+/* ★ Bookmark Button Override (Final) */
+.bookmark-btn i {
+    font-size: 24px;
+    transition: color 0.15s ease;
+}
+
+/* ไม่กด → icon แบบ regular */
+.bookmark-btn:not(.active) i {
     color: #c41e3a !important;
-    padding: 6px !important;
-    border-radius: 8px;
-    transition: transform 0.15s ease;
 }
 
-.icon-btn:hover {
-    transform: scale(1.15);
-}
-
-/* กดแล้วเป็นแดงเข้มขึ้น */
-.icon-btn.active {
+/* กดแล้ว → icon แบบ solid และแดงเข้ม */
+.bookmark-btn.active i {
     color: #a5152f !important;
 }
 
-/* จัดตำแหน่งให้ชิดขวา */
+/* hover */
+.bookmark-btn:hover i {
+    opacity: 0.75;
+}
+
+/* keep spacing */
 .review-card .btn-group {
     display: flex;
     gap: 10px;
@@ -265,8 +269,9 @@
 }
 
 /* ============================================================
-   BOTTOM RIGHT — LIKE / DISLIKE
+   BOTTOM RIGHT — LIKE / DISLIKE (unchanged)
    ============================================================ */
+
 .vote-container {
     display: flex;
     align-items: center;
@@ -288,7 +293,6 @@
     color: #a5152f !important;
 }
 
-/* Score number */
 .vote-score {
     font-size: 17px;
     font-weight: 700;
@@ -296,3 +300,28 @@
     text-align: center;
     color: #c41e3a;
 }
+
+/* ล้าง pseudo-element ของ Bootstrap ที่ทำให้ขึ้นคำว่า "Bookmarked" */
+.bookmark-btn::after,
+.bookmark-btn.btn-primary::after,
+.bookmark-btn.btn-outline-primary::after {
+    content: "" !important;
+    display: none !important;
+}
+
+/* ไอคอน Bookmark */
+.bookmark-btn i {
+    font-size: 28px;
+    color: #c41e3a;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.bookmark-btn:hover i {
+    transform: scale(1.15);
+}
+
+/* เมื่อ Bookmark แล้ว -> สีเข้มขึ้น */
+.bookmark-btn.active i {
+    color: #a5152f !important;
+}
+
