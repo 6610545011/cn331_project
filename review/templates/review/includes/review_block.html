@@ -42,6 +42,27 @@
         </div>
         {% endif %}
     </div>
+    <h5>Course: 
+        {% if review.course %}
+            <a href="{% url 'core:course_detail' review.course.course_code %}">{{ review.course.course_name }}</a>
+        {% else %}
+            -
+        {% endif %}
+    </h5>
+    <h5>Section: 
+        {% if review.section %}
+            {{ review.section.section_number}}
+        {% else %}
+            -
+        {% endif %}
+    </h5>
+    <h5>Prof: 
+        {% if review.prof %}
+            <a href="{% url 'core:professor_detail' review.prof.id %}">{{ review.prof.prof_name }}</a>
+        {% else %}
+            -
+        {% endif %}
+    </h5>
     <p class="review-rating">
         <strong>Rating:</strong>
         <span class="review-stars" aria-label="Rating: {{ review.rating }} out of 5">
