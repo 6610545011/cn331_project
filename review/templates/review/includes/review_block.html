@@ -6,10 +6,15 @@
     <div class="review-header">
         <div class="review-head-left">
             <div class="review-avatar">
-                {% if user.imgurl %}
-                    <img src="{{ user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
+                {% if review.incognito %}
+                    <span>A</span>
                 {% else %}
-                    <span>{{ user.username|slice:":1"|upper }}</span>
+                    {% if user.imgurl %}
+                        <img src="{{ user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
+                    {% else %}
+                        <span>{{ user.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                    <span>{{ username }}</span>
                 {% endif %}
             </div>
             <h4>{{ review.head }}</h4>
