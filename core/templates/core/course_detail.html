@@ -197,12 +197,20 @@ if (typeof window.courseBookmarkLoaded === 'undefined') {
 
             fetch(url, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': csrftoken,
                     'Content-Type': 'application/json'
                 },
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                if (!response.ok) return Promise.reject(new Error('network')); 
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'ok') {
                     courseBookmarkBtn.classList.toggle('bookmarked', data.bookmarked);
@@ -303,3 +311,4 @@ if (typeof window.plannerVariantLoaded === 'undefined') {
 }
 </script>
 {% endblock extra_scripts %}
+{% include "review/includes/review_actions_js.html" %}

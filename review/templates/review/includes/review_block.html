@@ -10,15 +10,17 @@
         </div>
         {% if user.is_authenticated %}
         <div class="btn-group">
-            <button class="btn btn-sm icon-btn bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
+                <button class="btn btn-sm icon-btn bookmark-btn {% if review.is_bookmarked %}active{% endif %}" 
                     data-review-id="{{ review.id }}" 
+                    data-bookmarked="{{ review.is_bookmarked|yesno:'True,False' }}"
+                    aria-pressed="{{ review.is_bookmarked|yesno:'true,false' }}"
                     data-url="{% url 'review:toggle_bookmark' review.id %}"
-                    title="Bookmark this review">
-                <i class="fas fa-bookmark"></i>
+                    title="Bookmark this review" aria-label="Toggle bookmark">
+                    <i class="bookmark-icon {% if review.is_bookmarked %}fas{% else %}far{% endif %} fa-bookmark" aria-hidden="true"></i>
             </button>
             {# Use Bootstrap modal for report popup #}
-            <button class="btn btn-sm icon-btn report-btn" data-review-id="{{ review.id }}" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}"
-                    title="Report this review">
+                    <button class="btn btn-sm icon-btn report-btn" data-review-id="{{ review.id }}" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}"
+                        title="Report this review" aria-controls="reportModal-{{ review.id }}" aria-pressed="false" aria-label="Report review">
                 <i class="fas fa-flag"></i>
             </button>
             {% if request.resolver_match.url_name == 'users:profile' and user == review.user %}
@@ -83,16 +85,20 @@
 </div>
 {% if user.is_authenticated %}
 <!-- Report Modal -->
-<div class="modal fade" id="reportModal-{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel-{{ review.id }}" aria-hidden="true" style="display:none;">
-    <div class="modal-dialog">
+<div class="modal fade report-modal" id="reportModal-{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel-{{ review.id }}" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reportModalLabel-{{ review.id }}"></h5>
+                <h5 class="modal-title" id="reportModalLabel-{{ review.id }}"><i class="fas fa-flag" aria-hidden="true"></i> Report Review</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="reportForm-{{ review.id }}" class="report-form" data-url="{% url 'review:report_review' review.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
+                    <div class="report-success" id="report-success-{{ review.id }}">
+                        <i class="fas fa-check-circle"></i>
+                        <div>Thank you — your report has been submitted.</div>
+                    </div>
                     <div id="report-alert-{{ review.id }}"></div>
                     <p>You are reporting the review for: <strong>{{ review.head }}</strong></p>
                     <div class="mb-3">
@@ -102,7 +108,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
                 </div>
             </form>
         </div>

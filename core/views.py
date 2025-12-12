@@ -22,7 +22,17 @@ from django.db import IntegrityError
 def homepage_view(request):
     # Show the first page of latest reviews on the homepage
     from review.models import Review
-    reviews_qs = Review.objects.select_related('user', 'course', 'prof').order_by('-date_created')
+    # Annotate whether the current user has bookmarked the review so the UI can show filled icons
+    from review.models import Bookmark
+    user_bookmark_subquery = Bookmark.objects.none()
+    if request.user.is_authenticated:
+        user_bookmark_subquery = Bookmark.objects.filter(user=request.user, review=OuterRef('pk'))
+
+    reviews_qs = Review.objects.annotate(
+        is_bookmarked=Exists(user_bookmark_subquery),
+        score=Coalesce(Sum('votes__vote_type'), 0),
+        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
+    ).select_related('user', 'course', 'prof').order_by('-date_created')
     paginator = Paginator(reviews_qs, 10)
     try:
         page_obj = paginator.page(1)

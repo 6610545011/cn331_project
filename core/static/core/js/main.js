@@ -46,19 +46,29 @@ const csrftoken = getCookie('csrftoken');
 document.body.addEventListener('click', function(e) {
     const bookmarkBtn = e.target.closest('.bookmark-btn');
     if (bookmarkBtn) {
+        // If this is a review bookmark (has reviewId), the review script handles this behavior.
+        if (bookmarkBtn.dataset.reviewId) return;
         e.preventDefault();
         const url = bookmarkBtn.dataset.url;
 
         fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'X-CSRFToken': csrftoken,
                 'Content-Type': 'application/json'
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject(new Error('auth'));
+            }
+            if (!response.ok) return Promise.reject(new Error('network')); 
+            return response.json();
+        })
         .then(data => {
-            if (data.status === 'ok') {
+                if (data.status === 'ok') {
                 bookmarkBtn.classList.toggle('btn-primary', data.bookmarked);
                 bookmarkBtn.classList.toggle('btn-outline-primary', !data.bookmarked);
                 bookmarkBtn.innerHTML = data.bookmarked ? '<i class="fas fa-bookmark"></i>' : '<i class="far fa-bookmark"></i>';
@@ -75,12 +85,20 @@ document.body.addEventListener('click', function(e) {
         const reviewCard = deleteBtn.closest('.review-card');
         fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'X-CSRFToken': csrftoken,
                 'Content-Type': 'application/json'
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject(new Error('auth'));
+            }
+            if (!response.ok) return Promise.reject(new Error('network')); 
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'ok') {
                 if (reviewCard) reviewCard.remove();
@@ -95,6 +113,8 @@ document.body.addEventListener('submit', function(e) {
     const form = e.target;
 
     if (form.matches('.report-form')) {
+        // Skip review-specific report forms (handled by review_actions_js)
+        if (form.id && form.id.startsWith('reportForm-')) return;
         e.preventDefault();
         const reviewId = form.id.split('-')[1];
         const formData = new FormData(form);
@@ -103,12 +123,19 @@ document.body.addEventListener('submit', function(e) {
 
         fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             body: formData,
             headers: {
                 'X-CSRFToken': csrftoken,
             },
         })
-        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject(new Error('auth'));
+            }
+            return response.json().then(data => ({ status: response.status, body: data }));
+        })
         .then(({ status, body }) => {
             let alertClass = 'alert-danger';
             let message = 'An unknown error occurred.';
@@ -137,6 +164,8 @@ document.body.addEventListener('submit', function(e) {
     }
 
     if (form.matches('.vote-form')) {
+        // Skip review vote forms handled by review_actions_js
+        if (form.dataset && form.dataset.reviewId) return;
         e.preventDefault();
         const reviewId = form.dataset.reviewId;
         const voteType = e.submitter.value;
@@ -149,13 +178,20 @@ document.body.addEventListener('submit', function(e) {
 
         fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'X-CSRFToken': csrftoken,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 'vote_type': voteType })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject(new Error('auth'));
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'ok') {
                     // Update all score displays for this review (real-time on page)

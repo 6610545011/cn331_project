@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import LoginForm, ChangeImageForm
 from review.models import Review, Bookmark
+from django.db.models import Q, Exists, OuterRef, Sum
+from django.db.models.functions import Coalesce
 
 def login_view(request):
     if request.method == 'POST':
@@ -43,12 +45,24 @@ def profile_view(request):
 
     # ดึงข้อมูลรีวิวทั้งหมดที่ผู้ใช้คนนี้เขียน
     # ใช้ select_related เพื่อลดจำนวน query ไปยัง database ทำให้เร็วขึ้น
-    user_reviews = Review.objects.filter(user=user).select_related('course', 'prof').order_by('-date_created')
+    # Annotate whether the current session user has bookmarked each review
+    user_bookmark_subquery = Bookmark.objects.none()
+    if request.user.is_authenticated:
+        user_bookmark_subquery = Bookmark.objects.filter(user=request.user, review=OuterRef('pk'))
+    user_reviews = Review.objects.filter(user=user).select_related('course', 'prof').annotate(
+        is_bookmarked=Exists(user_bookmark_subquery),
+        score=Coalesce(Sum('votes__vote_type'), 0),
+        user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
+    ).order_by('-date_created')
 
     # ดึงข้อมูลบุ๊คมาร์คที่เป็นรีวิว (review is not null)
     bookmarked_reviews = Bookmark.objects.filter(user=user, review__isnull=False).select_related(
         'review__course', 'review__user', 'review__prof'
     ).order_by('-id')
+    # Ensure each bookmarked review shows as bookmarked when rendered
+    for bk in bookmarked_reviews:
+        if bk.review:
+            setattr(bk.review, 'is_bookmarked', True)
     
     # ดึงข้อมูลบุ๊คมาร์คที่เป็นคอร์ส (review is null)
     bookmarked_courses = Bookmark.objects.filter(user=user, review__isnull=True).select_related(
