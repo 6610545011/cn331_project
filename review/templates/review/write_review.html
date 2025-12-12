@@ -59,7 +59,7 @@
             <div class="form-group rating-group">
                 {{ form.rating.label_tag }}
                 <div class="star-rating">
-                    {% for radio in form.rating reversed %}
+                    {% for radio in form.rating %}
                         {{ radio.tag }}
                         <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} stars"><i class="fas fa-star"></i></label>
                     {% endfor %}
