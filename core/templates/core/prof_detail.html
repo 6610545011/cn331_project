@@ -5,21 +5,15 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/prof_detail_styles.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
 <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- Breadcrumb / Back Link -->
-    <div class="mb-6">
-        <a href="{% url 'core:homepage' %}" class="text-orange-400 hover:text-orange-300 flex items-center gap-2 transition">
-            <i class="fas fa-arrow-left"></i>Back to Home
-        </a>
-    </div>
-    
     <!-- Profile Header -->
     <div class="card-review p-8 mb-8 prof-header">
-        <div class="flex flex-col md:flex-row gap-8 items-start header-row" style="padding-left:20px">
-            <!-- Profile Picture -->
+        <div class="flex flex-col md:flex-row gap-8 items-center header-row">
+            <!-- Profile Picture (left) -->
             <div class="flex-shrink-0 profile-pic">
                 {% if prof.imgurl %}
                     <img 
@@ -37,16 +31,16 @@
             
             <!-- Profile Info -->
             <div class="flex-1 profile-info">
-                <h1 class="text-4xl font-bold mb-2 prof-name">{{ prof.prof_name }}</h1>
+                <h1 class="prof-name">{{ prof.prof_name }}</h1>
                 
                 <span class="prof-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
                     <i class="fas fa-chalkboard-user mr-2"></i>Professor
                 </span>
                 
                 {% if prof.email %}
-                    <p class="text-gray-300 mb-2">
+                    <p class="prof-meta">
                         <strong class="text-orange-400">
-                            <i class="fas fa-envelope mr-2"> Email: </i>
+                            <i class="fas fa-envelope mr-2"></i>Email:
                         </strong>
                         <a href="mailto:{{ prof.email }}" class="text-orange-400 hover:text-orange-300 transition">
                             {{ prof.email }}
@@ -55,8 +49,10 @@
                 {% endif %}
                 
                 {% if prof.description %}
-                    <p class="text-gray-300 mt-4 leading-relaxed">
-                        <i class="fas fa-envelope mr-2"> About: </i>
+                    <p class="prof-meta prof-about">
+                        <strong class="text-orange-400">
+                            <i class="fas fa-info-circle mr-2"></i>About:
+                        </strong>
                         {{ prof.description }}
                     </p>
                 {% endif %}
@@ -96,7 +92,7 @@
             {% empty %}
                 <div class="card-review p-8 text-center">
                     <p class="text-gray-400">
-                        <i class="fas fa-info-circle mr-2"></i>Professorคนนี้ยังไม่ได้รับมอบหมายเซคชั่นใด
+                        <i class="fas fa-info-circle mr-2"></i>This professor has not been assigned to any sections yet
                     </p>
                 </div>
             {% endfor %}
@@ -117,9 +113,9 @@
                     <div class="text-5xl text-orange-400 mb-4">
                         <i class="fas fa-comment"></i>
                     </div>
-                    <p class="text-gray-400 mb-4">ยังไม่มีReviewsสำหรับProfessorคนนี้</p>
+                    <p class="text-gray-400 mb-4">No reviews for this professor yet</p>
                     <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
-                        <i class="fas fa-pen mr-2"></i>เขียนReviewsแรก
+                        <i class="fas fa-pen mr-2"></i>Write First Review
                     </a>
                 </div>
             {% endfor %}

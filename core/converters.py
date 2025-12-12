@@ -1,8 +1,8 @@
 import re
 
 class CaseInsensitiveSlugConverter:
-    # Accept any letters or digits, any case
-    regex = '[A-Za-z0-9]+'
+    # Accept any non-slash characters (allows spaces, dashes, etc.)
+    regex = "[^/]+"
 
     # Input from URL → Python
     def to_python(self, value):

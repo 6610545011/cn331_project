@@ -1,0 +1,304 @@
+/* ========================================
+   Course Detail Page Styling
+   ======================================== */
+
+/* Course Header Card */
+.course-header {
+    background: #fff !important;
+    border: 1px solid #e8e6e4 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(20, 20, 20, 0.03) !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.course-header .header-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-left: 0 !important;
+}
+
+.course-header .course-info {
+    width: 100%;
+    order: 0 !important;
+    padding-left: 2rem !important;
+}
+
+.course-header .course-code-badge {
+    background: linear-gradient(135deg, #ff8c00, #ff9f1a) !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 20px !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+    margin-bottom: 1rem !important;
+    margin-left: -2rem !important;
+}
+
+.course-header .course-title {
+    color: #222 !important;
+    font-weight: 800 !important;
+    margin-bottom: 1rem !important;
+    font-size: 3rem !important;
+    line-height: 1.1 !important;
+}
+
+.course-header .course-description {
+    color: #444 !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    margin: 1rem 0 !important;
+}
+
+.course-header .course-meta {
+    color: #444 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    margin: 0.5rem 0 !important;
+}
+
+/* Sections Container */
+.sections-container {
+    margin-top: 3rem;
+}
+
+.section-header-title {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #222 !important;
+    margin-bottom: 2rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 1.5rem;
+    border-left: 4px solid #e83f6f;
+    border-bottom: 3px solid #ff8c00;
+    padding-bottom: 1rem;
+}
+
+.section-header-title i {
+    color: #ff8c00 !important;
+    font-size: 1.5rem;
+}
+
+.section-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 0;
+}
+
+.section-item {
+    background: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0 1.5rem 1.5rem 1.5rem !important;
+    border-top: 4px solid #ff8c00;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.section-item:hover {
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.15);
+}
+
+.section-item-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: #ff8c00 !important;
+    margin-top: 0 !important;
+    margin-bottom: 1.5rem !important;
+    padding-top: 1.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-item-title i {
+    color: #ff8c00;
+}
+
+.section-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #222 !important;
+    font-size: 0.95rem;
+    margin: 0 !important;
+}
+
+.meta-icon {
+    color: #222 !important;
+    width: 18px;
+    text-align: center;
+}
+
+.meta-label {
+    color: #222 !important;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 90px;
+}
+
+.meta-value {
+    color: #ff8c00 !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.meta-value:hover {
+    color: #ffb340 !important;
+}
+
+.section-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.variant-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.add-to-variant-btn {
+    background: linear-gradient(135deg, #ff8c00, #ffb340) !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-to-variant-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.create-variant-btn {
+    background: transparent !important;
+    color: #222 !important;
+    padding: 0.5rem 1rem !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.create-variant-btn:hover {
+    border-color: #ff8c00;
+    color: #ff8c00 !important;
+}
+
+.section-empty {
+    background: #f9f8f7 !important;
+    border: 1px solid #e8e6e4 !important;
+    border-radius: 8px !important;
+    padding: 2rem !important;
+    text-align: center;
+    color: #999;
+}
+
+.section-empty i {
+    color: #ff8c00;
+    margin-right: 0.5rem;
+}
+
+/* Empty State */
+.empty-state {
+    background: #f9f8f7 !important;
+    border: 1px solid #e8e6e4 !important;
+    border-radius: 10px !important;
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+    color: #999;
+}
+
+.empty-state i {
+    color: #ff8c00;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #999 !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* CTA Button */
+.cta-button {
+    background: linear-gradient(135deg, #ff8c00, #ffb340) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.3);
+}
+
+.cta-button i {
+    margin-right: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .course-header .header-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .course-header .course-icon div {
+        width: 240px !important;
+        height: 240px !important;
+    }
+    
+    .course-header .course-title {
+        font-size: 2rem !important;
+    }
+    
+    .course-header .course-meta {
+        text-align: center;
+    }
+    
+    .section-item {
+        margin-bottom: 1rem;
+    }
+    
+    .section-header,
+    .review-section-header {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-item .flex {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+}

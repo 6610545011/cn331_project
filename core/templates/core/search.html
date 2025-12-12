@@ -33,10 +33,10 @@
     {% if results %}
         <!-- Tab Navigation -->
         <div style="display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 2px solid #ff8c00; padding-bottom: 10px; flex-wrap: wrap;">
-            {% if professors %}<button class="tab-link active" data-target="#professors-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #000; border-bottom: 3px solid #ff8c00;">ศาสตราจารย์ ({{ professors.count }})</button>{% endif %}
-            {% if courses %}<button class="tab-link" data-target="#courses-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">วิชา ({{ courses.count }})</button>{% endif %}
-            {% if sections %}<button class="tab-link" data-target="#sections-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">เซคชั่น ({{ sections.count }})</button>{% endif %}
-            {% if reviews %}<button class="tab-link" data-target="#reviews-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">รีวิว ({{ reviews.count }})</button>{% endif %}
+            {% if professors %}<button class="tab-link active" data-target="#professors-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #000; border-bottom: 3px solid #ff8c00;">Professors ({{ professors.count }})</button>{% endif %}
+            {% if courses %}<button class="tab-link" data-target="#courses-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">Courses ({{ courses.count }})</button>{% endif %}
+            {% if sections %}<button class="tab-link" data-target="#sections-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">Sections ({{ sections.count }})</button>{% endif %}
+            {% if reviews %}<button class="tab-link" data-target="#reviews-results" style="background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 0; color: #999; transition: all 0.3s;" onmouseover="this.style.color='#ff8c00';" onmouseout="this.style.color='#999';">Reviews ({{ reviews.count }})</button>{% endif %}
         </div>
 
         <!-- Tab Content -->
@@ -52,7 +52,7 @@
                                     {{ prof.prof_name }}
                                 </a>
                             </h3>
-                            <p style="color: #666;">{{ prof.description|default:"ไม่มีรายละเอียด"|truncatewords:30 }}</p>
+                            <p style="color: #666;">{{ prof.description|default:"No description available"|truncatewords:30 }}</p>
                         </div>
                     {% endfor %}
                 </div>
@@ -71,7 +71,7 @@
                                     {{ course.course_name }} ({{ course.course_code }})
                                 </a>
                             </h3>
-                            <p style="color: #666;">{{ course.description|default:"ไม่มีรายละเอียด"|truncatewords:30 }}</p>
+                            <p style="color: #666;">{{ course.description|default:"No description available"|truncatewords:30 }}</p>
                         </div>
 
                     {% endfor %}
@@ -87,11 +87,11 @@
                         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                             <h3 style="font-size: 1.2rem; font-weight: 600; color: #ff8c00; margin-bottom: 10px;">
                                 <a href="{% url 'core:course_detail' section.course.course_code %}" style="color: #ff8c00; text-decoration: none;">
-                                    {{ section.course.course_code }} - {{ section.course.course_name }} (เซคชั่น: {{ section.section_number }})
+                                    {{ section.course.course_code }} - {{ section.course.course_name }} (Section: {{ section.section_number }})
                                 </a>
                             </h3>
                             <p style="color: #666;">
-                                <strong>ผู้สอน:</strong>
+                                <strong>Instructor:</strong>
                                 {% for teacher in section.teachers.all %}
                                     <a href="{% url 'core:professor_detail' pk=teacher.pk %}" style="color: #ff8c00; text-decoration: none;">{{ teacher.prof_name }}</a>{% if not forloop.last %}, {% endif %}
                                 {% empty %}

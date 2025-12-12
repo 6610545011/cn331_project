@@ -6,43 +6,42 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/course_detail_styles.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
 <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- Breadcrumb / Back Link -->
-    <div class="mb-6">
-        <a href="{% url 'core:homepage' %}" class="text-orange-400 hover:text-orange-300 flex items-center gap-2 transition">
-            <i class="fas fa-arrow-left"></i>Back to Home
-        </a>
-    </div>
-    <br>
     <!-- Header Section -->
     <div class="card-review p-8 mb-8 course-header">
-        <div class="mb-6 relative z-10">
-            <span class="course-code-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                <i class="fas fa-book mr-2"></i>{{ course.course_code }}
-            </span>
-            <h1 class="text-4xl font-bold mb-3 course-title" style="padding-left: 10px">{{ course.course_name }}</h1>
-            <p class="text-gray-300 text-lg mb-4 leading-relaxed"  style="padding-left: 10px">{{ course.description }}</p>
-            
-            <div class="course-header-divider border-t border-orange-400 pt-4 mt-4">
-                <p class="text-gray-300 mb-3">
+        <div class="flex flex-col gap-4 header-row">
+            <!-- Course Info -->
+            <div class="course-info">
+                <span class="course-code-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-3">
+                    <i class="fas fa-book mr-2"></i>{{ course.course_code }}
+                </span>
+                <h1 class="course-title">{{ course.course_name }}</h1>
+                
+                {% if course.description %}
+                <p class="course-description">{{ course.description }}</p>
+                {% endif %}
+                
+                {% if course.all_professors %}
+                <p class="course-meta">
                     <strong class="text-orange-400">
-                        <i class="fas fa-chalkboard-user mr-2"  style="padding-left: 10px"> ผู้สอน: </i>
+                        <i class="fas fa-chalkboard-user mr-2"></i>Professor:
                     </strong>
                     {% for prof in course.all_professors %}
-                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition" >
+                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition">
                             {{ prof.prof_name }}
                         </a>{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        <span class="text-gray-500">ไม่มีข้อมูล</span>
                     {% endfor %}
                 </p>
+                {% endif %}
+                
                 {% if course.credit %}
-                <p class="text-gray-300">
+                <p class="course-meta">
                     <strong class="text-orange-400">
-                        <i class="fas fa-credit-card mr-2" style="padding-left: 10px"> หน่วยกิต: </i>
+                        <i class="fas fa-credit-card mr-2"></i>Credits:
                     </strong>
                     {{ course.credit }}
                 </p>
@@ -51,90 +50,60 @@
         </div>
     </div>
 
-    {% if user.is_authenticated %}
-    <div class="course-bookmark-container mb-6">
-        <button class="course-bookmark-btn {% if course_is_bookmarked %}bookmarked{% endif %}" 
-                data-course-id="{{ course.id }}" 
-                data-url="{% url 'core:toggle_course_bookmark' course.id %}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bookmark-icon">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-            </svg>
-        </button>
-    </div>
-    {% endif %}
 
-    <div class="detail-content">
-        <h3 class="text-3xl font-bold mb-6 flex items-center gap-3 review-section-header">
-            <i class="fas fa-graduation-cap text-orange-400"></i>Sections
+
+    <div class="detail-content sections-container">
+        <h3 class="section-header-title">
+            <i class="fas fa-graduation-cap"></i>Sections
         </h3>
         <div class="section-grid">
     
             {% for section in course.sections.all %}
                 <div class="section-item">
-                    <div class="section-number">
-                        <i class="fas fa-tag mr-2"></i>Section {{ section.section_number }}
+                    <h3 class="section-item-title">
+                        <i class="fas fa-tag"></i>Section {{ section.section_number }}
+                    </h3>
+                    <div class="section-meta">
+                        {% if section.teachers.all %}
+                            <p class="section-meta-row">
+                                <strong class="meta-label">Instructor:</strong>
+                                {% for prof in section.teachers.all %}
+                                    <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="meta-value">
+                                        {{ prof.prof_name }}
+                                    </a>{% if not forloop.last %}<br>{% endif %}
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.campus %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-map-marker-alt meta-icon"></i>
+                                <strong class="meta-label">Campus:</strong>
+                                <span class="meta-value">{{ section.campus.name }}</span>
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.datetime %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-clock meta-icon"></i>
+                                <strong class="meta-label">Time:</strong>
+                                <span class="meta-value">{{ section.datetime }}</span>
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.room %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-door-open meta-icon"></i>
+                                <strong class="meta-label">Room:</strong>
+                                <span class="meta-value">{{ section.room }}</span>
+                            </p>
+                        {% endif %}
                     </div>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-orange-400 mb-3 flex items-center gap-2">
-                                <i class="fas fa-tag" style="padding-right: 5px"> </i>Section {{ section.section_number }}
-                            </h3>
-                            <div class="space-y-2 text-gray-300">
-                                {% if section.teachers.all %}
-                                    <p>
-                                        <strong class="text-white">ผู้สอน:</strong><br>
-                                        {% for prof in section.teachers.all %}
-                                            <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300">
-                                                {{ prof.prof_name }}
-                                            </a>{% if not forloop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div>
-                            <div class="space-y-2 text-gray-300">
-                                {% if section.campus %}
-                                    <p>
-                                        <strong class="text-white">
-                                            <i class="fas fa-map-marker-alt text-orange-400 mr-2"style="padding-right: 5px"></i>วิทยาเขต:
-                                        </strong>
-                                        {{ section.campus.name }}
-                                    </p>
-                                {% endif %}
-                                {% if section.datetime %}
-                                    <p>
-                                        <strong class="text-white">
-                                            <i class="fas fa-clock text-orange-400 mr-2"style="padding-right: 5px"></i>เวลา:
-                                        </strong>
-                                        {{ section.datetime }}
-                                    </p>
-                                {% endif %}
-                                {% if section.room %}
-                                    <p>
-                                        <strong class="text-white">
-                                            <i class="fas fa-door-open text-orange-400 mr-2"style="padding-right: 5px"></i>ห้อง:
-                                        </strong>
-                                        {{ section.room }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% if user.is_authenticated %}
-                    <div class="mt-4 flex items-center gap-3">
-                        <select class="variant-select px-3 py-2 border rounded" data-section-id="{{ section.id }}">
-                            <option value="">Select plan...</option>
-                        </select>
-                        <button class="add-to-variant-btn bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded" data-section-id="{{ section.id }}">Add to Plan</button>
-                        <button class="create-variant-btn px-3 py-2 border rounded" data-section-id="{{ section.id }}">New Plan</button>
-                    </div>
-                    {% endif %}
                 </div>
             {% empty %}
-                <div class="card-review p-8 text-center">
-                    <p class="text-gray-400">
-                        <i class="fas fa-info-circle mr-2"></i>ไม่มีข้อมูลเซคชั่นสำหรับรายวิชานี้
+                <div class="section-empty">
+                    <p>
+                        <i class="fas fa-info-circle"></i>No sections available for this course
                     </p>
                 </div>
             {% endfor %}
@@ -144,7 +113,7 @@
     <!-- Reviews Section -->
     <div class="mb-8">
         <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 review-section-header">
-            <i class="fas fa-star text-orange-400"></i>รีวิว
+            <i class="fas fa-star text-orange-400"></i>Reviews
         </h2>
         
         <div class="space-y-4">
@@ -155,9 +124,9 @@
                     <div class="text-5xl text-orange-400 mb-4">
                         <i class="fas fa-comment"></i>
                     </div>
-                    <p class="text-gray-400 mb-4">ยังไม่มีรีวิวสำหรับรายวิชานี้</p>
+                    <p class="text-gray-400 mb-4">No reviews for this course yet</p>
                     <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
-                        <i class="fas fa-pen mr-2"></i>เขียนรีวิวแรก
+                        <i class="fas fa-pen mr-2"></i>Write First Review
                     </a>
                 </div>
             {% endfor %}

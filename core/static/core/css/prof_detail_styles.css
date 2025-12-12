@@ -14,11 +14,23 @@
     display: flex;
     flex-wrap: wrap;
     gap: 2rem;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 0 !important;
 }
 
 .prof-header .profile-pic {
     flex-shrink: 0;
+}
+
+.prof-header .profile-pic {
+    order: 0 !important;
+    margin-left: 0 !important;
+}
+
+.prof-header .profile-info {
+    order: 0 !important;
+    align-self: center;
 }
 
 .prof-header .prof-image {
@@ -41,7 +53,19 @@
     color: #222 !important;
     font-weight: 800 !important;
     margin-bottom: 1rem !important;
-    font-size: 2.5rem !important;
+    font-size: 3rem !important;
+    line-height: 1.1 !important;
+}
+
+.prof-header .prof-meta {
+    color: #444 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    margin: 0.25rem 0 !important;
+}
+
+.prof-header .prof-about {
+    font-size: 0.9rem !important;
 }
 
 .prof-header .prof-badge {
@@ -163,6 +187,10 @@
     
     .prof-header .prof-name {
         font-size: 2rem !important;
+    }
+
+    .prof-header .prof-meta {
+        text-align: center;
     }
     
     .section-card {
