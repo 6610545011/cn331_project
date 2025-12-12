@@ -44,7 +44,7 @@
     </div>
     <h5>Course: 
         {% if review.course %}
-            <a href="{% url 'core:course_detail' review.course.course_code %}">{{ review.course.course_name }}</a>
+            <a href="{% url 'core:course_detail' review.course.course_code %}">{{ review.course.course_code }} - {{ review.course.course_name }}</a>
         {% else %}
             -
         {% endif %}
