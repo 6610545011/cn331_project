@@ -42,13 +42,8 @@
     line-height: 1.2;
 }
 
-.review-card .btn-group {
-    display: flex;
-    gap: 8px;
-}
-
 .review-rating {
-    color: #d97706; /* golden */
+    color: #d97706;
     font-weight: 600;
     margin: 6px 0;
 }
@@ -68,11 +63,11 @@
     display: inline-block;
 }
 .review-stars .fa-star {
-    color: #f59e0b; /* gold */
+    color: #f59e0b;
     margin-right: 2px;
 }
 .review-stars .far {
-    color: #d1d5db; /* light grey for empty star */
+    color: #d1d5db;
 }
 
 /* Ensure stars are visible on dark profile background (override) */
@@ -113,47 +108,98 @@
     gap: 8px;
 }
 
-.review-actions .vote-form {
+/* ============================================================
+   NEW DESIGN — TOP RIGHT BUTTONS (Bookmark + Report)
+   ============================================================ */
+.btn-group {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-.vote-score {
-    font-weight: 700;
-    padding: 0 8px;
+/* Icon-only buttons (Flat style like the example image) */
+.icon-btn {
+    background: none !important;
+    border: none !important;
+    color: #c41e3a !important;
+    font-size: 30px !important;  /* large icon */
+    width: auto !important;
+    height: auto !important;
+    padding: 4px !important;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.icon-btn i {
+    margin: 0 !important;
+}
+
+.icon-btn:hover {
+    transform: scale(1.12);
+}
+
+/* Active state → darker red */
+.bookmark-btn.active,
+.report-btn.active {
+    color: #a5152f !important;
+}
+
+/* ============================================================
+   NEW DESIGN — VOTE BUTTONS (Like / Dislike)
+   ============================================================ */
+.review-actions {
+    margin-left: auto;
+}
+
+.vote-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .vote-btn {
-    padding: 6px 8px;
-    border-radius: 6px;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 32px !important;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    color: #c41e3a !important;
 }
 
-/* Inline report styles removed — using Bootstrap modal instead */
-
-.bookmark-btn i,
-.vote-btn i {
-    margin-right: 6px;
+.vote-btn:hover {
+    transform: scale(1.15);
 }
 
-/* Smaller screens tweaks */
+/* Pressed (already voted) */
+.vote-btn.btn-success,
+.vote-btn.btn-danger {
+    color: #a5152f !important;
+}
+
+.vote-score {
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+    color: #c41e3a;
+}
+
+/* Smaller screen tweaks */
 @media (max-width: 600px) {
     .review-card { padding: 12px; }
     .review-header h4 { font-size: 1rem; }
     .review-meta { font-size: 0.85rem; }
-    .btn-group .btn { padding: 6px 8px; }
 }
 
-/* Modal textarea slightly larger for readability */
-.report-form textarea {
-    min-height: 120px;
-}
-
-/* Profile-specific tweaks: make text white for review blocks inside profile views */
+/* Profile-specific tweaks */
 .profile-container .review-card,
 .profile-tab-pane .review-card {
     color: #ffffff;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.08);
 }
+
 .profile-container .review-card p,
 .profile-tab-pane .review-card p,
 .profile-container .review-card .review-meta,
@@ -172,9 +218,81 @@
     color: #ffffff;
 }
 
-/* If profile uses a dark background, slightly darken the card background for contrast */
-.profile-container .review-card,
-.profile-tab-pane .review-card {
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.08);
+/* Modal textarea */
+.report-form textarea {
+    min-height: 120px;
+}
+/* ============================================================
+   HARD RESET — ล้างสไตล์ Bootstrap ของปุ่มทั้งหมดในรีวิว
+   ============================================================ */
+
+.review-card .btn,
+.review-card button,
+.review-card .vote-btn,
+.review-card .icon-btn {
+    all: unset;                 /* ล้างสไตล์ Bootstrap ทั้งหมด */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ============================================================
+   TOP RIGHT — Bookmark & Report (Icon-only)
+   ============================================================ */
+.icon-btn {
+    font-size: 30px !important;
+    color: #c41e3a !important;
+    padding: 6px !important;
+    border-radius: 8px;
+    transition: transform 0.15s ease;
+}
+
+.icon-btn:hover {
+    transform: scale(1.15);
+}
+
+/* กดแล้วเป็นแดงเข้มขึ้น */
+.icon-btn.active {
+    color: #a5152f !important;
+}
+
+/* จัดตำแหน่งให้ชิดขวา */
+.review-card .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* ============================================================
+   BOTTOM RIGHT — LIKE / DISLIKE
+   ============================================================ */
+.vote-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vote-btn {
+    font-size: 32px !important;
+    color: #c41e3a !important;
+    padding: 4px;
+    transition: transform 0.15s ease;
+}
+
+.vote-btn:hover {
+    transform: scale(1.18);
+}
+
+.vote-btn.active {
+    color: #a5152f !important;
+}
+
+/* Score number */
+.vote-score {
+    font-size: 17px;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+    color: #c41e3a;
 }

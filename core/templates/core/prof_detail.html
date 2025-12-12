@@ -40,13 +40,13 @@
                 <h1 class="text-4xl font-bold mb-2 prof-name">{{ prof.prof_name }}</h1>
                 
                 <span class="prof-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                    <i class="fas fa-chalkboard-user mr-2"></i>ศาสตราจารย์
+                    <i class="fas fa-chalkboard-user mr-2"></i>Professor
                 </span>
                 
                 {% if prof.email %}
                     <p class="text-gray-300 mb-2">
                         <strong class="text-orange-400">
-                            <i class="fas fa-envelope mr-2"> อีเมล: </i>
+                            <i class="fas fa-envelope mr-2"> Email: </i>
                         </strong>
                         <a href="mailto:{{ prof.email }}" class="text-orange-400 hover:text-orange-300 transition">
                             {{ prof.email }}
@@ -56,7 +56,7 @@
                 
                 {% if prof.description %}
                     <p class="text-gray-300 mt-4 leading-relaxed">
-                        <i class="fas fa-envelope mr-2"> เกี่ยวกับ: </i>
+                        <i class="fas fa-envelope mr-2"> About: </i>
                         {{ prof.description }}
                     </p>
                 {% endif %}
@@ -67,7 +67,7 @@
     <!-- Sections Taught -->
     <div class="mb-8">
         <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b-2 border-orange-400 pb-4 section-header">
-            <i class="fas fa-book-open text-orange-400"></i>รายวิชาที่สอน
+            <i class="fas fa-book-open text-orange-400"></i>Courses Taught
         </h2>
         
         <div class="space-y-4">
@@ -81,12 +81,12 @@
                     </h3>
                     <div class="flex gap-6 text-gray-300">
                         <span>
-                            <strong class="text-white">เซคชั่น:</strong>
+                            <strong class="text-white">Section:</strong>
                             {{ section.section_number }}
                         </span>
                         {% if section.campus %}
                             <span>
-                                <strong class="text-white">วิทยาเขต:</strong>
+                                <strong class="text-white">Campus:</strong>
                                 {{ section.campus.name }}
                             </span>
                         {% endif %}
@@ -96,7 +96,7 @@
             {% empty %}
                 <div class="card-review p-8 text-center">
                     <p class="text-gray-400">
-                        <i class="fas fa-info-circle mr-2"></i>ศาสตราจารย์คนนี้ยังไม่ได้รับมอบหมายเซคชั่นใด
+                        <i class="fas fa-info-circle mr-2"></i>Professorคนนี้ยังไม่ได้รับมอบหมายเซคชั่นใด
                     </p>
                 </div>
             {% endfor %}
@@ -106,7 +106,7 @@
     <!-- Reviews -->
     <div class="mb-8">
         <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b-2 border-orange-400 pb-4">
-            <i class="fas fa-star text-orange-400"></i>รีวิว
+            <i class="fas fa-star text-orange-400"></i>Reviews
         </h2>
         
         <div class="space-y-4">
@@ -117,9 +117,9 @@
                     <div class="text-5xl text-orange-400 mb-4">
                         <i class="fas fa-comment"></i>
                     </div>
-                    <p class="text-gray-400 mb-4">ยังไม่มีรีวิวสำหรับศาสตราจารย์คนนี้</p>
+                    <p class="text-gray-400 mb-4">ยังไม่มีReviewsสำหรับProfessorคนนี้</p>
                     <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
-                        <i class="fas fa-pen mr-2"></i>เขียนรีวิวแรก
+                        <i class="fas fa-pen mr-2"></i>เขียนReviewsแรก
                     </a>
                 </div>
             {% endfor %}

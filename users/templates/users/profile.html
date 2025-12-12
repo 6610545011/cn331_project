@@ -208,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function activateTab(targetPane) {
         tabs.forEach(t => t.classList.remove('active'));
         panes.forEach(p => p.classList.remove('active'));
-        
         // Find the tab that corresponds to this pane
         const targetId = targetPane.id;
         let correspondingTab = null;

@@ -10,14 +10,16 @@
         </div>
         {% if user.is_authenticated %}
         <div class="btn-group">
-            <button class="btn btn-sm bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
+            <button class="btn btn-sm icon-btn bookmark-btn {% if review.is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %}" 
                     data-review-id="{{ review.id }}" 
-                    data-url="{% url 'review:toggle_bookmark' review.id %}">
-                <i class="fas fa-bookmark"></i> Bookmark
+                    data-url="{% url 'review:toggle_bookmark' review.id %}"
+                    title="Bookmark this review">
+                <i class="fas fa-bookmark"></i>
             </button>
             {# Use Bootstrap modal for report popup #}
-            <button class="btn btn-sm btn-outline-danger report-btn" data-review-id="{{ review.id }}" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}">
-                <i class="fas fa-flag"></i> Report
+            <button class="btn btn-sm icon-btn report-btn" data-review-id="{{ review.id }}" data-bs-toggle="modal" data-bs-target="#reportModal-{{ review.id }}"
+                    title="Report this review">
+                <i class="fas fa-flag"></i>
             </button>
             {% if request.resolver_match.url_name == 'users:profile' and user == review.user %}
             <button class="btn btn-sm btn-outline-danger delete-review-btn" data-review-id="{{ review.id }}" data-url="{% url 'review:delete_review' review.id %}">
@@ -61,16 +63,18 @@
         <div class="review-actions">
             <form class="vote-form d-inline-block" data-url="{% url 'review:vote_review' review.id %}" data-review-id="{{ review.id }}" method="post">
                 {% csrf_token %}
-                <button type="submit" name="vote_type" value="1" class="btn btn-sm vote-btn upvote-btn {% if review.user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
-                    <i class="fas fa-arrow-up"></i>
-                </button>
-                <span class="vote-score" data-review-id="{{ review.id }}">
-                    {# ถ้ามี review.score (จาก annotate) ให้ใช้ค่านั้น, ถ้าไม่มี ให้ใช้ review.vote_score (จาก property) #}
-                    {{ review.score|default:review.vote_score }}
-                </span>
-                <button type="submit" name="vote_type" value="-1" class="btn btn-sm vote-btn downvote-btn {% if review.user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                    <i class="fas fa-arrow-down"></i>
-                </button>
+                <div class="vote-container">
+                    <button type="submit" name="vote_type" value="1" class="btn btn-sm vote-btn upvote-btn {% if review.user_vote == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <span class="vote-score" data-review-id="{{ review.id }}">
+                        {# ถ้ามี review.score (จาก annotate) ให้ใช้ค่านั้น, ถ้าไม่มี ให้ใช้ review.vote_score (จาก property) #}
+                        {{ review.score|default:review.vote_score }}
+                    </span>
+                    <button type="submit" name="vote_type" value="-1" class="btn btn-sm vote-btn downvote-btn {% if review.user_vote == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                </div>
             </form>
         </div>
         {% endif %}
