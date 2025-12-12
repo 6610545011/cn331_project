@@ -5,7 +5,13 @@
 <div class="info-card review-card">
     <div class="review-header">
         <div class="review-head-left">
-            <div class="review-avatar">{{ review.user.username|slice:":1"|upper }}</div>
+            <div class="review-avatar">
+                {% if user.imgurl %}
+                    <img src="{{ user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
+                {% else %}
+                    <span>{{ user.username|slice:":1"|upper }}</span>
+                {% endif %}
+            </div>
             <h4>{{ review.head }}</h4>
         </div>
         {% if user.is_authenticated %}

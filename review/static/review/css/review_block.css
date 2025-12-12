@@ -6,6 +6,8 @@
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(20,20,20,0.03);
     margin-bottom: 14px;
+    position: relative;
+    z-index: auto; /* keep review cards in normal flow so modals/backdrops can overlay them */
 }
 
 .review-head-left {
@@ -25,6 +27,13 @@
     justify-content: center;
     font-weight: 700;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.review-avatar img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
 }
 
 .review-card .review-header {
@@ -281,6 +290,117 @@
     color: #1f2937; /* dark text */
     border: none;
 }
+
+/* Visual polish for report modal - purely cosmetic */
+.report-modal .modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    font-family: 'Kanit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, opacity 180ms ease;
+    transform: translateY(-8px);
+    opacity: 0;
+}
+.report-modal.show .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.report-modal .modal-header {
+    padding: 18px 22px;
+    background: linear-gradient(90deg, #ffb045 0%, #e84b5a 100%);
+    color: #fff;
+    border-bottom: none;
+}
+.report-modal .modal-header .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+}
+.report-modal .modal-header .modal-title i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(232,75,90,0.08);
+}
+
+.report-modal .modal-body {
+    padding: 22px 24px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+}
+.report-modal .report-success {
+    display: none;
+}
+
+.report-modal .report-success.show {
+    display: flex;
+}
+
+.report-modal .form-help {
+    font-size: 0.87rem;
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+.report-modal .char-counter {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 6px;
+}
+
+.report-textarea {
+    width: 100%;
+    min-height: 140px;
+    border: 1px solid #e6e9ee;
+    padding: 14px;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 1rem;
+    line-height: 1.45;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.report-textarea:focus {
+    outline: none;
+    border-color: #f97316;
+    box-shadow: 0 6px 18px rgba(249,115,22,0.08);
+}
+
+.report-modal .modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    background: transparent;
+}
+.report-modal .btn.btn-danger {
+    background: linear-gradient(90deg, #ff8c00, #e84b5a);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+.report-modal .btn.btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+.report-modal .btn.btn-danger:hover { transform: translateY(-1px); }
+
+/* Backdrop styling when fallback backdrop is used */
+#_fallback_backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 9998;
+    backdrop-filter: blur(4px) saturate(120%);
+}
 .report-modal .modal-footer .btn-danger {
     background: linear-gradient(90deg, #c41e3a, #a5152f);
     border: none;
@@ -327,11 +447,22 @@
 .review-card button,
 .review-card .vote-btn,
 .review-card .icon-btn {
-    all: unset;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 2000; /* above sidebar overlay (1500) but below modal/backdrop (9999+) */
+}
+
+/* Ensure forms within review-card allow pointer events */
+.review-card form,
+.review-card .btn-group,
+.review-card .review-actions {
+    pointer-events: auto;
+    position: relative;
+    z-index: 2000;
 }
 
 /* ============================================================
