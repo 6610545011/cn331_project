@@ -66,6 +66,9 @@ class Section(models.Model):
         return f"{self.course.course_code} Section {self.section_number}"
 
 
+from django.utils import timezone
+
+
 # Middle Tables (Many-to-Many defined explicitly in DBML)
 
 class Enrollment(models.Model):

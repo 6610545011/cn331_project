@@ -33,11 +33,78 @@
     <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; color: #000;">Latest Reviews</h2>
     
     <!-- Reviews Grid -->
-    <div style="display: grid; gap: 20px;">
-        <!-- This will be populated with reviews from context -->
-        <div style="text-align: center; color: #999; padding: 40px;">
-            <p>Select a course or use search to view reviews</p>
-        </div>
+    <div id="reviews-container" style="display: grid; gap: 20px;">
+        {% if reviews and reviews|length > 0 %}
+            {% for review in reviews %}
+                {% include 'review/includes/review_block.html' with review=review %}
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; color: #999; padding: 40px;">
+                <p>Select a course or use search to view reviews</p>
+            </div>
+        {% endif %}
     </div>
+
+    <!-- Loader and sentinel for infinite scroll -->
+    <div id="reviews-loader" style="text-align:center; padding: 20px; display: none;">Loading...</div>
+    <div id="reviews-end" data-has-next="{% if has_next %}true{% else %}false{% endif %}" data-next-page="{% if next_page %}{{ next_page }}{% else %}null{% endif %}" style="height: 1px;"></div>
 </div>
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const container = document.getElementById('reviews-container');
+    const loader = document.getElementById('reviews-loader');
+    const sentinel = document.getElementById('reviews-end');
+    const url = "{% url 'core:latest_reviews_api' %}";
+
+    let loading = false;
+    function getHasNext() {
+        return sentinel.dataset.hasNext === 'true';
+    }
+    function getNextPage() {
+        const v = sentinel.dataset.nextPage;
+        return (v && v !== 'null') ? parseInt(v, 10) : null;
+    }
+
+    async function loadNext() {
+        const page = getNextPage();
+        if (loading || !page) return;
+        loading = true;
+        loader.style.display = 'block';
+        try {
+            const resp = await fetch(url + '?page=' + page);
+            if (!resp.ok) throw new Error('Network error');
+            const data = await resp.json();
+            if (data.reviews_html) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = data.reviews_html;
+                while (tmp.firstChild) {
+                    container.appendChild(tmp.firstChild);
+                }
+            }
+            sentinel.dataset.hasNext = data.has_next ? 'true' : 'false';
+            sentinel.dataset.nextPage = data.next_page ? data.next_page : 'null';
+            if (!data.has_next) observer.disconnect();
+        } catch (e) {
+            console.error('Failed to load reviews', e);
+        } finally {
+            loader.style.display = 'none';
+            loading = false;
+        }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && getHasNext()) {
+                loadNext();
+            }
+        });
+    }, { root: null, rootMargin: '200px', threshold: 0.01 });
+
+    // Attach observer to sentinel
+    observer.observe(sentinel);
+});
+</script>
+{% endblock extra_scripts %}
