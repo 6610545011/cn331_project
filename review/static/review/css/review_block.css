@@ -648,3 +648,10 @@
     border-radius: 6px;
 }
 
+/*Links*/
+a {
+        color: #FF8C00;
+}
+a:visited {
+        color: #8B0000;
+}
