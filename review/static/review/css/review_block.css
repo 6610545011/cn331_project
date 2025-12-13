@@ -374,6 +374,7 @@
 
 .report-modal .modal-footer {
     display: flex;
+    justify-content: flex-end;
     gap: 8px;
     padding: 14px 20px;
     background: transparent;
