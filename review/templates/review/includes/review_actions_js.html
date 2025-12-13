@@ -21,29 +21,86 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
     // Use event delegation for clicks
     document.body.addEventListener('click', function(e) {
         const bookmarkBtn = e.target.closest('.bookmark-btn');
-        if (bookmarkBtn) {
+            if (bookmarkBtn) {
             e.preventDefault();
             const url = bookmarkBtn.dataset.url;
 
+            // Optimistic UI: toggle now, and revert on error
+            const reviewId = bookmarkBtn.dataset.reviewId;
+            const allBtns = document.querySelectorAll(`.bookmark-btn[data-review-id="${reviewId}"]`);
+            // Determine new state by toggling current pressed state
+            const currentlyBookmarked = bookmarkBtn.dataset.bookmarked === 'True';
+            const newState = !currentlyBookmarked;
+            allBtns.forEach(b => {
+                b.classList.toggle('active', newState);
+                b.dataset.bookmarked = newState ? 'True' : 'False';
+                b.setAttribute('aria-pressed', newState ? 'true' : 'false');
+                const icon = b.querySelector('.bookmark-icon');
+                if (icon) {
+                    icon.classList.toggle('fas', newState);
+                    icon.classList.toggle('far', !newState);
+                }
+                b.classList.add('pulse');
+                setTimeout(() => b.classList.remove('pulse'), 220);
+            });
+
             fetch(url, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
+                    'X-CSRFToken': csrftoken
                 },
             })
-            .then(response => response.json())
+            .then(response => {
+                // If the response was a redirect to login, handle it explicitly
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/accounts/login/?next=' + encodeURIComponent(location.pathname + location.search);
+                        return Promise.reject(new Error('auth'));
+                    }
+                    return Promise.reject(new Error('Network error'));
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.status === 'ok') {
-                    bookmarkBtn.classList.toggle('btn-primary', data.bookmarked);
-                    bookmarkBtn.classList.toggle('btn-outline-primary', !data.bookmarked);
-                    bookmarkBtn.innerHTML = data.bookmarked ? '<i class="fas fa-bookmark"></i> Bookmarked' : '<i class="far fa-bookmark"></i> Bookmark';
+                if (data && data.status === 'ok') {
+                    const isActive = !!data.bookmarked;
+                    // Ensure all instances are in sync with server
+                    allBtns.forEach(b => {
+                        b.classList.toggle('active', isActive);
+                        b.dataset.bookmarked = isActive ? 'True' : 'False';
+                        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                        const icon = b.querySelector('.bookmark-icon');
+                        if (icon) {
+                            icon.classList.toggle('fas', isActive);
+                            icon.classList.toggle('far', !isActive);
+                        }
+                    });
+                } else {
+                    // Revert optimistic change on error
+                    allBtns.forEach(b => {
+                        b.classList.toggle('active', currentlyBookmarked);
+                        b.dataset.bookmarked = currentlyBookmarked ? 'True' : 'False';
+                        b.setAttribute('aria-pressed', currentlyBookmarked ? 'true' : 'false');
+                        const icon = b.querySelector('.bookmark-icon');
+                        if (icon) {
+                            icon.classList.toggle('fas', currentlyBookmarked);
+                            icon.classList.toggle('far', !currentlyBookmarked);
+                        }
+                    });
                 }
             })
-            .catch(error => console.error('Error toggling bookmark:', error));
+            .catch(error => {
+                if (error && error.message !== 'auth') console.error('Error toggling bookmark:', error);
+            });
         }
-        
+
     });
+
 
     // Use event delegation for form submissions
     document.body.addEventListener('submit', function(e) {
@@ -58,12 +115,19 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
 
             fetch(url, {
                 method: 'POST',
+                credentials: 'same-origin',
                 body: formData,
                 headers: {
                     'X-CSRFToken': csrftoken,
                 },
             })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(response => {
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                return response.json().then(data => ({ status: response.status, body: data }));
+            })
             .then(({ status, body }) => {
                 let alertClass = 'alert-danger';
                 let message = 'An unknown error occurred.';
@@ -72,13 +136,26 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
                     alertClass = 'alert-success';
                     message = body.message;
                     form.reset();
+                    // Nice UX: display success banner and hide form briefly
+                    const successEl = document.getElementById(`report-success-${reviewId}`);
+                    const reportBtnEl = document.querySelector(`.report-btn[data-review-id="${reviewId}"]`);
+                    if (reportBtnEl) {
+                        reportBtnEl.disabled = true;
+                        reportBtnEl.setAttribute('aria-pressed', 'true');
+                    }
+                    if (successEl) {
+                        successEl.classList.add('show');
+                    }
+                    // temporarily hide form
+                    form.style.display = 'none';
                     setTimeout(() => {
+                        if (successEl) successEl.classList.remove('show');
+                        // restore form for modal reuse
+                        form.style.display = '';
                         const modalEl = document.getElementById(`reportModal-${reviewId}`);
-                        const modal = bootstrap.Modal.getInstance(modalEl);
-                        if (modal) {
-                            modal.hide();
-                        }
-                        // Fallback hide when Bootstrap JS is not present
+                        const modal = bootstrap && bootstrap.Modal ? bootstrap.Modal.getInstance(modalEl) : null;
+                        if (modal) modal.hide();
+                        // fallback hide when Bootstrap JS is not present
                         if (typeof bootstrap === 'undefined') {
                             if (modalEl) {
                                 modalEl.style.display = 'none';
@@ -90,7 +167,7 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
                             if (bd) bd.remove();
                         }
                         alertContainer.innerHTML = '';
-                    }, 2500);
+                    }, 1800);
                 } else {
                     message = body.message || 'Please correct the errors below.';
                 }
@@ -101,6 +178,42 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
                 alertContainer.innerHTML = `<div class="alert alert-danger" role="alert">A network error occurred. Please try again.</div>`;
             });
         }
+        document.querySelectorAll('.report-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const reviewId = this.dataset.reviewId;
+                const modalEl = document.getElementById('reportModal-' + reviewId);
+                const reportForm = modalEl.querySelector('.report-form');
+
+                reportForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    const formData = new FormData(this);
+                    fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrftoken }, body: formData })
+                        .then(resp => {
+                            if (resp.redirected && resp.url && resp.url.includes('/accounts/login')) {
+                                window.location.href = resp.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                                return Promise.reject(new Error('auth'));
+                            }
+                            return resp.json();
+                        })
+                        .then(data => {
+                            const alertEl = modalEl.querySelector('#report-alert-' + reviewId);
+                            if (data.status === 'ok') {
+                                alertEl.innerHTML = '<div class="alert alert-success">Report submitted successfully.</div>';
+                                setTimeout(() => {
+                                    var modal = bootstrap.Modal.getInstance(modalEl);
+                                    modal.hide();
+                                    btn.disabled = true;
+                                    btn.setAttribute('aria-pressed', 'true');
+                                }, 900);
+                            } else {
+                                alertEl.innerHTML = '<div class="alert alert-danger">' + (data.errors || 'Error') + '</div>';
+                            }
+                        });
+                }, { once: true });
+            });
+        });
 
         if (form.matches('.vote-form')) {
             e.preventDefault();
@@ -115,13 +228,20 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
 
             fetch(url, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': csrftoken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 'vote_type': voteType })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'ok') {
                     const scoreSpan = document.querySelector(`.vote-score[data-review-id="${reviewId}"]`);
@@ -149,6 +269,14 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
         if (ta) ta.focus();
     });
 
+    // Ensure the modal is appended to body before Bootstrap opens it
+    document.addEventListener('show.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (modal && modal.parentNode !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
+
     document.addEventListener('hidden.bs.modal', function(evt) {
         const modal = evt.target;
         if (!modal) return;
@@ -168,6 +296,10 @@ if (typeof window.reviewActionsLoaded === 'undefined') {
         // If bootstrap is available it will handle the popup via data-bs attributes
         if (typeof bootstrap === 'undefined') {
             e.preventDefault();
+            // ensure modal is a direct child of body so fixed position behaves correctly
+            if (modalEl.parentNode !== document.body) {
+                document.body.appendChild(modalEl);
+            }
             // show modal fallback
             modalEl.style.display = 'block';
             modalEl.classList.add('show');

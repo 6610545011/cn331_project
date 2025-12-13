@@ -1,83 +1,175 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{# 1. Set a unique title for this page #}
-{% block title %}About Us - Thammasat Study Plan{% endblock title %}
+{% block title %}About Us{% endblock %}
 
-{# 2. Add the page-specific stylesheet #}
-{% block extra_head %}
-    <link rel="stylesheet" href="{% static 'core/css/about_style.css' %}">
-{% endblock extra_head %}
-
-
-{# 3. Provide the unique main content for this page #}
 {% block content %}
-<div class="about-container">
-    
-    <!-- Project Description Section -->
-    <div class="project-description-card">
-        <h2>About The Project</h2>
-        <p>
-            sTUdyPlan is a web application designed to help Thammasat University students plan their academic journey more effectively. 
-            This project was developed as part of the Software Engineering (CN331) course.
+<div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="color: #c41e3a; font-size: 40px; margin-bottom: 10px;">
+            <span style="background: linear-gradient(135deg, #ff8c00 0%, #ff7600 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Thammasat Study Plan
+            </span>
+        </h1>
+        <p style="color: #666; font-size: 18px;">A course review system for Thammasat University students</p>
+    </div>
+
+    <!-- Project Description -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 50px;">
+        <h2 style="color: #c41e3a; font-size: 28px; margin-bottom: 15px;">
+            <i class="fas fa-project-diagram"></i> About the Project
+        </h2>
+        <p style="color: #333; line-height: 1.8; margin-bottom: 20px; font-size: 16px;">
+            sTUdyPlan is a web application designed to help Thammasat University students plan their studies efficiently. 
+            Users can search for reviews, write reviews about courses and professors, and help their peers make informed decisions 
+            when selecting courses and instructors. This project was developed as part of the Software Engineering (CN331) course.
         </p>
-        <ul>
-            <li>
-                <a href="https://github.com/6610545011/cn331_project.git" target="_blank">
-                    <i class="fab fa-github"></i> Project GitHub Repository
-                </a>
-            </li>
-            <li>
-                <a href="#" target="_blank">
-                    <i class="fab fa-youtube"></i> Demo Video (YouTube)
-                </a>
-            </li>
-            <li>
-                <a href="https://drive.google.com/file/d/1ShrcwkFO7gY_MzTSB75zHIbJGe9nVz16/view?usp=sharing" target="_blank">
-                    <i class="fas fa-file-alt"></i> Project Documentation (Google Docs)
-                </a>
-            </li>
-        </ul>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <a href="https://github.com/6610545011/cn331_project.git" target="_blank" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #000; transition: all 0.3s; cursor: pointer;">
+                <i class="fab fa-github" style="font-size: 28px; color: #ff8c00;"></i>
+                <div>
+                    <p style="font-weight: 600; margin: 0;">GitHub Repository</p>
+                    <p style="font-size: 13px; color: #999; margin: 4px 0 0 0;">View the project code</p>
+                </div>
+            </a>
+            
+            <a href="#" target="_blank" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #000; transition: all 0.3s; cursor: pointer;">
+                <i class="fab fa-youtube" style="font-size: 28px; color: #ff8c00;"></i>
+                <div>
+                    <p style="font-weight: 600; margin: 0;">Demo Video</p>
+                    <p style="font-size: 13px; color: #999; margin: 4px 0 0 0;">Watch the live demo</p>
+                </div>
+            </a>
+            
+            <a href="https://drive.google.com/file/d/1ShrcwkFO7gY_MzTSB75zHIbJGe9nVz16/view?usp=sharing" target="_blank" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #000; transition: all 0.3s; cursor: pointer;">
+                <i class="fas fa-file-alt" style="font-size: 28px; color: #ff8c00;"></i>
+                <div>
+                    <p style="font-weight: 600; margin: 0;">Documentation</p>
+                    <p style="font-size: 13px; color: #999; margin: 4px 0 0 0;">Read the details</p>
+                </div>
+            </a>
+        </div>
     </div>
 
     <!-- Team Section -->
-    <h1 class="about-title">Meet the Team</h1>
-    <p class="about-subtitle">
-        The passionate students behind the sTUdyPlan project.
-    </p>
+    <div style="margin-bottom: 50px;">
+        <h2 style="color: #c41e3a; font-size: 32px; text-align: center; margin-bottom: 15px;">
+            <i class="fas fa-users"></i> Development Team
+        </h2>
+        <p style="color: #666; text-align: center; margin-bottom: 40px; font-size: 16px;">CN331 students who developed this project</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <!-- Member 1 -->
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="height: 200px; background: linear-gradient(135deg, #ff8c00, #ff7600); overflow: hidden;">
+                    <img 
+                        src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762099428/CnP_02112025_230324_w327vp.jpg" 
+                        alt="Team Member"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                    >
+                </div>
+                <div style="padding: 20px;">
+                    <h3 style="color: #000; font-weight: 600; margin: 0 0 5px 0; font-size: 18px;">Nattrawi Chuay Vang</h3>
+                    <p style="color: #ff8c00; font-weight: 600; margin: 0 0 5px 0;">6610525013</p>
+                    <p style="color: #999; font-size: 14px; margin: 0;">Team Member</p>
+                </div>
+            </div>
 
-    <div class="team-grid">
-        <!-- Member 1 -->
-        <div class="team-card">
-            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099428/CnP_02112025_230324_w327vp.jpg')"></div>
-            <h3 class="member-name">นางสาว ณัฐรวี ช่วยวัง</h3>
-            <p class="member-id">6610525013</p>
-            <p class="member-role">member1</p>
-        </div>
+            <!-- Member 2 -->
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="height: 200px; background: linear-gradient(135deg, #ff8c00, #ff7600); overflow: hidden;">
+                    <img 
+                        src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762099308/CnP_02112025_230134_bmmlb1.jpg" 
+                        alt="Team Member"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                    >
+                </div>
+                <div style="padding: 20px;">
+                    <h3 style="color: #000; font-weight: 600; margin: 0 0 5px 0; font-size: 18px;">Sranyakr Pong-Asvachai</h3>
+                    <p style="color: #ff8c00; font-weight: 600; margin: 0 0 5px 0;">6610545011</p>
+                    <p style="color: #999; font-size: 14px; margin: 0;">Team Lead</p>
+                </div>
+            </div>
 
-        <!-- Member 2 -->
-        <div class="team-card">
-            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099308/CnP_02112025_230134_bmmlb1.jpg')"></div>
-            <h3 class="member-name">นาย ศรัญย์กร พงศ์อัศวชัย</h3>
-            <p class="member-id">6610545011</p>
-            <p class="member-role">member2</p>
-        </div>
+            <!-- Member 3 -->
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="height: 200px; background: linear-gradient(135deg, #ff8c00, #ff7600); overflow: hidden;">
+                    <img 
+                        src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762099880/Untitled_1_evlcml.jpg" 
+                        alt="Team Member"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                    >
+                </div>
+                <div style="padding: 20px;">
+                    <h3 style="color: #000; font-weight: 600; margin: 0 0 5px 0; font-size: 18px;">Thawalphorn Jindawaranunt</h3>
+                    <p style="color: #ff8c00; font-weight: 600; margin: 0 0 5px 0;">6610545029</p>
+                    <p style="color: #999; font-size: 14px; margin: 0;">Team Member</p>
+                </div>
+            </div>
 
-        <!-- Member 3 -->
-        <div class="team-card">
-            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099880/Untitled_1_evlcml.jpg')"></div>
-            <h3 class="member-name">นางสาว ธวัลภรณ์ จินดาวรานนท์</h3>
-            <p class="member-id">6610545029</p>
-            <p class="member-role">member3</p>
-        </div>
-
-        <!-- Member 4 -->
-        <div class="team-card">
-            <div class="member-photo" style="background-image: url('https://res.cloudinary.com/dz614nkdd/image/upload/v1762099011/unnamed-1_1_vasvvy.jpg')"></div>
-            <h3 class="member-name">นาย รัชชานนท์ ม่วงวิเชียร</h3>
-            <p class="member-id">6610685304</p>
-            <p class="member-role">member4</p>
+            <!-- Member 4 -->
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="height: 200px; background: linear-gradient(135deg, #ff8c00, #ff7600); overflow: hidden;">
+                    <img 
+                        src="https://res.cloudinary.com/dz614nkdd/image/upload/v1762099011/unnamed-1_1_vasvvy.jpg" 
+                        alt="Team Member"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                    >
+                </div>
+                <div style="padding: 20px;">
+                    <h3 style="color: #000; font-weight: 600; margin: 0 0 5px 0; font-size: 18px;">Ratchanon Muangvichian</h3>
+                    <p style="color: #ff8c00; font-weight: 600; margin: 0 0 5px 0;">6610685304</p>
+                    <p style="color: #999; font-size: 14px; margin: 0;">Team Member</p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Features Section -->
+    <div style="margin-bottom: 50px;">
+        <h2 style="color: #c41e3a; font-size: 32px; text-align: center; margin-bottom: 40px;">
+            <i class="fas fa-star"></i> Key Features
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 40px; color: #ff8c00; margin-bottom: 15px;">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 style="color: #000; font-weight: 600; margin-bottom: 10px; font-size: 18px;">Search Reviews</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">Find reviews about courses and professors to see what other students think</p>
+            </div>
+            
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 40px; color: #ff8c00; margin-bottom: 15px;">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <h3 style="color: #000; font-weight: 600; margin-bottom: 10px; font-size: 18px;">Write Reviews</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">Share your experience with detailed reviews and ratings</p>
+            </div>
+            
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 40px; color: #ff8c00; margin-bottom: 15px;">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 style="color: #000; font-weight: 600; margin-bottom: 10px; font-size: 18px;">Rate Reviews</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">Vote on reviews and bookmark your favorites for later</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; border-top: 2px solid #ff8c00; padding: 30px 0; margin-top: 50px;">
+        <p style="color: #666; margin: 0 0 10px 0; font-size: 16px;">
+            <i class="fas fa-heart" style="color: #c41e3a;"></i>
+            Made with passion by the sTUdyPlan team
+        </p>
+        <p style="color: #999; font-size: 13px; margin: 0;">
+            © 2025 Thammasat Study Plan - For Thammasat University Students
+        </p>
+    </div>
 </div>
-{% endblock content %}
+
+{% endblock %}

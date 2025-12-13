@@ -1,46 +1,104 @@
+{% extends "core/template.html" %}
+
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Thammasat Study Plan</title>
-    <link rel="stylesheet" href="{% static 'users/login_style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="login-container">
-        <div class="login-form-box">
-            <div class="logo-placeholder">
-                <!-- ใส่ Logo ของคุณที่นี่ -->
-                S THAMMASAT STUDY PLAN
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 60px auto; padding: 0 20px;">
+    <!-- Page Title -->
+    <h1 style="color: #c41e3a; font-size: 32px; margin-bottom: 10px; text-align: center;">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+    </h1>
+    <p style="color: #666; text-align: center; margin-bottom: 40px; font-size: 16px;">Welcome back to Thammasat Study Plan</p>
+
+    <!-- Login Form Card -->
+    <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <form method="post" style="display: flex; flex-direction: column; gap: 20px;">
+            {% csrf_token %}
+
+            <!-- Username Field -->
+            <div>
+                <label for="id_username" style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-user"></i> Username
+                </label>
+                <input type="text" 
+                       name="username" 
+                       id="id_username"
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; color: #000; box-sizing: border-box;"
+                       placeholder="Enter your username" 
+                       required autofocus>
             </div>
-            <h1>Login</h1>
-            <p>Enter your credentials provided by the administrator.</p>
 
-            <form method="post">
-                {% csrf_token %}
-                <div class="input-group">
-                    <label for="id_username">Username</label>
-                    {{ form.username }}
+            <!-- Password Field -->
+            <div>
+                <label for="id_password" style="display: block; color: #000; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" 
+                       name="password" 
+                       id="id_password"
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; color: #000; box-sizing: border-box;"
+                       placeholder="Enter your password" 
+                       required>
+            </div>
+
+            <!-- Error Messages -->
+            {% if form.errors %}
+                <div style="background: #ffebee; color: #c41e3a; padding: 12px; border-radius: 6px; border-left: 4px solid #c41e3a;">
+                    <strong><i class="fas fa-exclamation-circle"></i> Login Failed</strong>
+                    <p style="margin: 8px 0 0 0; font-size: 14px;">Username or password is incorrect. Please try again.</p>
                 </div>
-                <div class="input-group">
-                    <label for="id_password">Password</label>
-                    {{ form.password }}
-                </div>
+            {% endif %}
 
-                {% if form.errors %}
-                    <div class="error-message">
-                        Invalid username or password. Please try again.
-                    </div>
-                {% endif %}
+            <!-- Remember Me -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" name="remember" id="id_remember" style="width: 18px; height: 18px; cursor: pointer;">
+                <label for="id_remember" style="color: #666; cursor: pointer; margin: 0; font-size: 14px;">
+                    Remember me
+                </label>
+            </div>
 
-                <button type="submit" class="login-btn">Login</button>
-            </form>
-            <a href="{% url 'core:homepage' %}" class="back-link">← Go back to Homepage</a>
-        </div>
+            <!-- Submit Button -->
+            <button type="submit" style="padding: 14px; background: linear-gradient(135deg, #ff8c00, #ff7600); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px;">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+
+            <!-- Back Link -->
+            <a href="{% url 'core:homepage' %}" style="text-align: center; color: #ff8c00; text-decoration: none; font-size: 14px; transition: all 0.3s; display: block; margin-top: 10px;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </form>
     </div>
-</body>
-</html>
+
+    <!-- Info Section -->
+    <div style="background: #f0f7ff; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; margin-top: 30px; text-align: center;">
+        <p style="color: #333; margin: 0; font-size: 14px;">
+            <strong>Demo Account Available:</strong><br>
+            Username: <code style="background: white; padding: 4px 8px; border-radius: 4px;">demo</code> | 
+            Password: <code style="background: white; padding: 4px 8px; border-radius: 4px;">demo123</code>
+        </p>
+    </div>
+</div>
+
+<style>
+    input[type="text"], input[type="password"] {
+        transition: border-color 0.3s;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus {
+        outline: none;
+        border-color: #ff8c00 !important;
+        box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    a:hover {
+        color: #ff7600;
+    }
+</style>
+{% endblock %}

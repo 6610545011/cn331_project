@@ -15,6 +15,9 @@ from django.http import JsonResponse
 from django.db import transaction, models
 from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
+from stats.models import CourseReviewStat
+from datetime import date
+from django.db.models import F
 from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
 from .models import Review, Bookmark, Report, ReviewUpvote
 
@@ -29,6 +32,14 @@ def write_review(request):
             review.user = request.user
             review.save()
             form.save_m2m() # จำเป็นถ้าฟอร์มมี ManyToManyFields
+            # Analytics: increment course review stat
+            try:
+                today = date.today()
+                stat, created = CourseReviewStat.objects.get_or_create(course=review.course, date=today, defaults={'count': 1})
+                if not created:
+                    CourseReviewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
+            except Exception:
+                pass
             
             messages.success(request, 'ขอบคุณสำหรับรีวิวของคุณ!')
             return redirect('core:homepage')

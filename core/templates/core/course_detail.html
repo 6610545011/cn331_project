@@ -2,68 +2,325 @@
 {% load static %}
 {% load core_extras %}
 
-{% block title %}{{ course.course_name }} - Thammasat Study Plan{% endblock title %}
+{% block title %}{{ course.course_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/course_detail_styles.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
-<div class="detail-container">
-    <div class="detail-header">
-        <h1>{{ course.course_code }} - {{ course.course_name }}</h1>
-        <p class="sub-heading">{{ course.description }}</p>
-        <p class="sub-heading">
-            <strong>Taught by:</strong>
-            {% for prof in course.all_professors %}
-                <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
-            {% empty %}
-                Instructor information not available.
-            {% endfor %}
-        </p>
+<div class="container mx-auto max-w-4xl px-4 py-8">
+    <!-- Header Section -->
+    <div class="card-review p-8 mb-8 course-header">
+        {% if user.is_authenticated %}
+        <div class="course-bookmark-container">
+            <!-- Inline styles to force remove blue outline/shadow -->
+            <button class="course-bookmark-btn {% if course_is_bookmarked %}bookmarked{% endif %}" 
+                    data-course-id="{{ course.id }}" 
+                    data-url="{% url 'core:toggle_course_bookmark' course.id %}"
+                    aria-label="Toggle course bookmark"
+                    style="outline: none !important; box-shadow: none !important; border: none !important; background: transparent !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bookmark-icon">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        {% endif %}
+        <div class="flex flex-col gap-4 header-row">
+            <!-- Course Info -->
+            <div class="course-info">
+                <span class="course-code-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-3">
+                    <i class="fas fa-book mr-2"></i>{{ course.course_code }}
+                </span>
+                <h1 class="course-title">{{ course.course_name }}</h1>
+                
+                {% if course.description %}
+                <p class="course-description">{{ course.description }}</p>
+                {% endif %}
+                
+                {% if course.all_professors %}
+                <p class="course-meta">
+                    <strong class="text-orange-400">
+                        <i class="fas fa-chalkboard-user mr-2"></i>Professor:
+                    </strong>
+                    {% for prof in course.all_professors %}
+                        <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="text-orange-400 hover:text-orange-300 transition">
+                            {{ prof.prof_name }}
+                        </a>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                {% endif %}
+                
+                {% if course.credit %}
+                <p class="course-meta">
+                    <strong class="text-orange-400">
+                        <i class="fas fa-credit-card mr-2"></i>Credits:
+                    </strong>
+                    {{ course.credit }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Sections</h3>
-        <div class="card-list">
+
+
+    <div class="detail-content sections-container">
+        <h3 class="section-header-title">
+            <i class="fas fa-graduation-cap"></i>Sections
+        </h3>
+        <div class="section-grid">
+    
             {% for section in course.sections.all %}
-                <div class="info-card">
-                    <h4>Section {{ section.section_number }}</h4>
-                    <p>
-                        <strong>Professor(s):</strong>
-                        {% for prof in section.teachers.all %}
-                            <a href="{% url 'core:professor_detail' pk=prof.pk %}">{{ prof.prof_name }}</a>{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            Not assigned
-                        {% endfor %}
-                    </p>
-                    {% if section.campus %}<p><strong>Campus:</strong> {{ section.campus.name }}</p>{% endif %}
-                    {# แก้ไข: เปลี่ยนจาก date_time เป็น datetime ตาม model #}
-                    {% if section.datetime %}<p><strong>Time:</strong> {{ section.datetime }}</p>{% endif %}
-                    {% if section.room %}<p><strong>Location:</strong> {{ section.room }}</p>{% endif %}
+                <div class="section-item">
+                    <h3 class="section-item-title">
+                        <i class="fas fa-tag"></i>Section {{ section.section_number }}
+                    </h3>
+                    <div class="section-meta">
+                        {% if section.teachers.all %}
+                            <p class="section-meta-row">
+                                <strong class="meta-label">Instructor:</strong>
+                                {% for prof in section.teachers.all %}
+                                    <a href="{% url 'core:professor_detail' pk=prof.pk %}" class="meta-value">
+                                        {{ prof.prof_name }}
+                                    </a>{% if not forloop.last %}<br>{% endif %}
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.campus %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-map-marker-alt meta-icon"></i>
+                                <strong class="meta-label">Campus:</strong>
+                                <span class="meta-value">{{ section.campus.name }}</span>
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.datetime %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-clock meta-icon"></i>
+                                <strong class="meta-label">Time:</strong>
+                                <span class="meta-value">{{ section.datetime }}</span>
+                            </p>
+                        {% endif %}
+                        
+                        {% if section.room %}
+                            <p class="section-meta-row">
+                                <i class="fas fa-door-open meta-icon"></i>
+                                <strong class="meta-label">Room:</strong>
+                                <span class="meta-value">{{ section.room }}</span>
+                            </p>
+                        {% endif %}
+                    </div>
                 </div>
             {% empty %}
-                <p>No sections available for this course.</p>
+                <div class="section-empty">
+                    <p>
+                        <i class="fas fa-info-circle"></i>No sections available for this course
+                    </p>
+                </div>
             {% endfor %}
         </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Reviews</h3>
-        <div class="card-list">
+    <!-- Reviews Section -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 review-section-header">
+            <i class="fas fa-star text-orange-400"></i>Reviews
+        </h2>
+        
+        <div class="space-y-4">
             {% for review in course.reviews.all %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
-                <p>No reviews for this course yet. Be the first to write one!</p>
+                <div class="card-review p-12 text-center">
+                    <div class="text-5xl text-orange-400 mb-4">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <p class="text-gray-400 mb-4">No reviews for this course yet</p>
+                    <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
+                        <i class="fas fa-pen mr-2"></i>Write First Review
+                    </a>
+                </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
 {% endblock content %}
 
-{# ======================================================== #}
-{#  เพิ่มส่วนนี้เข้ามาเพื่อโหลด JavaScript ของระบบ Review  #}
-{# ======================================================== #}
 {% block extra_scripts %}
-    {# review actions are handled globally by core/js/main.js; avoid including the per-page script to prevent duplicate bindings #}
+<script>
+// ==========================================
+// Course Bookmark Script (Isolated Scope)
+// ==========================================
+(function() {
+    // We use a self-executing function to avoid variable name collisions 
+    // with review_actions_js.html (like 'csrftoken' or 'getCookie')
+
+    // Local helper function for this scope only
+    function getLocalCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.course-bookmark-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        const url = btn.dataset.url;
+        const token = getLocalCookie('csrftoken');
+
+        // Optimistic UI update
+        btn.classList.toggle('bookmarked');
+        
+        // Animation
+        btn.style.transform = "scale(0.9)";
+        setTimeout(() => btn.style.transform = "", 150);
+
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': token,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject('auth');
+            }
+            if (!response.ok) return Promise.reject('network'); 
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'ok') {
+                // Revert if server error
+                btn.classList.toggle('bookmarked');
+            }
+        })
+        .catch(error => {
+            if (error !== 'auth') {
+                console.error('Error toggling course bookmark:', error);
+                btn.classList.toggle('bookmarked');
+            }
+        });
+    });
+})();
+</script>
+
+<script>
+// ==========================================
+// Planner Variant Script (Isolated Scope)
+// ==========================================
+(function() {
+    // Local helper for this scope
+    function getLocalCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const plannerToken = getLocalCookie('csrftoken');
+
+    function loadVariants() {
+        fetch('{% url "planner:list_variants" %}', { credentials: 'same-origin' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const selects = document.querySelectorAll('.variant-select');
+                    selects.forEach(sel => {
+                        sel.innerHTML = '<option value="">Select plan...</option>';
+                        data.variants.forEach(v => {
+                            const opt = document.createElement('option');
+                            opt.value = v.id;
+                            opt.textContent = v.name + ' (' + v.credits + ' cr)';
+                            sel.appendChild(opt);
+                        });
+                    });
+                }
+            }).catch(console.error);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadVariants);
+
+    document.body.addEventListener('click', function(ev) {
+        const createBtn = ev.target.closest('.create-variant-btn');
+        if (createBtn) {
+            ev.preventDefault();
+            const name = prompt('Name your new plan (e.g. Plan 1):');
+            if (!name) return;
+            const form = new FormData();
+            form.append('name', name);
+            fetch('{% url "planner:create_variant" %}', { 
+                method: 'POST', 
+                body: form, 
+                credentials: 'same-origin', 
+                headers: {'X-CSRFToken': plannerToken} 
+            })
+            .then(r => r.json()).then(j => {
+                if (j.ok) {
+                    loadVariants();
+                    alert('Created: ' + j.name);
+                } else {
+                    alert('Error: ' + (j.error || 'unknown'));
+                }
+            }).catch(err => alert('Network error'));
+        }
+
+        const addBtn = ev.target.closest('.add-to-variant-btn');
+        if (addBtn) {
+            ev.preventDefault();
+            const sectionId = addBtn.dataset.sectionId;
+            const sel = document.querySelector('.variant-select[data-section-id="' + sectionId + '"]');
+            if (!sel) return alert('Select a plan first');
+            const variantId = sel.value;
+            if (!variantId) return alert('Please select a plan');
+            const url = '{% url "planner:variant_add_section" 0 0 %}'.replace('/0/0/', '/' + variantId + '/' + sectionId + '/');
+            fetch(url, { 
+                method: 'POST', 
+                credentials: 'same-origin', 
+                headers: { 'X-CSRFToken': plannerToken } 
+            })
+            .then(r => r.json()).then(j => {
+                if (j.ok) {
+                    alert('Added to plan' + (j.warning ? '\n' + j.warning : ''));
+                    loadVariants();
+                } else {
+                    alert('Failed: ' + JSON.stringify(j));
+                }
+            }).catch(err => alert('Network error'));
+        }
+    });
+})();
+</script>
+
+<!-- 
+    Include Review Actions JS.
+    This script likely defines its own global variables.
+    By isolating the scripts above, we prevent conflicts.
+-->
+{% include "review/includes/review_actions_js.html" %}
 {% endblock extra_scripts %}

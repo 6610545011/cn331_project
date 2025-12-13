@@ -6,31 +6,31 @@ class ReviewForm(forms.ModelForm):
     # 1. กำหนด Field ทั้งหมดให้ไม่บังคับเลือก (required=False) ในตอนแรก
     # เราจะใช้เมธอด clean() เพื่อสร้างเงื่อนไขการตรวจสอบที่ซับซ้อนเอง
     course = forms.ModelChoiceField(
-        queryset=Course.objects.none(), # จะกำหนด queryset แบบไดนามิกใน __init__
-        label="รายวิชา (เลือกจากวิชาที่เคยลงทะเบียน)",
+        queryset=Course.objects.none(), # filled dynamically in __init__
+        label="Course (choose from your registered courses)",
         required=False,
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_course'})
     )
     
     section = forms.ModelChoiceField(
-        queryset=Section.objects.none(), # จะถูกเติมด้วย AJAX
-        label="Section (เลือกได้หลังเลือกรายวิชา)",
+        queryset=Section.objects.none(), # populated via AJAX
+        label="Section (available after selecting a course)",
         required=False,
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_section'})
     )
 
     professor = forms.ModelChoiceField(
-        queryset=Prof.objects.none(), # จะกำหนด queryset แบบไดนามิกใน __init__
-        label="อาจารย์ผู้สอน (เลือกจากอาจารย์ที่เคยเรียนด้วย)",
+        queryset=Prof.objects.none(), # filled dynamically in __init__
+        label="Professor (choose from instructors you've taken)",
         required=False,
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_professor'})
     )
 
     # ฟิลด์สำหรับเนื้อหารีวิว (ยังคงบังคับกรอก)
     header = forms.CharField(
-        label="หัวข้อรีวิว",
+        label="Review title",
         max_length=255,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น "วิชานี้ดีมาก เรียนสนุก"'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., "This course was great and fun"'})
     )
 
     # ฟิลด์สำหรับ Tag (ไม่บังคับเลือก)
@@ -38,7 +38,7 @@ class ReviewForm(forms.ModelForm):
         queryset=Tag.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
-        label="แท็กที่เกี่ยวข้องกับรีวิวนี้"
+        label="Tags for this review"
     )
 
     class Meta:
@@ -47,12 +47,12 @@ class ReviewForm(forms.ModelForm):
         fields = ['course', 'section', 'prof', 'header', 'rating', 'body', 'incognito', 'tags']
         
         labels = {
-            'body': 'เนื้อหารีวิว',
-            'rating': 'ให้คะแนนความพึงพอใจ',
-            'incognito': 'ไม่ระบุตัวตน',
+            'body': 'Review content',
+            'rating': 'Satisfaction rating',
+            'incognito': 'Post anonymously',
         }
         widgets = {
-            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'เล่าประสบการณ์ของคุณเกี่ยวกับวิชานี้...'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Share your experience about this course...'}),
             'rating': forms.RadioSelect(choices=[(i, str(i)) for i in range(5, 0, -1)]),
             'incognito': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
@@ -119,11 +119,11 @@ class ReviewForm(forms.ModelForm):
         section = cleaned_data.get('section')
         prof = cleaned_data.get('prof') # ใช้ 'prof' เพราะเราเปลี่ยนชื่อใน __init__
 
-        # --- Validation 1: ต้องเลือกเป้าหมายรีวิวอย่างน้อย 1 อย่าง ---
+        # --- Validation 1: must pick at least one review target ---
         if not course and not prof:
             # Error นี้จะแสดงที่ด้านบนสุดของฟอร์ม (non_field_errors)
             raise forms.ValidationError(
-                "กรุณาเลือกอย่างน้อยหนึ่งรายการเพื่อรีวิว (รายวิชา หรือ อาจารย์ผู้สอน)",
+                "Please choose at least one target to review (course or professor)",
                 code='no_target'
             )
 
@@ -131,12 +131,12 @@ class ReviewForm(forms.ModelForm):
         # กรณี 2.1: ถ้าเลือก Course และ Section -> Section ต้องอยู่ใน Course นั้น
         if course and section:
             if section.course != course:
-                self.add_error('section', f"Section {section.section_number} ไม่ได้อยู่ในรายวิชา {course.course_code}")
+                self.add_error('section', f"Section {section.section_number} is not in course {course.course_code}")
 
         # กรณี 2.2: ถ้าเลือก Course และ Professor -> Professor ต้องเคยสอน Course นั้น
         if course and prof:
             if not Section.objects.filter(course=course, teachers=prof).exists():
-                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนในรายวิชา {course.course_code}")
+                self.add_error('prof', f"{prof.prof_name} does not teach course {course.course_code}")
 
         # If user selected a professor but no course, try to infer a course.
         # Prefer a course where the user was enrolled with that professor.
@@ -159,14 +159,14 @@ class ReviewForm(forms.ModelForm):
                 course = inferred_course
             else:
                 raise forms.ValidationError(
-                    "เมื่อเลือกอาจารย์ผู้สอนโดยไม่เลือกรายวิชา ระบบไม่พบรายวิชาที่เชื่อมกับอาจารย์ท่านนี้ — กรุณาเลือกรายวิชาหรือเลือกอาจารย์ที่มีการสอนในระบบ",
+                    "When selecting a professor without a course, no linked course was found — please choose a course or a professor with a course in the system.",
                     code='no_course_for_prof'
                 )
 
         # กรณี 2.3: ถ้าเลือก Professor และ Section -> Professor ต้องสอน Section นั้น
         if prof and section:
             if prof not in section.teachers.all():
-                self.add_error('prof', f"{prof.prof_name} ไม่ได้สอนใน Section {section.section_number}")
+                self.add_error('prof', f"{prof.prof_name} does not teach Section {section.section_number}")
 
         return cleaned_data
 

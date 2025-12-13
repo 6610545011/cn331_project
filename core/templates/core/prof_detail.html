@@ -1,62 +1,123 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}{{ prof.prof_name }} - Thammasat Study Plan{% endblock title %} {# <--- แก้ไข .name เป็น .prof_name #}
+{% block title %}{{ prof.prof_name }} - THAMMASAT STUDY PLAN{% endblock title %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'core/css/detail_page.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/prof_detail_styles.css' %}">
 {% endblock extra_head %}
 
 {% block content %}
-<div class="detail-container">
-    
-    <div class="detail-header">
-        <div class="header-content">
-            {% if prof.imgurl %} {# <--- แก้ไข .img_url เป็น .imgurl #}
-                <img src="{{ prof.imgurl }}" alt="Photo of {{ prof.prof_name }}" class="profile-image"> {# <--- แก้ไข .img_url เป็น .imgurl #}
-            {% endif %}
-            <div class="header-text">
-                <h1>{{ prof.prof_name }}</h1> {# <--- แก้ไข .name เป็น .prof_name #}
-                
-                {# ส่วนนี้อาจต้องปรับตาม model ของคุณ ถ้าไม่มี campus, room ใน Prof model โดยตรง #}
-                {# <p class="sub-heading">
-                    <strong>Campus:</strong> {{ prof.campus.name }} | 
-                    <strong>Room:</strong> {{ prof.room.name }}
-                </p> #}
-
-                {% if prof.email %}
-                    <p><strong>Email:</strong> <a href="mailto:{{ prof.email }}">{{ prof.email }}</a></p>
+<div class="container mx-auto max-w-4xl px-4 py-8">
+    <!-- Profile Header -->
+    <div class="card-review p-8 mb-8 prof-header">
+        <div class="flex flex-col md:flex-row gap-8 items-center header-row">
+            <!-- Profile Picture (left) -->
+            <div class="flex-shrink-0 profile-pic">
+                {% if prof.imgurl %}
+                    <img 
+                        src="{{ prof.imgurl }}" 
+                        alt="Photo of {{ prof.prof_name }}" 
+                        class="w-56 h-56 rounded-xl object-cover shadow-2xl border-4 border-orange-400 prof-image"
+                        style="width: 300px; height: 300px; object-fit: cover; border-radius: 1rem;"
+                    >
+                {% else %}
+                    <div class="w-56 h-56 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-2xl border-4 border-orange-400 prof-image">
+                        <i class="fas fa-user text-6xl text-white"></i>
+                    </div>
                 {% endif %}
-                <p>{{ prof.description }}</p>
+            </div>
+            
+            <!-- Profile Info -->
+            <div class="flex-1 profile-info">
+                <h1 class="prof-name">{{ prof.prof_name }}</h1>
+                
+                <span class="prof-badge inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    <i class="fas fa-chalkboard-user mr-2"></i>Professor
+                </span>
+                
+                {% if prof.email %}
+                    <p class="prof-meta">
+                        <strong class="text-orange-400">
+                            <i class="fas fa-envelope mr-2"></i>Email:
+                        </strong>
+                        <a href="mailto:{{ prof.email }}" class="text-orange-400 hover:text-orange-300 transition">
+                            {{ prof.email }}
+                        </a>
+                    </p>
+                {% endif %}
+                
+                {% if prof.description %}
+                    <p class="prof-meta prof-about">
+                        <strong class="text-orange-400">
+                            <i class="fas fa-info-circle mr-2"></i>About:
+                        </strong>
+                        {{ prof.description }}
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>
-
-    <div class="detail-content">
-        <h3>Sections Taught</h3>
-        <div class="card-list">
+    <br>
+    <!-- Sections Taught -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b-2 border-orange-400 pb-4 section-header">
+            <i class="fas fa-book-open text-orange-400"></i>Courses Taught
+        </h2>
+        
+        <div class="space-y-4">
             {% for section in prof.teaching_sections.all %}
-                <div class="info-card">
-                    <h4><a href="{% url 'core:course_detail' pk=section.course.pk %}">{{ section.course.course_code }} - {{ section.course.course_name }}</a></h4>
-                    <p>
-                        <strong>Section:</strong> {{ section.section_number }}
-                        {% if section.campus %}| <strong>Campus:</strong> {{ section.campus.name }}{% endif %}
-                    </p>
+                <div class="card-review p-6 section-card">
+                    <h3 class="text-xl font-bold text-orange-400 mb-3 section-title">
+                        <a href="{% url 'core:course_detail' section.course.course_code %}" class="hover:text-orange-300 transition flex items-center gap-2">
+                            <i class="fas fa-book"></i>
+                            {{ section.course.course_code }} - {{ section.course.course_name }}
+                        </a>
+                    </h3>
+                    <div class="flex gap-6 text-gray-300">
+                        <span>
+                            <strong class="text-white">Section:</strong>
+                            {{ section.section_number }}
+                        </span>
+                        {% if section.campus %}
+                            <span>
+                                <strong class="text-white">Campus:</strong>
+                                {{ section.campus.name }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <br>
                 </div>
             {% empty %}
-                <p>This professor is not currently assigned to any sections.</p>
+                <div class="card-review p-8 text-center">
+                    <p class="text-gray-400">
+                        <i class="fas fa-info-circle mr-2"></i>This professor has not been assigned to any sections yet
+                    </p>
+                </div>
             {% endfor %}
         </div>
     </div>
 
-    <div class="detail-content">
-        <h3>Reviews</h3>
-        <div class="card-list">
-            {# โค้ดส่วนนี้ถูกต้องแล้ว เพราะ view ส่ง 'reviews' มาให้ #}
+    <!-- Reviews -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b-2 border-orange-400 pb-4">
+            <i class="fas fa-star text-orange-400"></i>Reviews
+        </h2>
+        
+        <div class="space-y-4">
             {% for review in reviews %}
                 {% include "review/includes/review_block.html" with review=review %}
             {% empty %}
-                <p>No reviews for this professor yet. Be the first to write one!</p>
+                <div class="card-review p-12 text-center">
+                    <div class="text-5xl text-orange-400 mb-4">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <p class="text-gray-400 mb-4">No reviews for this professor yet</p>
+                    <a href="{% url 'review:write_review' %}" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition inline-block">
+                        <i class="fas fa-pen mr-2"></i>Write First Review
+                    </a>
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -64,5 +125,5 @@
 {% endblock content %}
 
 {% block extra_scripts %}
-    {# The review actions script is now loaded globally in main.js #}
+    {% include "review/includes/review_actions_js.html" %}
 {% endblock extra_scripts %}

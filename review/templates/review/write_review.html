@@ -10,9 +10,9 @@
 {% block content %}
 <main class="content-area">
     <div class="review-form-container">
-        <h1>เขียนรีวิว</h1>
+        <h1>WRITE REVIEW</h1>
         
-        {# แสดงข้อความ error ทั่วไป (เช่น "กรุณาเลือกอย่างน้อยหนึ่งรายการ") #}
+        {# General error messages (e.g., missing required selections) #}
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {% for error in form.non_field_errors %}
@@ -59,9 +59,9 @@
             <div class="form-group rating-group">
                 {{ form.rating.label_tag }}
                 <div class="star-rating">
-                    {% for radio in form.rating reversed %}
+                    {% for radio in form.rating %}
                         {{ radio.tag }}
-                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} ดาว"><i class="fas fa-star"></i></label>
+                        <label for="{{ radio.id_for_label }}" class="star-label" title="{{ radio.choice_label }} stars"><i class="fas fa-star"></i></label>
                     {% endfor %}
                 </div>
                 {% if form.rating.errors %}<div class="errors">{{ form.rating.errors }}</div>{% endif %}
@@ -81,7 +81,7 @@
                 {% if form.tags.errors %}<div class="errors">{{ form.tags.errors }}</div>{% endif %}
             </div>
 
-            <button type="submit" class="btn-submit">ส่งรีวิว</button>
+            <button type="submit" class="btn-submit">Post Review</button>
         </form>
     </div>
 </main>
@@ -95,9 +95,9 @@ $(document).ready(function() {
     const professorSelect = $('#id_professor');
 
     // ทำให้ Dropdown สวยงามด้วย Select2
-    courseSelect.select2({ placeholder: '--- เลือกรีวิวรายวิชา (ไม่บังคับ) ---', allowClear: true });
-    professorSelect.select2({ placeholder: '--- เลือกรีวิวอาจารย์ (ไม่บังคับ) ---', allowClear: true });
-    sectionSelect.select2({ placeholder: '--- กรุณาเลือกรายวิชาก่อน ---' });
+    courseSelect.select2({ placeholder: '--- Select a course review (optional). ---', allowClear: true });
+    professorSelect.select2({ placeholder: '--- Choose a professor review (optional). ---', allowClear: true });
+    sectionSelect.select2({ placeholder: '--- Please select a course first ---' });
 
     // Event: เมื่อมีการเลือกหรือล้างการเลือกรายวิชา
     courseSelect.on('change', function() {
@@ -105,25 +105,25 @@ $(document).ready(function() {
 
         if (courseId) {
             // ถ้ามี courseId, ให้ไปโหลด Section
-            sectionSelect.prop('disabled', false).html('<option>กำลังโหลด...</option>');
+            sectionSelect.prop('disabled', false).html('<option>loading...</option>');
             $.ajax({
                 url: "{% url 'review:ajax_get_sections' %}",
                 data: { 'course_id': courseId },
                 success: function (data) {
-                    sectionSelect.empty().append('<option value="">--- เลือก Section (ไม่บังคับ) ---</option>');
+                    sectionSelect.empty().append('<option value="">--- Select Section (optional) ---</option>');
                     if (data.sections.length > 0) {
                         data.sections.forEach(function(sec) {
                             sectionSelect.append(new Option(sec.text, sec.id));
                         });
                     } else {
-                        sectionSelect.append('<option value="">ไม่พบ Section ที่คุณเคยลงทะเบียน</option>');
+                        sectionSelect.append('<option value="">No sections found that you have registered for</option>');
                     }
-                    sectionSelect.trigger('change'); // อัปเดต Select2
+                    sectionSelect.trigger('change'); // Update Select2
                 }
             });
         } else {
-            // ถ้าไม่มี courseId (ล้างการเลือก), ให้ Reset และปิดช่อง Section
-            sectionSelect.empty().append('<option value="">--- กรุณาเลือกรายวิชาก่อน ---</option>').prop('disabled', true).trigger('change');
+            // If no courseId (selection cleared), reset and disable Section dropdown
+            sectionSelect.empty().append('<option value="">--- Please select a course first ---</option>').prop('disabled', true).trigger('change');
         }
     });
 });
