@@ -5,6 +5,7 @@
 /* Course Header Card */
 .course-header {
     background: #fff !important;
+    position: relative;
     border: 1px solid #e8e6e4 !important;
     border-radius: 16px !important;
     box-shadow: 0 4px 12px rgba(20, 20, 20, 0.03) !important;
@@ -301,4 +302,76 @@
         flex-direction: column;
         gap: 0.5rem !important;
     }
+}
+
+/* =========================================
+   NEW BOOKMARK BUTTON STYLES (Fixed Colors)
+   ========================================= */
+.course-bookmark-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.course-bookmark-btn {
+    /* Resetting all potential button styles */
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0; 
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    -webkit-tap-highlight-color: transparent;
+    /* Don't rely on 'color' inheritance for the icon, we set it explicitly below */
+}
+
+/* SVG Styling - Explicit Colors */
+.bookmark-icon {
+    width: 32px;
+    height: 32px;
+    stroke-width: 2px;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+    display: block;
+    
+    /* Default State (Inactive) */
+    stroke: #d1d5db !important; /* Gray Outline */
+    fill: transparent !important;
+}
+
+/* Hover State (Inactive) */
+.course-bookmark-btn:hover .bookmark-icon {
+    stroke: #9ca3af !important; /* Darker Gray Outline */
+    fill: transparent !important;
+}
+
+/* Bookmarked State (Active) */
+.course-bookmark-btn.bookmarked .bookmark-icon {
+    stroke: #c41e3a !important; /* Red Outline */
+    fill: #c41e3a !important;   /* Red Fill */
+}
+
+/* Bookmarked Hover State */
+.course-bookmark-btn.bookmarked:hover .bookmark-icon {
+    stroke: #a5152f !important; /* Darker Red Outline */
+    fill: #a5152f !important;   /* Darker Red Fill */
+}
+
+/* Remove any focus rings from the button itself */
+.course-bookmark-btn:focus,
+.course-bookmark-btn:active,
+.course-bookmark-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
 }

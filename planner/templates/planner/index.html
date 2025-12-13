@@ -338,7 +338,7 @@
 
         {# Course Blocks #}
         {% for item in items %}
-          <div class="course-block" style="grid-column: {{ item.css_start_col }} / span {{ item.css_span_col }}; grid-row: {{ item.day|add:2 }} / span 1; background: {{ item.color }};">
+          <div class="course-block" data-section-key="{{ item.course_code }}-{{ item.section_number }}" style="grid-column: {{ item.css_start_col }} / span {{ item.css_span_col }}; grid-row: {{ item.day|add:2 }} / span 1; background: {{ item.color }};">
             <div style="font-weight: 800; font-size: 0.9rem;">{{ item.course_code }}</div>
             <div style="font-size: 0.8rem; opacity: 0.9;">Sec {{ item.section_number }}</div>
             <div style="font-size: 0.75rem; margin-top:2px;">{{ item.room|default:"-" }}</div>
@@ -645,5 +645,44 @@ if (saveBtn){
 
 // Init
 if (document.getElementById('variant-history')) fetchVariants();
+</script>
+<script>
+// Ensure course blocks for same section share the same color across multiple time ranges
+document.addEventListener('DOMContentLoaded', function () {
+  const blocks = Array.from(document.querySelectorAll('.course-block'));
+  if (!blocks.length) return;
+
+  const palette = [
+    '#ffd166','#ff8c42','#ff6b6b','#6ee7b7','#7dd3fc','#a78bfa','#fda4af','#fbcfe8','#c7f9cc'
+  ];
+  const map = Object.create(null);
+  let p = 0;
+
+  blocks.forEach(el => {
+    const key = el.dataset.sectionKey || (el.textContent || '').trim().slice(0,40);
+    // If this key already has an assigned color, use it
+    if (map[key]) return;
+    // If element has an inline background color, prefer it
+    const inlineBg = el.style.background || el.getAttribute('data-bg') || '';
+    if (inlineBg) {
+      map[key] = inlineBg;
+    } else {
+      map[key] = palette[p % palette.length];
+      p += 1;
+    }
+  });
+
+  // Apply mapped colors to all blocks
+  blocks.forEach(el => {
+    const key = el.dataset.sectionKey || (el.textContent || '').trim().slice(0,40);
+    const color = map[key];
+    if (color) {
+      el.style.background = color;
+      // ensure readable text color
+      el.style.color = '#111';
+      el.style.borderLeft = '4px solid rgba(0,0,0,0.06)';
+    }
+  });
+});
 </script>
 {% endblock %}
