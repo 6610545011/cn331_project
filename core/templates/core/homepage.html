@@ -1,52 +1,111 @@
 {% extends "core/template.html" %}
 {% load static %}
 
-{% block title %}Homepage - Thammasat Study Plan{% endblock title %}
+{% block title %}THAMMASAT STUDY PLAN - Home{% endblock title %}
 
 {% block content %}
-<!-- Main Content -->
-<main class="content-area">
-    <div class="left-panel">
-        <h1 class="main-title">
-            <span class="star">✦</span>THAMMASAT<span class="dot">•</span><br>
-            <span class="dot">•</span>studyplan<span class="pencil">/</span>
-        </h1>
-        <h2 class="sub-title">course review</h2>
-        <form method="get" action="{% url 'core:search' %}" class="search-bar">
-        <input type="text" name="q" placeholder="search course review..." value="{{ request.GET.q|default:'' }}">
-        <button type="submit">
-            <i class="fas fa-search"></i>
-        </button>
-        </form>
-        <div class="action-buttons">
-            <!-- ปุ่มที่ 1: Write Review (เปลี่ยนเป็นแท็ก <a> เพื่อให้เป็นลิงก์) -->
-            <a href="{% url 'review:write_review' %}" class="action-btn write-review">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-thumbs-up"></i>
-                <span>write<br>review</span>
-            </a>
-            
-            <!-- ปุ่มที่ 2: Schedule Plan (ยังคงเป็น <button> เหมือนเดิม) -->
-            <button class="action-btn schedule-plan">
-                <i class="fas fa-calendar-alt"></i>
-                <span>schedule<br>PLAN</span>
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 30px; color: #000;">
+        <i class="fas fa-book" style="color: #ff8c00; margin-right: 10px;"></i>
+        COURSE REVIEW
+    </h1>
+    
+    <!-- Search Bar -->
+    <form method="get" action="{% url 'core:search' %}" style="margin-bottom: 40px;">
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1; position: relative;">
+                <input 
+                    type="text" 
+                    name="q" 
+                    placeholder="search course review..." 
+                    value="{{ request.GET.q|default:'' }}"
+                    style="width: 100%; padding: 15px 20px; border: 2px solid #999; border-radius: 30px; font-size: 16px; font-family: 'Kanit', sans-serif;"
+                >
+                <i class="fas fa-times" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #999; font-size: 20px;"></i>
+            </div>
+            <button type="submit" style="padding: 15px 30px; background: linear-gradient(135deg, #ff8c00, #ff7600); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 16px; font-family: 'Kanit', sans-serif;">
+                <i class="fas fa-search"></i>
             </button>
         </div>
-        <!-- ========================================== -->
-
-    </div>
-    <div class="right-panel">
-        <div class="decorative-graphic">
-        <!-- วงกลมพื้นหลังยังอยู่เหมือนเดิม -->
-            <div class="circle circle-1">
-                <div class="circle circle-2">
-                    <div class="circle circle-3">
-                    </div>
-                </div>
+    </form>
+    
+    <!-- Featured Section Title -->
+    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; color: #000;">Latest Reviews</h2>
+    
+    <!-- Reviews Grid -->
+    <div id="reviews-container" style="display: grid; gap: 20px;">
+        {% if reviews and reviews|length > 0 %}
+            {% for review in reviews %}
+                {% include 'review/includes/review_block.html' with review=review %}
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; color: #999; padding: 40px;">
+                <p>Select a course or use search to view reviews</p>
             </div>
-        <!-- เพิ่มโลโก้ใหม่เข้ามาตรงนี้ -->
-            <img src="https://res.cloudinary.com/dsrdav70h/image/upload/v1762085204/TU331_4_2_vlebor.png" alt="sTUdyPlan Graphic Logo" class="graphic-logo">
-        </div>
+        {% endif %}
     </div>
-</main>
+
+    <!-- Loader and sentinel for infinite scroll -->
+    <div id="reviews-loader" style="text-align:center; padding: 20px; display: none;">Loading...</div>
+    <div id="reviews-end" data-has-next="{% if has_next %}true{% else %}false{% endif %}" data-next-page="{% if next_page %}{{ next_page }}{% else %}null{% endif %}" style="height: 1px;"></div>
+</div>
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const container = document.getElementById('reviews-container');
+    const loader = document.getElementById('reviews-loader');
+    const sentinel = document.getElementById('reviews-end');
+    const url = "{% url 'core:latest_reviews_api' %}";
+
+    let loading = false;
+    function getHasNext() {
+        return sentinel.dataset.hasNext === 'true';
+    }
+    function getNextPage() {
+        const v = sentinel.dataset.nextPage;
+        return (v && v !== 'null') ? parseInt(v, 10) : null;
+    }
+
+    async function loadNext() {
+        const page = getNextPage();
+        if (loading || !page) return;
+        loading = true;
+        loader.style.display = 'block';
+        try {
+            const resp = await fetch(url + '?page=' + page);
+            if (!resp.ok) throw new Error('Network error');
+            const data = await resp.json();
+            if (data.reviews_html) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = data.reviews_html;
+                while (tmp.firstChild) {
+                    container.appendChild(tmp.firstChild);
+                }
+            }
+            sentinel.dataset.hasNext = data.has_next ? 'true' : 'false';
+            sentinel.dataset.nextPage = data.next_page ? data.next_page : 'null';
+            if (!data.has_next) observer.disconnect();
+        } catch (e) {
+            console.error('Failed to load reviews', e);
+        } finally {
+            loader.style.display = 'none';
+            loading = false;
+        }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && getHasNext()) {
+                loadNext();
+            }
+        });
+    }, { root: null, rootMargin: '200px', threshold: 0.01 });
+
+    // Attach observer to sentinel
+    observer.observe(sentinel);
+});
+</script>
+    {% include "review/includes/review_actions_js.html" %}
+{% endblock extra_scripts %}

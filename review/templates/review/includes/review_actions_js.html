@@ -1,0 +1,341 @@
+<script>
+if (typeof window.reviewActionsLoaded === 'undefined') {
+    window.reviewActionsLoaded = true;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Use event delegation for clicks
+    document.body.addEventListener('click', function(e) {
+        const bookmarkBtn = e.target.closest('.bookmark-btn');
+            if (bookmarkBtn) {
+            e.preventDefault();
+            const url = bookmarkBtn.dataset.url;
+
+            // Optimistic UI: toggle now, and revert on error
+            const reviewId = bookmarkBtn.dataset.reviewId;
+            const allBtns = document.querySelectorAll(`.bookmark-btn[data-review-id="${reviewId}"]`);
+            // Determine new state by toggling current pressed state
+            const currentlyBookmarked = bookmarkBtn.dataset.bookmarked === 'True';
+            const newState = !currentlyBookmarked;
+            allBtns.forEach(b => {
+                b.classList.toggle('active', newState);
+                b.dataset.bookmarked = newState ? 'True' : 'False';
+                b.setAttribute('aria-pressed', newState ? 'true' : 'false');
+                const icon = b.querySelector('.bookmark-icon');
+                if (icon) {
+                    icon.classList.toggle('fas', newState);
+                    icon.classList.toggle('far', !newState);
+                }
+                b.classList.add('pulse');
+                setTimeout(() => b.classList.remove('pulse'), 220);
+            });
+
+            fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+            })
+            .then(response => {
+                // If the response was a redirect to login, handle it explicitly
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/accounts/login/?next=' + encodeURIComponent(location.pathname + location.search);
+                        return Promise.reject(new Error('auth'));
+                    }
+                    return Promise.reject(new Error('Network error'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.status === 'ok') {
+                    const isActive = !!data.bookmarked;
+                    // Ensure all instances are in sync with server
+                    allBtns.forEach(b => {
+                        b.classList.toggle('active', isActive);
+                        b.dataset.bookmarked = isActive ? 'True' : 'False';
+                        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                        const icon = b.querySelector('.bookmark-icon');
+                        if (icon) {
+                            icon.classList.toggle('fas', isActive);
+                            icon.classList.toggle('far', !isActive);
+                        }
+                    });
+                } else {
+                    // Revert optimistic change on error
+                    allBtns.forEach(b => {
+                        b.classList.toggle('active', currentlyBookmarked);
+                        b.dataset.bookmarked = currentlyBookmarked ? 'True' : 'False';
+                        b.setAttribute('aria-pressed', currentlyBookmarked ? 'true' : 'false');
+                        const icon = b.querySelector('.bookmark-icon');
+                        if (icon) {
+                            icon.classList.toggle('fas', currentlyBookmarked);
+                            icon.classList.toggle('far', !currentlyBookmarked);
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                if (error && error.message !== 'auth') console.error('Error toggling bookmark:', error);
+            });
+        }
+
+    });
+
+
+    // Use event delegation for form submissions
+    document.body.addEventListener('submit', function(e) {
+        const form = e.target;
+
+        if (form.matches('.report-form')) {
+            e.preventDefault();
+            const reviewId = form.id.split('-')[1];
+            const formData = new FormData(form);
+            const url = form.dataset.url;
+            const alertContainer = document.getElementById(`report-alert-${reviewId}`);
+
+            fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                return response.json().then(data => ({ status: response.status, body: data }));
+            })
+            .then(({ status, body }) => {
+                let alertClass = 'alert-danger';
+                let message = 'An unknown error occurred.';
+
+                if (status === 200 && body.status === 'ok') {
+                    alertClass = 'alert-success';
+                    message = body.message;
+                    form.reset();
+                    // Nice UX: display success banner and hide form briefly
+                    const successEl = document.getElementById(`report-success-${reviewId}`);
+                    const reportBtnEl = document.querySelector(`.report-btn[data-review-id="${reviewId}"]`);
+                    if (reportBtnEl) {
+                        reportBtnEl.disabled = true;
+                        reportBtnEl.setAttribute('aria-pressed', 'true');
+                    }
+                    if (successEl) {
+                        successEl.classList.add('show');
+                    }
+                    // temporarily hide form
+                    form.style.display = 'none';
+                    setTimeout(() => {
+                        if (successEl) successEl.classList.remove('show');
+                        // restore form for modal reuse
+                        form.style.display = '';
+                        const modalEl = document.getElementById(`reportModal-${reviewId}`);
+                        const modal = bootstrap && bootstrap.Modal ? bootstrap.Modal.getInstance(modalEl) : null;
+                        if (modal) modal.hide();
+                        // fallback hide when Bootstrap JS is not present
+                        if (typeof bootstrap === 'undefined') {
+                            if (modalEl) {
+                                modalEl.style.display = 'none';
+                                modalEl.classList.remove('show');
+                                modalEl.setAttribute('aria-hidden', 'true');
+                                modalEl.removeAttribute('aria-modal');
+                            }
+                            const bd = document.getElementById('_fallback_backdrop');
+                            if (bd) bd.remove();
+                        }
+                        alertContainer.innerHTML = '';
+                    }, 1800);
+                } else {
+                    message = body.message || 'Please correct the errors below.';
+                }
+                alertContainer.innerHTML = `<div class="alert ${alertClass}" role="alert">${message}</div>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertContainer.innerHTML = `<div class="alert alert-danger" role="alert">A network error occurred. Please try again.</div>`;
+            });
+        }
+        document.querySelectorAll('.report-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const reviewId = this.dataset.reviewId;
+                const modalEl = document.getElementById('reportModal-' + reviewId);
+                const reportForm = modalEl.querySelector('.report-form');
+
+                reportForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    const formData = new FormData(this);
+                    fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrftoken }, body: formData })
+                        .then(resp => {
+                            if (resp.redirected && resp.url && resp.url.includes('/accounts/login')) {
+                                window.location.href = resp.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                                return Promise.reject(new Error('auth'));
+                            }
+                            return resp.json();
+                        })
+                        .then(data => {
+                            const alertEl = modalEl.querySelector('#report-alert-' + reviewId);
+                            if (data.status === 'ok') {
+                                alertEl.innerHTML = '<div class="alert alert-success">Report submitted successfully.</div>';
+                                setTimeout(() => {
+                                    var modal = bootstrap.Modal.getInstance(modalEl);
+                                    modal.hide();
+                                    btn.disabled = true;
+                                    btn.setAttribute('aria-pressed', 'true');
+                                }, 900);
+                            } else {
+                                alertEl.innerHTML = '<div class="alert alert-danger">' + (data.errors || 'Error') + '</div>';
+                            }
+                        });
+                }, { once: true });
+            });
+        });
+
+        if (form.matches('.vote-form')) {
+            e.preventDefault();
+            const reviewId = form.dataset.reviewId;
+            const voteType = e.submitter.value;
+            const url = form.dataset.url;
+
+            const upvoteBtn = form.querySelector('.upvote-btn');
+            const downvoteBtn = form.querySelector('.downvote-btn');
+            upvoteBtn.disabled = true;
+            downvoteBtn.disabled = true;
+
+            fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'vote_type': voteType })
+            })
+            .then(response => {
+                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                    return Promise.reject(new Error('auth'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'ok') {
+                    const scoreSpan = document.querySelector(`.vote-score[data-review-id="${reviewId}"]`);
+                    scoreSpan.textContent = data.new_score;
+
+                    upvoteBtn.classList.toggle('btn-success', data.user_vote == 1);
+                    upvoteBtn.classList.toggle('btn-outline-success', data.user_vote != 1);
+                    downvoteBtn.classList.toggle('btn-danger', data.user_vote == -1);
+                    downvoteBtn.classList.toggle('btn-outline-danger', data.user_vote != -1);
+                }
+            })
+            .catch(error => console.error('Error submitting vote:', error))
+            .finally(() => {
+                upvoteBtn.disabled = false;
+                downvoteBtn.disabled = false;
+            });
+        }
+    });
+
+    // Bootstrap modal helpers: autofocus textarea when opened, clear alerts when closed
+    document.addEventListener('shown.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (!modal) return;
+        const ta = modal.querySelector('textarea');
+        if (ta) ta.focus();
+    });
+
+    // Ensure the modal is appended to body before Bootstrap opens it
+    document.addEventListener('show.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (modal && modal.parentNode !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
+
+    document.addEventListener('hidden.bs.modal', function(evt) {
+        const modal = evt.target;
+        if (!modal) return;
+        const alert = modal.querySelector('[id^="report-alert-"]');
+        if (alert) alert.innerHTML = '';
+        const form = modal.querySelector('form.report-form');
+        if (form) form.reset();
+    });
+
+    // Fallback: if Bootstrap JS is not loaded, provide simple show/hide behavior
+    document.body.addEventListener('click', function(e) {
+        const rb = e.target.closest('.report-btn');
+        if (!rb) return;
+        const reviewId = rb.dataset.reviewId;
+        const modalEl = document.getElementById(`reportModal-${reviewId}`);
+        if (!modalEl) return;
+        // If bootstrap is available it will handle the popup via data-bs attributes
+        if (typeof bootstrap === 'undefined') {
+            e.preventDefault();
+            // ensure modal is a direct child of body so fixed position behaves correctly
+            if (modalEl.parentNode !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            // show modal fallback
+            modalEl.style.display = 'block';
+            modalEl.classList.add('show');
+            modalEl.removeAttribute('aria-hidden');
+            modalEl.setAttribute('aria-modal', 'true');
+            // add backdrop if not present
+            if (!document.getElementById('_fallback_backdrop')) {
+                const bd = document.createElement('div');
+                bd.id = '_fallback_backdrop';
+                bd.className = 'modal-backdrop fade show';
+                document.body.appendChild(bd);
+            }
+            // autofocus textarea
+            const ta = modalEl.querySelector('textarea');
+            if (ta) ta.focus();
+        }
+    });
+
+    // Also ensure modal is hidden after successful submit even without bootstrap
+
+    // Fallback: close modal when clicking an element that would dismiss it (Cancel button / close icon)
+    document.body.addEventListener('click', function(e) {
+        const dismissBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close');
+        if (!dismissBtn) return;
+        if (typeof bootstrap !== 'undefined') return; // Bootstrap handles this normally
+
+        // find closest modal ancestor
+        const modalEl = e.target.closest('.modal');
+        if (!modalEl) return;
+        e.preventDefault();
+        modalEl.style.display = 'none';
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.removeAttribute('aria-modal');
+        const bd = document.getElementById('_fallback_backdrop');
+        if (bd) bd.remove();
+    });
+}
+</script>

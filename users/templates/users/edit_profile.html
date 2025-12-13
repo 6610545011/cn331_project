@@ -1,0 +1,157 @@
+{% extends "core/template.html" %}
+{% load static %}
+
+{% block title %}Edit Profile - Thammasat Study Plan{% endblock title %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'review/css/review_form.css' %}">
+<style>
+.profile-edit-container {
+    display: grid;
+    gap: 20px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+.profile-edit-card {
+    background: #f6f4f2;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+}
+.profile-edit-card h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #c41e3a;
+    font-weight: 800;
+    text-align: center;
+    padding: 4px 0 10px;
+}
+.profile-edit-card .helper-text {
+    color: #777;
+    font-size: 0.95rem;
+    text-align: center;
+}
+.preview-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.preview-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 3px solid #fff;
+    background: #f6f6f6;
+}
+#{{ form.imgurl.id_for_label }} {
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #e4e4e4;
+}
+
+/* ⭐ ปุ่มอยู่ในระนาบเดียวกัน + ขนาดเท่ากัน */
+.inline-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.inline-actions .action-btn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 52px;
+    padding: 0 !important;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+}
+.subtle-note {
+    color: #666;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<main class="content-area">
+    <div class="review-form-container">
+        <h1>EDIT PROFILE</h1>
+
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="profile-edit-container">
+
+                <div class="profile-edit-card">
+                    <h2>Profile image</h2>
+                    <p class="helper-text">Use a direct image URL. Square images look best.</p>
+
+                    <div class="preview-wrapper mt-3">
+                        <img src="{{ user.imgurl|default:'https://via.placeholder.com/280x280?text=Profile' }}" 
+                             alt="Current profile image" 
+                             class="preview-avatar" 
+                             id="avatarPreview">
+
+                        <div style="flex:1; min-width: 220px;">
+                            <label for="{{ form.imgurl.id_for_label }}" class="form-label">{{ form.imgurl.label }}</label>
+                            {{ form.imgurl }}
+                            {% if form.imgurl.errors %}
+                                <div class="invalid-feedback d-block">{{ form.imgurl.errors }}</div>
+                            {% endif %}
+                            <div class="helper-text mt-2">Example: https://example.com/avatar.jpg</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="subtle-note" style="text-align: center; margin: 10px 0 12px;">
+                    Changes apply immediately after saving.
+                </p>
+
+                <!-- ⭐ ปุ่มทั้งสองอยู่ในระดับเดียวกัน -->
+                <div class="inline-actions">
+                    <a href="{% url 'users:profile' %}" 
+                       class="action-btn"
+                       style="border: 2px solid #ff8c00; color: #ff8c00;">
+                       Back To Profile
+                    </a>
+
+                    <button type="submit" 
+                            class="action-btn"
+                            style="background: #ff8c00; color: white; border: none;">
+                        Save Image
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('{{ form.imgurl.id_for_label }}');
+    const preview = document.getElementById('avatarPreview');
+    if (input && preview) {
+        input.addEventListener('input', () => {
+            const url = input.value.trim();
+            if (url) preview.src = url;
+        });
+    }
+});
+</script>
+{% endblock extra_scripts %}

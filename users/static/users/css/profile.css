@@ -1,0 +1,244 @@
+/* --- Color Palette --- */
+:root {
+    --bg-purple: #4a0e6c;
+    --content-purple: #3a0b56;
+    --header-yellow: #ffc700;
+    --accent-pink: #e54f6d;
+    --text-white: #ffffff;
+    --text-light-gray: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --card-border: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Main Container --- */
+.profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* จัดทุกอย่างให้อยู่ตรงกลาง */
+}
+
+/* --- Profile Header --- */
+.profile-header {
+    text-align: center;
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.profile-picture-wrapper {
+    margin-bottom: 15px;
+}
+
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--header-yellow);
+    object-fit: cover;
+    background-color: var(--content-purple);
+}
+
+.profile-picture-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--card-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--content-purple);
+    color: var(--text-muted);
+}
+
+.profile-picture-placeholder .fas {
+    font-size: 50px;
+}
+
+.profile-username {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-white);
+}
+
+.profile-email {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 25px;
+}
+
+.edit-profile-btn {
+    background-color: transparent;
+    border: 2px solid var(--accent-pink);
+    color: var(--accent-pink);
+    padding: 10px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.edit-profile-btn:hover {
+    background-color: var(--accent-pink);
+    color: var(--text-white);
+}
+.edit-profile-btn .fas {
+    margin-right: 8px;
+}
+
+/* --- Tabs Styling --- */
+.profile-tabs {
+    margin-bottom: 30px;
+}
+
+.tabs-wrapper {
+    display: flex;
+    gap: 30px;
+}
+
+.profile-tab-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-family: inherit;
+    font-weight: 600;
+    padding: 10px 0;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.profile-tab-btn:hover {
+    color: var(--text-white);
+}
+.profile-tab-btn.active {
+    color: var(--text-white);
+    border-bottom-color: var(--header-yellow);
+}
+.profile-tab-btn .badge {
+    background-color: var(--content-purple);
+    color: var(--text-muted);
+    border-radius: 10px;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    margin-left: 5px;
+}
+.profile-tab-btn.active .badge {
+    background-color: var(--header-yellow);
+    color: var(--bg-purple);
+}
+
+/* --- Tab Content & Visibility Control --- */
+.tab-content-wrapper {
+    width: 100%;
+}
+.profile-tab-pane {
+    display: none;
+}
+.profile-tab-pane.active {
+    display: block;
+}
+
+/* --- Empty State & Review Card Styling --- */
+.empty-state, .review-card {
+    background-color: var(--content-purple);
+    border-radius: 15px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 30px;
+}
+.empty-state .empty-icon {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+.empty-state h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-white);
+}
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+.action-btn.primary {
+    background-color: var(--accent-pink);
+    color: var(--text-white);
+    padding: 14px 40px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+}
+.action-btn.primary:hover {
+    transform: scale(1.05);
+}
+
+.review-card {
+    margin-bottom: 20px;
+    padding: 25px;
+    color: var(--text-light-gray);
+}
+.review-card h3 a {
+    color: var(--text-white);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.review-card h3 a:hover {
+    color: var(--header-yellow);
+}
+
+/* --- Course Bookmark Card --- */
+.course-bookmark-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.course-bookmark-card {
+    background-color: var(--content-purple);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.course-bookmark-card:hover {
+    border-color: var(--header-yellow);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.course-bookmark-card h4 {
+    color: var(--text-white);
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.course-bookmark-link:hover .course-bookmark-card h4 {
+    color: var(--header-yellow);
+}
+
+.course-description {
+    color: var(--text-light-gray);
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.course-bookmark-card p {
+    color: var(--text-light-gray);
+    margin: 8px 0;
+}

@@ -1,0 +1,658 @@
+/* Styles for review blocks used across search, profile, course/prof pages */
+.review-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(20,20,20,0.03);
+    margin-bottom: 14px;
+    position: relative;
+    z-index: auto; /* keep review cards in normal flow so modals/backdrops can overlay them */
+}
+
+.review-head-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#c41e3a,#ff8c00);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.review-avatar img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+}
+
+.review-card .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.review-card .review-header h4 {
+    margin: 0;
+    font-size: 1.06rem;
+    color: #222;
+    line-height: 1.2;
+}
+
+.review-rating {
+    color: #d97706;
+    font-weight: 600;
+    margin: 6px 0;
+}
+
+.review-tags {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 4px 0;
+}
+
+.review-tags strong {
+    color: #333;
+}
+
+.review-stars {
+    margin-left: 8px;
+    display: inline-block;
+}
+.review-stars .fa-star {
+    color: #f59e0b;
+    margin-right: 2px;
+}
+.review-stars .far {
+    color: #d1d5db;
+}
+
+/* Ensure stars are visible on dark profile background (override) */
+.profile-container .review-stars .fa-star,
+.profile-tab-pane .review-stars .fa-star {
+    color: #ffd166;
+}
+.profile-container .review-stars .far,
+.profile-tab-pane .review-stars .far {
+    color: rgba(255,255,255,0.35);
+}
+
+.review-rating .star {
+    color: #f59e0b;
+    margin-left: 6px;
+}
+
+.review-card p {
+    margin: 8px 0;
+    color: #333;
+    line-height: 1.45;
+}
+
+.review-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: #666;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.review-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   NEW DESIGN — TOP RIGHT BUTTONS (Bookmark + Report)
+   ============================================================ */
+.btn-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Icon-only buttons */
+.icon-btn {
+    background: none !important;
+    border: none !important;
+    color: #c41e3a !important;
+    font-size: 30px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 4px !important;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.icon-btn i {
+    margin: 0 !important;
+}
+
+.icon-btn:hover {
+    transform: scale(1.12);
+}
+
+/* Active → darker red */
+.bookmark-btn.active,
+.report-btn.active {
+    color: #a5152f !important;
+}
+
+/* Bookmark button: icon-only with border (outline) when not active,
+   and filled when active */
+.bookmark-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid #c41e3a;
+    background: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.bookmark-btn i {
+    color: #c41e3a !important;
+    font-size: 20px;
+}
+.bookmark-btn:hover { transform: scale(1.06); }
+.bookmark-btn.active {
+    background: #c41e3a;
+    color: white !important;
+    border-color: #c41e3a;
+}
+.bookmark-btn.active i { color: white !important; }
+
+/* Report button: similar icon-only style but uses the same color
+   and will show active state after reporting */
+.report-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.08);
+    background: transparent;
+    color: #333;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.report-btn i {
+    color: inherit !important;
+    font-size: 20px;
+}
+.report-btn:hover { transform: scale(1.06); }
+.report-btn.active {
+    background: #a5152f;
+    color: white !important;
+    border-color: #a5152f;
+}
+.report-btn.active i { color: white !important; }
+
+/* ============================================================
+   NEW DESIGN — VOTE BUTTONS
+   ============================================================ */
+.review-actions {
+    margin-left: auto;
+}
+
+.vote-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vote-btn {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 32px !important;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    color: #c41e3a !important;
+}
+
+.vote-btn:hover {
+    transform: scale(1.15);
+}
+
+.vote-btn.btn-success,
+.vote-btn.btn-danger {
+    color: #a5152f !important;
+}
+
+.vote-score {
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+    color: #c41e3a;
+}
+
+/* ======================== */
+@media (max-width: 600px) {
+    .review-card { padding: 12px; }
+    .review-header h4 { font-size: 1rem; }
+    .review-meta { font-size: 0.85rem; }
+}
+
+/* Profile-specific */
+.profile-container .review-card,
+.profile-tab-pane .review-card {
+    color: #000000;
+    background: #ffffff;
+    border-color: #ececec;
+}
+
+.profile-container .review-card p,
+.profile-tab-pane .review-card p,
+.profile-container .review-card .review-meta,
+.profile-tab-pane .review-card .review-meta,
+.profile-container .review-card .review-header h4,
+.profile-tab-pane .review-card .review-header h4,
+.profile-container .review-card .review-rating,
+.profile-tab-pane .review-card .review-rating,
+.profile-container .review-card .review-tags,
+.profile-tab-pane .review-card .review-tags {
+    color: #333333;
+}
+
+.profile-container .review-card .review-tags strong,
+.profile-tab-pane .review-card .review-tags strong {
+    color: #333333;
+}
+
+/* Modal textarea */
+.report-form textarea {
+    min-height: 120px;
+}
+
+/* Report modal tweaks */
+.report-modal .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    background: #ffffff; /* remove transparency */
+    color: #1f2937; /* dark text */
+    border: none;
+}
+
+/* Visual polish for report modal - purely cosmetic */
+.report-modal .modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    font-family: 'Kanit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, opacity 180ms ease;
+    transform: translateY(-8px);
+    opacity: 0;
+}
+.report-modal.show .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.report-modal .modal-header {
+    padding: 18px 22px;
+    background: linear-gradient(90deg, #ffb045 0%, #e84b5a 100%);
+    color: #fff;
+    border-bottom: none;
+}
+.report-modal .modal-header .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+}
+.report-modal .modal-header .modal-title i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(232,75,90,0.08);
+}
+
+.report-modal .modal-body {
+    padding: 22px 24px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+}
+.report-modal .report-success {
+    display: none;
+}
+
+.report-modal .report-success.show {
+    display: flex;
+}
+
+.report-modal .form-help {
+    font-size: 0.87rem;
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+.report-modal .char-counter {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 6px;
+}
+
+.report-textarea {
+    width: 100%;
+    min-height: 140px;
+    border: 1px solid #e6e9ee;
+    padding: 14px;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 1rem;
+    line-height: 1.45;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.report-textarea:focus {
+    outline: none;
+    border-color: #f97316;
+    box-shadow: 0 6px 18px rgba(249,115,22,0.08);
+}
+
+.report-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    background: transparent;
+}
+.report-modal .btn.btn-danger {
+    background: linear-gradient(90deg, #ff8c00, #e84b5a);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+.report-modal .btn.btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+.report-modal .btn.btn-danger:hover { transform: translateY(-1px); }
+
+/* Backdrop styling when fallback backdrop is used */
+#_fallback_backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 9998;
+    backdrop-filter: blur(4px) saturate(120%);
+}
+.report-modal .modal-footer .btn-danger {
+    background: linear-gradient(90deg, #c41e3a, #a5152f);
+    border: none;
+}
+.report-modal .modal-header .btn-close {
+    filter: invert(0.05) brightness(0.95);
+}
+
+/* Fallback when bootstrap JS/CSS is not present: center the modal and add backdrop */
+.report-modal.show {
+    display: block;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0 !important;
+    max-width: 90%;
+}
+.report-modal .modal-dialog {
+    max-width: 720px;
+    margin: 0 auto;
+}
+.report-modal .modal-dialog.modal-dialog-centered {
+    max-width: 680px;
+}
+#_fallback_backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 9998;
+    backdrop-filter: blur(3px);
+}
+/* Hide Bootstrap's transparent backdrop if present and use darker overlay */
+.modal-backdrop.fade.show {
+    background-color: rgba(0,0,0,0.6) !important;
+    backdrop-filter: blur(2px);
+}
+
+/* ============================================================
+   HARD RESET
+   ============================================================ */
+.review-card .btn,
+.review-card button,
+.review-card .vote-btn,
+.review-card .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 2000; /* above sidebar overlay (1500) but below modal/backdrop (9999+) */
+}
+
+/* Ensure forms within review-card allow pointer events */
+.review-card form,
+.review-card .btn-group,
+.review-card .review-actions {
+    pointer-events: auto;
+    position: relative;
+    z-index: 2000;
+}
+
+/* ============================================================
+   TOP RIGHT — Bookmark & Report (Final Override)
+   ============================================================ */
+
+/* ★ Bookmark Button Override (Final) */
+.bookmark-btn i {
+    font-size: 24px;
+    transition: color 0.15s ease;
+}
+
+/* ไม่กด → icon แบบ regular */
+.bookmark-btn:not(.active) i {
+    color: #7b7b7b !important;
+}
+
+/* กดแล้ว → icon แบบ solid และแดงเข้ม */
+.bookmark-btn.active i {
+    color: #a5152f !important;
+}
+
+/* hover */
+.bookmark-btn:hover i {
+    opacity: 0.75;
+}
+
+/* keep spacing */
+.review-card .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* ============================================================
+   BOTTOM RIGHT — LIKE / DISLIKE (unchanged)
+   ============================================================ */
+
+.vote-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vote-btn {
+    font-size: 32px !important;
+    color: #c41e3a !important;
+    padding: 4px;
+    transition: transform 0.15s ease;
+}
+
+.vote-btn:hover {
+    transform: scale(1.18);
+}
+
+.vote-btn.active {
+    color: #a5152f !important;
+}
+
+.vote-score {
+    font-size: 17px;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+    color: #c41e3a;
+}
+
+/* ล้าง pseudo-element ของ Bootstrap ที่ทำให้ขึ้นคำว่า "Bookmarked" */
+.bookmark-btn::after,
+.bookmark-btn.btn-primary::after,
+.bookmark-btn.btn-outline-primary::after {
+    content: "" !important;
+    display: none !important;
+}
+
+/* ไอคอน Bookmark */
+.bookmark-btn i {
+    font-size: 28px;
+    color: #c41e3a;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.bookmark-btn:hover i {
+    transform: scale(1.15);
+}
+
+/* เมื่อ Bookmark แล้ว -> สีเข้มขึ้น */
+.bookmark-btn.active i {
+    color: #a5152f !important;
+}
+
+/* Smooth icon change and small pulse when toggling bookmark */
+.bookmark-btn .bookmark-icon {
+    transition: transform 0.12s cubic-bezier(.2,.6,.2,1), color 0.12s ease, opacity 0.12s ease;
+}
+.bookmark-btn.pulse {
+    transform: scale(1.06);
+}
+
+/* Report modal aesthetic improvements */
+.report-modal .modal-header {
+    padding: 18px 20px;
+    border-bottom: none;
+    background: linear-gradient(90deg, #ff8c00, #c41e3a);
+    color: #fff;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 6px 18px rgba(196, 24, 48, 0.08);
+}
+.report-modal .modal-header .modal-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.report-modal .modal-body {
+    padding: 20px 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.0));
+}
+.report-modal .modal-footer {
+    padding: 14px 20px;
+    border-top: none;
+    background: transparent;
+}
+.report-modal .modal-content {
+    overflow: hidden;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.report-modal.show .modal-content {
+    box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+}
+.report-modal.show .modal-content {
+    transform: translateY(0) scale(1);
+}
+.report-modal .modal-content:not(.show) {
+    transform: translateY(-8px) scale(.995);
+}
+
+/* success indicator inside modal */
+.report-modal .report-success {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16,185,129,0.12);
+    color: #10b981;
+    padding: 12px 16px;
+    border-radius: 8px;
+}
+.report-modal .report-success.show {
+    display: flex;
+}
+
+/* Textarea & form controls */
+.report-form textarea {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    padding: 14px;
+    border-radius: 8px;
+    resize: vertical;
+    min-height: 140px;
+    box-shadow: 0 6px 16px rgba(16,24,40,0.04);
+}
+.report-form label.form-label {
+    font-weight: 600;
+    color: #374151;
+}
+/* Buttons */
+.report-modal .modal-footer .btn.btn-danger {
+    background: linear-gradient(90deg, #ff8c00, #c41e3a);
+    border: none;
+    box-shadow: 0 6px 18px rgba(196, 24, 48, 0.15);
+}
+.report-modal .modal-footer .btn.btn-secondary {
+    border: 1px solid #e5e7eb;
+}
+.report-modal .btn-close { background: none; border: none; }
+
+/* Optional icon style in header */
+.report-modal .modal-header .fas.fa-flag {
+    background: rgba(255,255,255,0.12);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/*Links*/
+a {
+        color: #FF8C00;
+}
+a:visited {
+        color: #8B0000;
+}

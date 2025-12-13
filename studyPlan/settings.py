@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'core',
     'review',
+    'stats',
     'users',
     'planner',
 ]
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.DailyActiveUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -125,3 +127,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = 'users.User'
+
+# Redirect login-required decorators to the users app login view
+LOGIN_URL = '/users/login/'

@@ -1,0 +1,396 @@
+{% extends 'core/template.html' %}
+{% load static %}
+
+{% block title %}My Profile - {{ user.username }}{% endblock %}
+
+{% block extra_head %}
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #c41e3a; /* Red Theme */
+        --secondary-color: #ff8c00;
+        --secondary-hover: #ff7600;
+        --bg-color: #f0f7ff;
+        --card-bg: #ffffff;
+        --text-color: #333;
+        --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        --radius: 12px;
+    }
+
+    body { background-color: var(--bg-color); color: var(--text-color); }
+    
+    .profile-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    
+    /* Header */
+    .profile-header { 
+        background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); 
+        padding: 40px; text-align: center; margin-bottom: 30px; position: relative; overflow: hidden; 
+    }
+    .profile-header::before { 
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100px; 
+        background: linear-gradient(135deg, var(--primary-color), #a01830); z-index: 0; 
+    }
+    .profile-picture-wrapper { 
+        position: relative; z-index: 1; width: 120px; height: 120px; margin: 0 auto 20px; 
+        border-radius: 50%; background: white; padding: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+    }
+    .profile-picture, .profile-picture-placeholder { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .profile-picture-placeholder { display: flex; align-items: center; justify-content: center; background: #eee; color: #aaa; font-size: 50px; }
+    .profile-info { position: relative; z-index: 1; }
+    .profile-username { color: var(--primary-color); font-size: 28px; margin-bottom: 5px; font-weight: 700; }
+    
+    .edit-profile-btn { 
+        display: inline-block; padding: 10px 24px; 
+        background: linear-gradient(135deg, var(--secondary-color), var(--secondary-hover)); 
+        color: white; border-radius: 30px; text-decoration: none; font-weight: 600; transition: transform 0.2s; 
+    }
+    .edit-profile-btn:hover { transform: translateY(-2px); color: white; box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3); }
+
+    /* Tabs */
+    .profile-tabs { 
+        display: flex; justify-content: center; margin-bottom: 30px; background: var(--card-bg); 
+        padding: 10px; border-radius: var(--radius); box-shadow: var(--shadow); 
+    }
+    .profile-tab-btn { 
+        background: none; border: none; padding: 12px 24px; font-size: 16px; font-weight: 600; 
+        color: #666; cursor: pointer; border-radius: 8px; transition: all 0.3s; margin: 0 5px; 
+    }
+    .profile-tab-btn.active { background-color: rgba(255, 140, 0, 0.1); color: var(--secondary-color); }
+    .badge { background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
+
+    /* Cards */
+    .result-list { list-style: none; padding: 0; }
+    .result-item { margin-bottom: 20px; }
+    .info-card { 
+        background: var(--card-bg); border-radius: var(--radius); padding: 20px; 
+        box-shadow: var(--shadow); border-left: 4px solid var(--secondary-color); transition: transform 0.2s; 
+        position: relative; /* For absolute positioning of bookmark button */
+    }
+    .info-card:hover { transform: translateY(-3px); }
+    
+    .section-title { 
+        font-size: 20px; color: var(--text-color); margin: 30px 0 15px; 
+        border-bottom: 2px solid #eee; padding-bottom: 10px; 
+    }
+    
+    .view-course-btn h3 { color: var(--primary-color); font-size: 18px; margin-bottom: 10px; }
+    .view-course-btn { text-decoration: none; }
+    
+    .empty-state { 
+        text-align: center; padding: 60px 20px; background: var(--card-bg); 
+        border-radius: var(--radius); box-shadow: var(--shadow); color: #666; 
+    }
+    .empty-icon { font-size: 48px; color: #ddd; margin-bottom: 20px; }
+    
+    /* Animations */
+    .profile-tab-pane { display: none; animation: fadeIn 0.3s ease; }
+    .profile-tab-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    html { scroll-behavior: smooth; }
+
+    /* =========================================
+       NEW BOOKMARK BUTTON STYLES (Fixed Colors)
+       ========================================= */
+    .course-bookmark-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+    }
+
+    .course-bookmark-btn {
+        /* Resetting all potential button styles */
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0; 
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        height: auto;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* SVG Styling - Explicit Colors */
+    .bookmark-icon {
+        width: 28px;
+        height: 28px;
+        stroke-width: 2px;
+        transition: fill 0.2s ease, stroke 0.2s ease;
+        display: block;
+        
+        /* Default State (Inactive) */
+        stroke: #d1d5db !important; /* Gray Outline */
+        fill: transparent !important;
+    }
+
+    /* Hover State (Inactive) */
+    .course-bookmark-btn:hover .bookmark-icon {
+        stroke: #9ca3af !important; /* Darker Gray Outline */
+        fill: transparent !important;
+    }
+
+    /* Bookmarked State (Active) */
+    .course-bookmark-btn.bookmarked .bookmark-icon {
+        stroke: var(--primary-color) !important; /* Red Outline */
+        fill: var(--primary-color) !important;   /* Red Fill */
+    }
+
+    /* Bookmarked Hover State */
+    .course-bookmark-btn.bookmarked:hover .bookmark-icon {
+        stroke: #a5152f !important; /* Darker Red Outline */
+        fill: #a5152f !important;   /* Darker Red Fill */
+    }
+
+    /* Remove any focus rings from the button itself */
+    .course-bookmark-btn:focus,
+    .course-bookmark-btn:active,
+    .course-bookmark-btn:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    
+    <!-- Header -->
+    <header class="profile-header">
+        <div class="profile-picture-wrapper">
+            {% if user.imgurl %}
+                <img src="{{ user.imgurl }}" alt="Profile Picture" class="profile-picture">
+            {% else %}
+                <div class="profile-picture-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-username">{{ user.username }}</h1>
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+            <a href="{% url 'users:edit_profile' %}" class="edit-profile-btn"><i class="fas fa-pencil-alt"></i> Edit Profile</a>
+        </div>
+    </header>
+
+    <!-- Tabs Navigation -->
+    <nav class="profile-tabs">
+        <div class="tabs-wrapper">
+            <button class="profile-tab-btn active" data-target="#reviews-pane">
+                <i class="fas fa-feather-alt"></i> My Reviews <span class="badge">{{ user_reviews.count }}</span>
+            </button>
+            <button class="profile-tab-btn" data-target="#bookmarks-pane">
+                <i class="fas fa-bookmark"></i> My Bookmarks <span class="badge">{{ bookmarked_reviews.count|add:bookmarked_courses.count }}</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Tabs Content -->
+    <div class="tab-content-wrapper">
+        <!-- My Reviews Tab Pane -->
+        <div class="profile-tab-pane active" id="reviews-pane">
+            {% if user_reviews %}
+                <ul class="result-list">
+                {% for review in user_reviews %}
+                    <li class="result-item">
+                        <div class="info-card" style="border-left: 4px solid var(--primary-color);">
+                            {% include "review/includes/review_block.html" with review=review %}
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comment-slash empty-icon"></i>
+                    <h2>No Reviews Yet</h2>
+                    <p>You haven't written any reviews. Share your experience!</p>
+                    <a href="#" class="action-btn primary">Write Your First Review</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- My Bookmarks Tab Pane -->
+        <div class="profile-tab-pane" id="bookmarks-pane">
+            {% if bookmarked_reviews or bookmarked_courses %}
+                <ul class="result-list">
+                {% if bookmarked_courses %}
+                <h2 class="section-title"><i class="fas fa-book"></i> Bookmarked Courses</h2>
+                {% for bookmark in bookmarked_courses %}
+                    <li class="result-item">
+                        <div class="info-card">
+                            <!-- COURSE BOOKMARK BUTTON -->
+                            <div class="course-bookmark-container">
+                                <button class="course-bookmark-btn bookmarked" 
+                                        data-course-id="{{ bookmark.course.id }}" 
+                                        data-url="{% url 'core:toggle_course_bookmark' bookmark.course.id %}"
+                                        aria-label="Toggle course bookmark">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bookmark-icon">
+                                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- END BUTTON -->
+
+                            <a href="{% url 'core:course_detail' bookmark.course.course_code %}" class="view-course-btn">
+                                <h3 > {{ bookmark.course.course_code }} - {{ bookmark.course.course_name }}</h3>
+                            </a>
+                            <p class="course-description">{{ bookmark.course.description|truncatechars:150 }}</p>
+                            <p>
+                                <strong>Credit:</strong> {{ bookmark.course.credit }}
+                            </p>
+                        </div>
+                    </li>
+                {% endfor %}
+                {% endif %}
+                
+                {% if bookmarked_reviews %}
+                <h2 class="section-title"><i class="fas fa-star"></i> Bookmarked Reviews</h2>
+                {% for bookmark in bookmarked_reviews %}
+                    <li class="result-item">
+                        <div class="info-card" style="border-left: 4px solid var(--primary-color);">
+                            {% include "review/includes/review_block.html" with review=bookmark.review %}
+                        </div>
+                    </li>
+                {% endfor %}
+                {% endif %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-bookmark empty-icon"></i>
+                    <h2>No Bookmarks</h2>
+                    <p>You haven't bookmarked any reviews or courses yet. Start exploring!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Custom JavaScript for Tabs -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.profile-tab-btn');
+    const panes = document.querySelectorAll('.profile-tab-pane');
+
+    // Function to activate tab
+    function activateTab(targetPane) {
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        // Find the tab that corresponds to this pane
+        const targetId = targetPane.id;
+        let correspondingTab = null;
+        
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-target') === '#' + targetId) {
+                correspondingTab = tab;
+            }
+        });
+        
+        if (correspondingTab) {
+            correspondingTab.classList.add('active');
+        }
+        targetPane.classList.add('active');
+    }
+
+    // Handle tab button clicks
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetPane = document.querySelector(tab.getAttribute('data-target'));
+            if (targetPane) {
+                activateTab(targetPane);
+            }
+        });
+    });
+
+    // Handle anchor link on page load
+    if (window.location.hash === '#bookmarks') {
+        const bookmarksPane = document.getElementById('bookmarks-pane');
+        if (bookmarksPane) {
+            activateTab(bookmarksPane);
+        }
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ==========================================
+// Course Bookmark Script (Isolated Scope)
+// ==========================================
+(() => {
+    if (window.courseBookmarkInitialized) return;
+    window.courseBookmarkInitialized = true;
+
+    function getLocalCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.course-bookmark-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        const url = btn.dataset.url;
+        const csrfToken = getLocalCookie('csrftoken');
+
+        // Optimistic UI update
+        btn.classList.toggle('bookmarked');
+        
+        // Animation
+        btn.style.transform = "scale(0.9)";
+        setTimeout(() => btn.style.transform = "", 150);
+
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject('auth');
+            }
+            if (!response.ok) return Promise.reject('network'); 
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'ok') {
+                btn.classList.toggle('bookmarked');
+            }
+        })
+        .catch(error => {
+            if (error !== 'auth') {
+                console.error('Error toggling course bookmark:', error);
+                btn.classList.toggle('bookmarked');
+            }
+        });
+    });
+})();
+</script>
+{% include "review/includes/review_actions_js.html" %}
+{% endblock %}
