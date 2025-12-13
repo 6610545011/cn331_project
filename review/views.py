@@ -17,7 +17,7 @@ from django.views.decorators.http import require_POST
 from core.models import Course, Prof, Section
 from stats.models import CourseReviewStat
 from datetime import date
-from django.db.models import F
+from django.db.models import F, Q
 from .forms import ReviewForm, ReportForm, ReviewUpvoteForm
 from .models import Review, Bookmark, Report, ReviewUpvote
 

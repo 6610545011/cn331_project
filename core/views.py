@@ -13,7 +13,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from itertools import chain
 from review.models import Bookmark, Review
-from django.db import IntegrityError
 
 # ==================================
 #  Simple Views
@@ -21,9 +20,6 @@ from django.db import IntegrityError
 
 def homepage_view(request):
     # Show the first page of latest reviews on the homepage
-    from review.models import Review
-    # Annotate whether the current user has bookmarked the review so the UI can show filled icons
-    from review.models import Bookmark
     user_bookmark_subquery = Bookmark.objects.none()
     if request.user.is_authenticated:
         user_bookmark_subquery = Bookmark.objects.filter(user=request.user, review=OuterRef('pk'))
@@ -34,10 +30,7 @@ def homepage_view(request):
         user_vote=Coalesce(Sum('votes__vote_type', filter=Q(votes__user_id=request.user.id)), 0)
     ).select_related('user', 'course', 'prof').order_by('-date_created')
     paginator = Paginator(reviews_qs, 10)
-    try:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+    page_obj = paginator.page(1)
 
     context = {
         'reviews': page_obj.object_list,
@@ -52,7 +45,6 @@ def latest_reviews_api(request):
     Paginated AJAX endpoint returning rendered review blocks.
     Query params: page (1-based), page_size
     """
-    from review.models import Review, Bookmark
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 10))
 
@@ -134,17 +126,13 @@ def search(request):
         sections = Section.objects.select_related('course').prefetch_related('teachers').all()
         reviews = reviews_queryset.all()
     # --- Analytics: increment course search stats when courses are present in results
-    try:
-        if query and courses.exists():
-            today = date.today()
-            # Only increment top N matched course stats to reduce write amplification (e.g., top 5)
-            for course in courses[:5]:
-                stat, created = CourseSearchStat.objects.get_or_create(course=course, date=today, defaults={'count': 1})
-                if not created:
-                    CourseSearchStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
-    except Exception:
-        # Don't let analytics failures break the main search flow
-        pass
+    if query and courses.exists():
+        today = date.today()
+        # Only increment top N matched course stats to reduce write amplification (e.g., top 5)
+        for course in courses[:5]:
+            stat, created = CourseSearchStat.objects.get_or_create(course=course, date=today, defaults={'count': 1})
+            if not created:
+                CourseSearchStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
     
     # --- จัดเรียงข้อมูล ---
     if sort_by == 'alphabetical':
@@ -196,7 +184,7 @@ def prof_detail(request, pk):
 
 
 def course_detail(request, course_code):
-    course = Course.objects.get(course_code__iexact=course_code)
+    course = get_object_or_404(Course, course_code__iexact=course_code)
     
     # Check if the course is bookmarked by the current user (review=None)
     course_is_bookmarked = False
@@ -230,31 +218,16 @@ def course_detail(request, course_code):
     ).distinct()
 
     # --- Analytics: increment view count ---
-    try:
-        today = date.today()
-        stat, created = CourseViewStat.objects.get_or_create(course=course, date=today, defaults={'count': 1})
-        if not created:
-            CourseViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
-    except Exception:
-        pass
+    today = date.today()
+    stat, created = CourseViewStat.objects.get_or_create(course=course, date=today, defaults={'count': 1})
+    if not created:
+        CourseViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
 
     return render(request, 'core/course_detail.html', {
         'course': course,
         'reviews': reviews,
         'course_is_bookmarked': course_is_bookmarked
     })
-
-    # Attempt to increment the CourseViewStat asynchronously is preferred;
-    # for now we increment directly but swallow exceptions to avoid breaking the page.
-    try:
-        today = date.today()
-        stat, created = CourseViewStat.objects.get_or_create(course=course, date=today, defaults={'count': 1})
-        if not created:
-            CourseViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1)
-    except Exception:
-        pass
-
-    # Note: this increment moved above return to ensure it runs.
 
 
 
@@ -277,5 +250,5 @@ def toggle_course_bookmark(request, course_id):
     if not created:
         bookmark.delete()
         return JsonResponse({'status': 'ok', 'bookmarked': False})
-    
+
     return JsonResponse({'status': 'ok', 'bookmarked': True})

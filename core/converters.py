@@ -1,4 +1,3 @@
-import re
 
 class CaseInsensitiveSlugConverter:
     # Accept any non-slash characters (allows spaces, dashes, etc.)
