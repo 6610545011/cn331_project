@@ -13,6 +13,20 @@
 <div class="container mx-auto max-w-4xl px-4 py-8">
     <!-- Header Section -->
     <div class="card-review p-8 mb-8 course-header">
+        {% if user.is_authenticated %}
+        <div class="course-bookmark-container">
+            <!-- Inline styles to force remove blue outline/shadow -->
+            <button class="course-bookmark-btn {% if course_is_bookmarked %}bookmarked{% endif %}" 
+                    data-course-id="{{ course.id }}" 
+                    data-url="{% url 'core:toggle_course_bookmark' course.id %}"
+                    aria-label="Toggle course bookmark"
+                    style="outline: none !important; box-shadow: none !important; border: none !important; background: transparent !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bookmark-icon">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        {% endif %}
         <div class="flex flex-col gap-4 header-row">
             <!-- Course Info -->
             <div class="course-info">
@@ -138,11 +152,15 @@
 
 {% block extra_scripts %}
 <script>
-// Separate script for course bookmark to avoid conflicts with existing review bookmark handlers
-if (typeof window.courseBookmarkLoaded === 'undefined') {
-    window.courseBookmarkLoaded = true;
+// ==========================================
+// Course Bookmark Script (Isolated Scope)
+// ==========================================
+(function() {
+    // We use a self-executing function to avoid variable name collisions 
+    // with review_actions_js.html (like 'csrftoken' or 'getCookie')
 
-    function getCookie(name) {
+    // Local helper function for this scope only
+    function getLocalCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
@@ -156,46 +174,61 @@ if (typeof window.courseBookmarkLoaded === 'undefined') {
         }
         return cookieValue;
     }
-    const csrftoken = getCookie('csrftoken');
 
     document.body.addEventListener('click', function(e) {
-        const courseBookmarkBtn = e.target.closest('.course-bookmark-btn');
-        if (courseBookmarkBtn) {
-            e.preventDefault();
-            const url = courseBookmarkBtn.dataset.url;
+        const btn = e.target.closest('.course-bookmark-btn');
+        if (!btn) return;
 
-            fetch(url, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(response => {
-                if (response.redirected && response.url && response.url.includes('/accounts/login')) {
-                    window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
-                    return Promise.reject(new Error('auth'));
-                }
-                if (!response.ok) return Promise.reject(new Error('network')); 
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'ok') {
-                    courseBookmarkBtn.classList.toggle('bookmarked', data.bookmarked);
-                }
-            })
-            .catch(error => console.error('Error toggling course bookmark:', error));
-        }
+        e.preventDefault();
+        const url = btn.dataset.url;
+        const token = getLocalCookie('csrftoken');
+
+        // Optimistic UI update
+        btn.classList.toggle('bookmarked');
+        
+        // Animation
+        btn.style.transform = "scale(0.9)";
+        setTimeout(() => btn.style.transform = "", 150);
+
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': token,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject('auth');
+            }
+            if (!response.ok) return Promise.reject('network'); 
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'ok') {
+                // Revert if server error
+                btn.classList.toggle('bookmarked');
+            }
+        })
+        .catch(error => {
+            if (error !== 'auth') {
+                console.error('Error toggling course bookmark:', error);
+                btn.classList.toggle('bookmarked');
+            }
+        });
     });
-}
+})();
 </script>
-<script>
-// Planner variant UI scripts
-if (typeof window.plannerVariantLoaded === 'undefined') {
-    window.plannerVariantLoaded = true;
 
-    function getCookie(name) {
+<script>
+// ==========================================
+// Planner Variant Script (Isolated Scope)
+// ==========================================
+(function() {
+    // Local helper for this scope
+    function getLocalCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
@@ -209,9 +242,9 @@ if (typeof window.plannerVariantLoaded === 'undefined') {
         }
         return cookieValue;
     }
-    const csrftoken2 = getCookie('csrftoken');
+    
+    const plannerToken = getLocalCookie('csrftoken');
 
-    // populate variant select boxes
     function loadVariants() {
         fetch('{% url "planner:list_variants" %}', { credentials: 'same-origin' })
             .then(r => r.json())
@@ -219,7 +252,6 @@ if (typeof window.plannerVariantLoaded === 'undefined') {
                 if (data.ok) {
                     const selects = document.querySelectorAll('.variant-select');
                     selects.forEach(sel => {
-                        // clear existing
                         sel.innerHTML = '<option value="">Select plan...</option>';
                         data.variants.forEach(v => {
                             const opt = document.createElement('option');
@@ -234,7 +266,6 @@ if (typeof window.plannerVariantLoaded === 'undefined') {
 
     document.addEventListener('DOMContentLoaded', loadVariants);
 
-    // click handlers
     document.body.addEventListener('click', function(ev) {
         const createBtn = ev.target.closest('.create-variant-btn');
         if (createBtn) {
@@ -243,41 +274,53 @@ if (typeof window.plannerVariantLoaded === 'undefined') {
             if (!name) return;
             const form = new FormData();
             form.append('name', name);
-            fetch('{% url "planner:create_variant" %}', { method: 'POST', body: form, credentials: 'same-origin', headers: {'X-CSRFToken': csrftoken2} })
-                .then(r => r.json()).then(j => {
-                    if (j.ok) {
-                        loadVariants();
-                        alert('Created: ' + j.name);
-                    } else {
-                        alert('Error: ' + (j.error || 'unknown'));
-                    }
-                }).catch(err => alert('Network error'));
+            fetch('{% url "planner:create_variant" %}', { 
+                method: 'POST', 
+                body: form, 
+                credentials: 'same-origin', 
+                headers: {'X-CSRFToken': plannerToken} 
+            })
+            .then(r => r.json()).then(j => {
+                if (j.ok) {
+                    loadVariants();
+                    alert('Created: ' + j.name);
+                } else {
+                    alert('Error: ' + (j.error || 'unknown'));
+                }
+            }).catch(err => alert('Network error'));
         }
 
         const addBtn = ev.target.closest('.add-to-variant-btn');
         if (addBtn) {
             ev.preventDefault();
             const sectionId = addBtn.dataset.sectionId;
-            // find select in the same card
             const sel = document.querySelector('.variant-select[data-section-id="' + sectionId + '"]');
             if (!sel) return alert('Select a plan first');
             const variantId = sel.value;
             if (!variantId) return alert('Please select a plan');
             const url = '{% url "planner:variant_add_section" 0 0 %}'.replace('/0/0/', '/' + variantId + '/' + sectionId + '/');
-            fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrftoken2 } })
-                .then(r => r.json()).then(j => {
-                    if (j.ok) {
-                        alert('Added to plan' + (j.warning ? '\n' + j.warning : ''));
-                        // Optionally reload or update UI
-                        loadVariants();
-                    } else {
-                        alert('Failed: ' + JSON.stringify(j));
-                    }
-                }).catch(err => alert('Network error'));
+            fetch(url, { 
+                method: 'POST', 
+                credentials: 'same-origin', 
+                headers: { 'X-CSRFToken': plannerToken } 
+            })
+            .then(r => r.json()).then(j => {
+                if (j.ok) {
+                    alert('Added to plan' + (j.warning ? '\n' + j.warning : ''));
+                    loadVariants();
+                } else {
+                    alert('Failed: ' + JSON.stringify(j));
+                }
+            }).catch(err => alert('Network error'));
         }
-
     });
-}
+})();
 </script>
-    {% include "review/includes/review_actions_js.html" %}
+
+<!-- 
+    Include Review Actions JS.
+    This script likely defines its own global variables.
+    By isolating the scripts above, we prevent conflicts.
+-->
+{% include "review/includes/review_actions_js.html" %}
 {% endblock extra_scripts %}

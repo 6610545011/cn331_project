@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
             sql=(
                 """
                 CREATE TABLE IF NOT EXISTS core_dailyactiveuser (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
                     user_id INTEGER NOT NULL REFERENCES users_user(id) ON DELETE CASCADE,
                     UNIQUE(user_id, date)

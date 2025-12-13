@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
     :root {
-        --primary-color: #c41e3a;
+        --primary-color: #c41e3a; /* Red Theme */
         --secondary-color: #ff8c00;
         --secondary-hover: #ff7600;
         --bg-color: #f0f7ff;
@@ -65,6 +65,7 @@
     .info-card { 
         background: var(--card-bg); border-radius: var(--radius); padding: 20px; 
         box-shadow: var(--shadow); border-left: 4px solid var(--secondary-color); transition: transform 0.2s; 
+        position: relative; /* For absolute positioning of bookmark button */
     }
     .info-card:hover { transform: translateY(-3px); }
     
@@ -88,15 +89,83 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     html { scroll-behavior: smooth; }
+
+    /* =========================================
+       NEW BOOKMARK BUTTON STYLES (Fixed Colors)
+       ========================================= */
+    .course-bookmark-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+    }
+
+    .course-bookmark-btn {
+        /* Resetting all potential button styles */
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0; 
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        height: auto;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* SVG Styling - Explicit Colors */
+    .bookmark-icon {
+        width: 28px;
+        height: 28px;
+        stroke-width: 2px;
+        transition: fill 0.2s ease, stroke 0.2s ease;
+        display: block;
+        
+        /* Default State (Inactive) */
+        stroke: #d1d5db !important; /* Gray Outline */
+        fill: transparent !important;
+    }
+
+    /* Hover State (Inactive) */
+    .course-bookmark-btn:hover .bookmark-icon {
+        stroke: #9ca3af !important; /* Darker Gray Outline */
+        fill: transparent !important;
+    }
+
+    /* Bookmarked State (Active) */
+    .course-bookmark-btn.bookmarked .bookmark-icon {
+        stroke: var(--primary-color) !important; /* Red Outline */
+        fill: var(--primary-color) !important;   /* Red Fill */
+    }
+
+    /* Bookmarked Hover State */
+    .course-bookmark-btn.bookmarked:hover .bookmark-icon {
+        stroke: #a5152f !important; /* Darker Red Outline */
+        fill: #a5152f !important;   /* Darker Red Fill */
+    }
+
+    /* Remove any focus rings from the button itself */
+    .course-bookmark-btn:focus,
+    .course-bookmark-btn:active,
+    .course-bookmark-btn:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="profile-container">
     
-    <!-- ======================== -->
-    <!--  ส่วน Profile Header ที่นำกลับมา -->
-    <!-- ======================== -->
+    <!-- Header -->
     <header class="profile-header">
         <div class="profile-picture-wrapper">
             {% if user.imgurl %}
@@ -115,9 +184,7 @@
         </div>
     </header>
 
-    <!-- ======================== -->
-    <!--  ส่วน Tabs Navigation    -->
-    <!-- ======================== -->
+    <!-- Tabs Navigation -->
     <nav class="profile-tabs">
         <div class="tabs-wrapper">
             <button class="profile-tab-btn active" data-target="#reviews-pane">
@@ -129,9 +196,7 @@
         </div>
     </nav>
 
-    <!-- ======================== -->
-    <!--  ส่วน Tabs Content       -->
-    <!-- ======================== -->
+    <!-- Tabs Content -->
     <div class="tab-content-wrapper">
         <!-- My Reviews Tab Pane -->
         <div class="profile-tab-pane active" id="reviews-pane">
@@ -164,6 +229,19 @@
                 {% for bookmark in bookmarked_courses %}
                     <li class="result-item">
                         <div class="info-card">
+                            <!-- COURSE BOOKMARK BUTTON -->
+                            <div class="course-bookmark-container">
+                                <button class="course-bookmark-btn bookmarked" 
+                                        data-course-id="{{ bookmark.course.id }}" 
+                                        data-url="{% url 'core:toggle_course_bookmark' bookmark.course.id %}"
+                                        aria-label="Toggle course bookmark">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bookmark-icon">
+                                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- END BUTTON -->
+
                             <a href="{% url 'core:course_detail' bookmark.course.course_code %}" class="view-course-btn">
                                 <h3 > {{ bookmark.course.course_code }} - {{ bookmark.course.course_name }}</h3>
                             </a>
@@ -198,7 +276,7 @@
     </div>
 </div>
 
-<!-- Custom JavaScript for Tabs (เหมือนเดิม) -->
+<!-- Custom JavaScript for Tabs -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.profile-tab-btn');
@@ -242,6 +320,77 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ==========================================
+// Course Bookmark Script (Isolated Scope)
+// ==========================================
+(() => {
+    if (window.courseBookmarkInitialized) return;
+    window.courseBookmarkInitialized = true;
+
+    function getLocalCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.course-bookmark-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        const url = btn.dataset.url;
+        const csrfToken = getLocalCookie('csrftoken');
+
+        // Optimistic UI update
+        btn.classList.toggle('bookmarked');
+        
+        // Animation
+        btn.style.transform = "scale(0.9)";
+        setTimeout(() => btn.style.transform = "", 150);
+
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.redirected && response.url && response.url.includes('/accounts/login')) {
+                window.location.href = response.url + '?next=' + encodeURIComponent(location.pathname + location.search);
+                return Promise.reject('auth');
+            }
+            if (!response.ok) return Promise.reject('network'); 
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'ok') {
+                btn.classList.toggle('bookmarked');
+            }
+        })
+        .catch(error => {
+            if (error !== 'auth') {
+                console.error('Error toggling course bookmark:', error);
+                btn.classList.toggle('bookmarked');
+            }
+        });
+    });
+})();
 </script>
 {% include "review/includes/review_actions_js.html" %}
 {% endblock %}
