@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
             sql=(
                 """
                 CREATE TABLE IF NOT EXISTS core_coursesearchstat (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
                     count INTEGER NOT NULL DEFAULT 0,
                     course_id INTEGER NOT NULL REFERENCES core_course(id) ON DELETE CASCADE,
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 CREATE INDEX IF NOT EXISTS core_coursesearchstat_course_idx ON core_coursesearchstat(course_id);
 
                 CREATE TABLE IF NOT EXISTS core_courseviewstat (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
                     count INTEGER NOT NULL DEFAULT 0,
                     course_id INTEGER NOT NULL REFERENCES core_course(id) ON DELETE CASCADE,
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 CREATE INDEX IF NOT EXISTS core_courseviewstat_course_idx ON core_courseviewstat(course_id);
 
                 CREATE TABLE IF NOT EXISTS core_coursereviewstat (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
                     count INTEGER NOT NULL DEFAULT 0,
                     course_id INTEGER NOT NULL REFERENCES core_course(id) ON DELETE CASCADE,
