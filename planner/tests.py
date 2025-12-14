@@ -3,9 +3,9 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from datetime import time
 from core.models import Course, Section
-from planner.models import SectionSchedule
+from planner.models import SectionSchedule, Planner, PlanVariant
 from planner.utils import _time_to_slot_float, _time_to_slot_range
-from planner.models import Planner
+from planner.views import _pastel_color_for_key
 from django.core.exceptions import ValidationError
 
 User = get_user_model()
@@ -118,3 +118,112 @@ class PlannerViewTests(TestCase):
         resp = self.client.get(reverse('planner:search_sections'), {'q': 'CS101'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()['results']), 1)
+
+
+class PlannerViewEdgeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='edge', email='edge@example.com', password='pw')
+        self.client.login(username='edge', password='pw')
+        self.course = Course.objects.create(course_code="EDGE1", course_name="Edge", credit=1)
+        self.section = Section.objects.create(course=self.course, section_number="01")
+        SectionSchedule.objects.create(section=self.section, day_of_week=0, start_time=time(8,0), end_time=time(9,0))
+
+    def test_add_section_to_planner_conflict(self):
+        planner, _ = Planner.objects.get_or_create(user=self.user)
+        planner.sections.add(self.section)
+
+        other_course = Course.objects.create(course_code="EDGE2", course_name="Other", credit=1)
+        other_sec = Section.objects.create(course=other_course, section_number="02")
+        SectionSchedule.objects.create(section=other_sec, day_of_week=0, start_time=time(8,30), end_time=time(9,30))
+
+        resp = self.client.get(reverse('planner:add_section', args=[other_sec.id]))
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(resp.json()['ok'])
+
+    def test_add_section_to_planner_warning_low_credit(self):
+        resp = self.client.get(reverse('planner:add_section', args=[self.section.id]))
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data['ok'])
+        self.assertIn('warning', data)
+        self.assertIn('Total credits', data['warning'])
+
+    def test_remove_section_without_planner(self):
+        user = User.objects.create_user(username='noplan', email='no@plan.com', password='pw')
+        self.client.logout()
+        self.client.login(username='noplan', password='pw')
+        resp = self.client.get(reverse('planner:remove_section', args=[self.section.id]))
+        self.assertEqual(resp.status_code, 404)
+        self.assertFalse(resp.json()['ok'])
+
+    def test_add_section_schedule_errors(self):
+        self.client.logout()
+        self.client.login(username='edge', password='pw')
+
+        resp = self.client.get(reverse('planner:add_section_schedule'))
+        self.assertEqual(resp.status_code, 405)
+
+        resp = self.client.post(reverse('planner:add_section_schedule'), {'section_id': self.section.id})
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.client.post(reverse('planner:add_section_schedule'), {
+            'section_id': 9999,
+            'day': 0,
+            'start_slot': 0,
+            'span': 1
+        })
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.post(reverse('planner:add_section_schedule'), {
+            'section_id': self.section.id,
+            'day': 'x',
+            'start_slot': 'bad',
+            'span': 'y'
+        })
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.client.post(reverse('planner:add_section_schedule'), {
+            'section_id': self.section.id,
+            'day': 0,
+            'start_slot': 24,
+            'span': 1
+        })
+        self.assertEqual(resp.status_code, 400)
+
+    def test_color_generation_stable(self):
+        color = _pastel_color_for_key('demo-key')
+        self.assertTrue(color.startswith('hsl('))
+        # Deterministic: same key yields same color
+        self.assertEqual(color, _pastel_color_for_key('demo-key'))
+
+    def test_create_variant_validation(self):
+        resp = self.client.get(reverse('planner:create_variant'))
+        self.assertEqual(resp.status_code, 405)
+
+        resp = self.client.post(reverse('planner:create_variant'), {})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_save_current_variant_credit_bounds(self):
+        planner, _ = Planner.objects.get_or_create(user=self.user)
+        planner.sections.add(self.section)
+
+        resp = self.client.post(reverse('planner:save_current_variant'), {'name': 'TooLow'})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('between 9 and 22', resp.json()['error'])
+
+    def test_variant_conflict_and_load_method(self):
+        planner, _ = Planner.objects.get_or_create(user=self.user)
+        planner.sections.add(self.section)
+        variant = PlanVariant.objects.create(planner=planner, name='Base')
+        variant.sections.add(self.section)
+
+        conflict_course = Course.objects.create(course_code='VCF', course_name='Conflict', credit=3)
+        conflict_section = Section.objects.create(course=conflict_course, section_number='01')
+        SectionSchedule.objects.create(section=conflict_section, day_of_week=0, start_time=time(8,30), end_time=time(9,30))
+
+        resp = self.client.get(reverse('planner:load_variant', args=[variant.id]))
+        self.assertEqual(resp.status_code, 405)
+
+        resp = self.client.get(reverse('planner:variant_add_section', args=[variant.id, conflict_section.id]))
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(resp.json()['ok'])

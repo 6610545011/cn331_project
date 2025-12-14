@@ -1,12 +1,17 @@
 import json
-from django.test import TestCase, Client
+from datetime import date
+from django.test import TestCase, Client, RequestFactory
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.admin.sites import AdminSite
+from django.db import IntegrityError
+from unittest import mock
 
 from core.models import Course, Prof, Section, Campus, Teach
-from .models import Review
+from .models import Review, Tag
 from review.forms import ReviewForm
 from review.models import ReviewUpvote, Report, Bookmark
+from review.admin import BookmarkAdmin, TagAdmin
 
 User = get_user_model()
 
@@ -168,6 +173,12 @@ class ReviewAPIsTestCase(TestCase):
         self.assertIn('results', data)
         self.assertEqual(len(data['results']), 0, "Should return an empty list for no matches.")
 
+    def test_search_courses_api_missing_term(self):
+        url = reverse('review:ajax_search_courses')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.json())
+
     def test_get_professors_for_course_api_invalid_id(self):
         """
         Test (Sad Path): Ensure the professors API returns an empty list
@@ -180,6 +191,18 @@ class ReviewAPIsTestCase(TestCase):
         data = response.json()
         self.assertIn('professors', data)
         self.assertEqual(len(data['professors']), 0, "Should return an empty list for an invalid section ID.")
+
+    def test_get_professors_missing_param(self):
+        url = reverse('review:ajax_get_professors')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['professors'], [])
+
+    def test_get_sections_missing_param(self):
+        url = reverse('review:ajax_get_sections')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['sections'], [])
 
 
 class ReviewFormTests(TestCase):
@@ -225,6 +248,37 @@ class ReviewFormTests(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['course'], self.course)
 
+    def test_form_prof_without_course_inference_fails(self):
+        lonely_prof = Prof.objects.create(prof_name="NoCourseProf")
+        form = ReviewForm(data={
+            'prof': lonely_prof.id,
+            'header': 'H', 'body': 'B', 'rating': 5
+        }, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('__all__', form.errors)
+
+    def test_form_course_prof_not_teaching(self):
+        other_prof = Prof.objects.create(prof_name="Other")
+        form = ReviewForm(data={
+            'course': self.course.id,
+            'prof': other_prof.id,
+            'header': 'H', 'body': 'B', 'rating': 5
+        }, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('prof', form.errors)
+
+    def test_section_widget_enables_on_bound_data(self):
+        # Initial form should keep section disabled
+        blank_form = ReviewForm(user=self.user)
+        self.assertTrue(blank_form.fields['section'].widget.attrs.get('disabled'))
+
+        bound = ReviewForm(data={
+            'course': self.course.id,
+            'section': self.section.id,
+            'header': 'H', 'body': 'B', 'rating': 5
+        }, user=self.user)
+        self.assertFalse(bound.fields['section'].widget.attrs.get('disabled', False))
+
 class ReviewActionTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='u', email='u@u.com', password='p')
@@ -258,10 +312,27 @@ class ReviewActionTests(TestCase):
                                 content_type='application/json')
         self.assertEqual(resp.json()['user_vote'], 0)
 
+    def test_vote_review_invalid_payload(self):
+        resp = self.client.post(reverse('review:vote_review', args=[self.review.id]), data='not-json', content_type='application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['message'], 'Invalid request format.')
+
+    def test_vote_review_invalid_vote_type(self):
+        resp = self.client.post(reverse('review:vote_review', args=[self.review.id]), data=json.dumps({'vote_type': 3}), content_type='application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['message'], 'Invalid vote type.')
+
     def test_delete_review(self):
         resp = self.client.post(reverse('review:delete_review', args=[self.review.id]))
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(Review.objects.filter(id=self.review.id).exists())
+
+    def test_delete_review_wrong_user(self):
+        other = User.objects.create_user(username='o', email='o@o.com', password='p')
+        self.client.logout()
+        self.client.login(username='o', password='p')
+        resp = self.client.post(reverse('review:delete_review', args=[self.review.id]))
+        self.assertEqual(resp.status_code, 404)
 
     def test_ajax_views(self):
         s = Section.objects.create(course=self.course, section_number="01")
@@ -276,3 +347,58 @@ class ReviewActionTests(TestCase):
         resp = self.client.get(reverse('review:ajax_get_sections'), {'course_id': self.course.id})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()['sections']), 1)
+
+    def test_toggle_bookmark_method_not_allowed(self):
+        resp = self.client.get(reverse('review:toggle_bookmark', args=[self.review.id]))
+        self.assertEqual(resp.status_code, 405)
+
+class ReviewAdminTests(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(username='adminu', email='a@a.com', password='p')
+        self.course = Course.objects.create(course_code='ADM1', course_name='Admin', credit=1)
+
+    def test_auto_user_mixin_sets_user(self):
+        request = self.factory.post('/')
+        request.user = self.user
+        admin = BookmarkAdmin(Bookmark, self.site)
+        obj = Bookmark(course=self.course)
+        admin.save_model(request, obj, form=None, change=False)
+        self.assertEqual(obj.user, self.user)
+
+    def test_auto_user_mixin_integrity_error(self):
+        request = self.factory.post('/')
+        request.user = self.user
+        admin = BookmarkAdmin(Bookmark, self.site)
+        obj = Bookmark(course=self.course)
+        with mock.patch('django.contrib.admin.ModelAdmin.save_model', side_effect=IntegrityError):
+            with self.assertRaisesMessage(Exception, "Could not save"):
+                admin.save_model(request, obj, form=None, change=False)
+
+    def test_tag_admin_str(self):
+        tag = Tag.objects.create(name='x')
+        self.assertEqual(str(tag), 'x')
+
+
+class ReviewModelTests(TestCase):
+    def test_vote_score_and_str(self):
+        user = User.objects.create_user(username='m', email='m@m.com', password='p')
+        course = Course.objects.create(course_code='M1', course_name='Model', credit=1)
+        review = Review.objects.create(user=user, course=course, head='H', body='B', rating=4)
+        self.assertEqual(review.vote_score, 0)
+        self.assertIn('M1', str(review))
+        ReviewUpvote.objects.create(user=user, review=review, vote_type=1)
+        self.assertEqual(review.vote_score, 1)
+
+
+class StatsModelTests(TestCase):
+    def test_stats_str(self):
+        from stats.models import CourseSearchStat, CourseViewStat, CourseReviewStat
+        course = Course.objects.create(course_code='STAT', course_name='Stats', credit=1)
+        search = CourseSearchStat(course=course, date=date.today(), count=2)
+        view = CourseViewStat(course=course, date=date.today(), count=3)
+        review = CourseReviewStat(course=course, date=date.today(), count=4)
+        self.assertIn('STAT', str(search))
+        self.assertIn('STAT', str(view))
+        self.assertIn('STAT', str(review))
