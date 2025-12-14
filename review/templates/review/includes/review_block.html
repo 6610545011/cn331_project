@@ -9,12 +9,11 @@
                 {% if review.incognito %}
                     <span>A</span>
                 {% else %}
-                    {% if user.imgurl %}
-                        <img src="{{ user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
+                    {% if review.user.imgurl %}
+                        <img src="{{ review.user.imgurl }}" alt="Profile" class="w-full h-full object-cover">
                     {% else %}
-                        <span>{{ user.username|slice:":1"|upper }}</span>
+                        <span>{{ review.user.username|slice:":1"|upper }}</span>
                     {% endif %}
-                    <span>{{ username }}</span>
                 {% endif %}
             </div>
             <h4>{{ review.head }}</h4>
