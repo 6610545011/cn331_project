@@ -75,6 +75,6 @@
 
 ## อื่นๆ
 
-- Full Report: [Report](https://drive.google.com/file/d/1ShrcwkFO7gY_MzTSB75zHIbJGe9nVz16/view)
+- Full Report: [Report](https://drive.google.com/file/d/1oyIwitnJ_bPIkv6BDXMbSLocnYsszgD0/view?usp=drive_link)
 - Demo Application: https://cn331-project.onrender.com/
-- Demo Video: [Video]()
+- Demo Video: [Video](https://drive.google.com/file/d/1_zrUq8Yx1gTRZfYinc7BXiYLs2JuDGmy/view?usp=drive_link)
